@@ -2,23 +2,31 @@
 #include "CVeBase.h"
 #include "CPlayList.h"
 
-class CPageList : public CVeBase, public Dui::CListView::IAdapter
+class CPlayListFileAdapter : public Dui::CListView::IAdapter
 {
-public:
-    constexpr static float
-        ListFileListWidth = 170.f,
-        EditHeight = 37.f,
-        ButtonPadding = 110.f,
-        CoverSize = 40.f,
-        ListItemHeight = 46.f
-        ;
 private:
-    using LvIndex = eck::UiBasic::Lc::Index;
-    using LvProperty = eck::UiBasic::Lc::Property;
-    using LvState = eck::UiBasic::Lc::TState;
+    struct Item
+    {
+        RefPtr<eck::CD2DImageList> pImageList;
+        LvState uState{};
+    };
 
-    constexpr static int DefaultCoverIndex{};
+    std::vector<Item> m_vList{};
 
+    LvIndex LcaGetCount() const noexcept override;
+    int LcaGetColumnCount() const noexcept override;
+    void LcaGet(const LvIndex& idx, int idxCol,
+        LvProperty eProp, std::any& Data) const noexcept override;
+    void LcaSet(const LvIndex& idx, int idxCol,
+        LvProperty eProp, std::any& Data, BOOL bMove = FALSE) noexcept override;
+    void LcaColumnWidthChanged(int idxCol, float cxNew) noexcept override;
+public:
+    EckInlineNdCe auto& operator[](size_t idx) noexcept { return m_vList[idx]; }
+};
+
+class CPlayListItemAdapter : public Dui::CListView::IAdapter
+{
+private:
     enum class Column
     {
         Title,
@@ -29,45 +37,15 @@ private:
         Maximum,
     };
 
-    struct LIST_INFO
-    {
-        RefPtr<eck::CD2DImageList> pImageList;
-    };
-    struct ITEM_INFO
+    struct Item
     {
         int idxImage{};// -1 = 需要更新
         LvState uState{};
         ComPtr<IDWriteTextLayout> pTextLayout[(size_t)Column::Maximum]{};
     };
 
-    struct TSKPARAM_LOAD_META_DATA
-    {
-        RefPtr<CPlayList> pList;
-        RefPtr<eck::CD2DImageList> pImageList;
-        eck::CTrivialBuffer<int> vItem;
-    };;
-
-    Dui::CEdit m_EDSearch{};
-    Dui::CListView m_TBLPlayList{};
-    eck::CLinearLayoutV m_LytPlayList{};
-
-    Dui::CButton m_BTAddFile{};
-    Dui::CButton m_BTLocate{};
-    eck::CLayoutDummy m_TopBarDummySpace{};
-    Dui::CEdit m_EDSearchItem{};
-    eck::CLinearLayoutH m_LytTopBar{};
-    Dui::CListView m_GLList{};
-    eck::CLinearLayoutV m_LytList{};
-
-    eck::CLinearLayoutH m_Lyt{};
-
-    int m_cxIl{}, m_cyIl{};
-
-    std::vector<LIST_INFO> m_vListInfo{};
-    mutable std::vector<ITEM_INFO> m_vItem{};
-
-    BOOL m_bSearchItemEditEmpty{};
-
+    RefPtr<CPlayList> m_pList{};
+    std::vector<Item> m_vItem{};
 
     LvIndex LcaGetCount() const noexcept override;
     int LcaGetColumnCount() const noexcept override;
@@ -76,6 +54,51 @@ private:
     void LcaSet(const LvIndex& idx, int idxCol,
         LvProperty eProp, std::any& Data, BOOL bMove = FALSE) noexcept override;
     void LcaColumnWidthChanged(int idxCol, float cxNew) noexcept override;
+public:
+    EckInlineNdCe auto& operator[](size_t idx) noexcept { return m_vItem[idx]; }
+    void InvalidateImage() noexcept;
+};
+
+class CPageList : public CVeBase
+{
+    friend class CPlayListItemAdapter;
+public:
+    constexpr static float
+        ListFileListWidth = 170.f,
+        EditHeight = 37.f,
+        ButtonPadding = 110.f,
+        CoverSize = 40.f,
+        ListItemHeight = 46.f
+        ;
+
+    constexpr static int DefaultCoverIndex{};
+private:
+    struct TSKPARAM_LOAD_META_DATA
+    {
+        RefPtr<CPlayList> pList;
+        RefPtr<eck::CD2DImageList> pImageList;
+        eck::CTrivialBuffer<int> vItem;
+    };
+
+    Dui::CEdit m_EDSearch{};
+    Dui::CListView m_TBLPlayList{};
+    eck::CLinearLayoutV m_LytPlayList{};
+    CPlayListFileAdapter m_FileAdapter{};
+
+    Dui::CButton m_BTAddFile{};
+    Dui::CButton m_BTLocate{};
+    eck::CLayoutDummy m_TopBarDummySpace{};
+    Dui::CEdit m_EDSearchItem{};
+    eck::CLinearLayoutH m_LytTopBar{};
+    Dui::CListView m_GLList{};
+    eck::CLinearLayoutV m_LytList{};
+    CPlayListItemAdapter m_ItemAdapter{};
+
+    eck::CLinearLayoutH m_Lyt{};
+
+    int m_cxIl{}, m_cyIl{};
+
+    BOOL m_bSearchItemEditEmpty{};
 
     eck::CoroTask<void> PlLoadMetadata(TSKPARAM_LOAD_META_DATA&& Param) noexcept;
     void PlBeginLoadMetadata(int idxList = -1) noexcept;

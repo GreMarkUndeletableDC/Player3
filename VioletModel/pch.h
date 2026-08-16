@@ -70,6 +70,10 @@ using namespace std::literals;
 
 using Dui::EagPoint;
 
+using LvIndex = eck::UiBasic::Lc::Index;
+using LvProperty = eck::UiBasic::Lc::Property;
+using LvState = eck::UiBasic::Lc::TState;
+
 #include "Bass\bass.h"
 #include "Bass\bass_fx.h"
 #include "Bass\bassmidi.h"

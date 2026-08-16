@@ -129,6 +129,6 @@ void CVeMiniCover::TlTick(int ms) noexcept
 {
     if (!m_bAnActive)
         return;
-    m_bAnActive = m_ec.Tick(ms, 200.f);
+    m_bAnActive = m_ec.Tick((float)ms, 200.f);
     Invalidate();
 }

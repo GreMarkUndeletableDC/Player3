@@ -165,7 +165,7 @@ PlayResult CPlayer::Next(BOOL bNoLoop) noexcept
 {
     if (!m_pPlayList)
         return PlayResult::NoPlayList;
-    int idxItem, idxGroup;
+    int idxItem;
     if (IsRandom())
         idxItem = GetList()->PlyGetCurrentRandomItem();
     else
@@ -191,7 +191,7 @@ PlayResult CPlayer::Previous() noexcept
 {
     if (!m_pPlayList)
         return PlayResult::NoPlayList;
-    int idxItem, idxGroup;
+    int idxItem;
     if (m_eAutoNext == AutoNextMode::Random)
         idxItem = GetList()->PlyGetCurrentRandomItem();
     else

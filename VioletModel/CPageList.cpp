@@ -12,85 +12,6 @@ constexpr std::wstring_view ColumnName[]
 };
 constexpr float ColumnWidth[]{ 270, 150, 150, 50 };
 
-CPageList::LvIndex CPageList::LcaGetCount() const noexcept
-{
-    const auto& pList = PlCurrent();
-    if (!pList)
-        return { 0, 0 };
-    LvIndex idx{};
-    idx.Item = pList->FlIsSearching() ?
-        pList->FlGetSearchResultCount() : pList->FlGetCount();
-    m_vItem.resize((size_t)idx.Item);// HACK
-    return idx;
-}
-
-int CPageList::LcaGetColumnCount() const noexcept
-{
-    return ARRAYSIZE(ColumnName);
-}
-
-void CPageList::LcaGet(const LvIndex& idx, int idxCol,
-    LvProperty eProp, std::any& Data) const noexcept
-{
-    switch (eProp)
-    {
-    case LvProperty::SystemState:
-        Data = (LvState)m_vItem[idx.Item].uState;
-        break;
-    case LvProperty::UiTextLayout:
-        Data = m_vItem[idx.Item].pTextLayout[idxCol];
-        break;
-    case LvProperty::Image:
-    {
-        const auto idxImage = m_vItem[idx.Item].idxImage;
-        Data = idxImage < 0 ? DefaultCoverIndex : idxImage;
-    }
-    break;
-    case LvProperty::Text:
-    {
-        auto& rs = *std::any_cast<eck::CStringW*>(Data);
-        const auto& e = PlCurrent()->FlAt(idx.Item);
-        switch (idxCol)
-        {
-        case 0: rs = e.rsName;   break;
-        case 1: rs = e.rsArtist; break;
-        case 2: rs = e.rsAlbum;  break;
-        case 3:
-        {
-            const auto uSecTime = e.s.uSecTime;
-            if (uSecTime)
-                rs.Format(L"%d:%02d", uSecTime / 60, uSecTime % 60);
-            else
-                rs.Clear();
-        }
-        break;
-        }
-    }
-    break;
-    }
-}
-
-void CPageList::LcaSet(const LvIndex& idx, int idxCol,
-    LvProperty eProp, std::any& Data, BOOL bMove) noexcept
-{
-    switch (eProp)
-    {
-    case LvProperty::SystemState:
-        m_vItem[idx.Item].uState = std::any_cast<LvState>(Data);
-        break;
-    case LvProperty::UiTextLayout:
-        m_vItem[idx.Item].pTextLayout[idxCol] = std::any_cast<ComPtr<IDWriteTextLayout>>(Data);
-        break;
-    }
-}
-
-void CPageList::LcaColumnWidthChanged(int idxCol, float cxNew) noexcept
-{
-    // TODO: 考虑cxNew
-    for (auto& e : m_vItem)
-        e.pTextLayout[idxCol].Clear();
-}
-
 eck::CoroTask<void> CPageList::PlLoadMetadata(
     TSKPARAM_LOAD_META_DATA&& Param_) noexcept
 {
@@ -124,10 +45,10 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
             e.s.bUpdated = TRUE;
             bNeedUpdate = TRUE;
         }
-        if (m_vItem[i].idxImage < 0)
+        if (m_ItemAdapter[i].idxImage < 0)
         {
             vMetadata[i].mi.uMask |= Tag::MIM_COVER;
-            m_vItem[i].idxImage = 0;
+            m_ItemAdapter[i].idxImage = 0;
             bNeedUpdate = TRUE;
         }
     }
@@ -192,7 +113,7 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
             hr = pBitmap->CopyPixels(
                 &rc,
                 cxIlTile * sizeof(UINT),
-                Meta.CoverPixel.Size(),
+                (UINT)Meta.CoverPixel.Size(),
                 (BYTE*)Meta.CoverPixel.Data());
             if (FAILED(hr))
                 Meta.CoverPixel.Clear();
@@ -205,7 +126,7 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
     EckCounter(Param.vItem.Size(), i)
     {
         auto& e = Param.pList->FlAtAbsolutely(Param.vItem[i]);
-        auto& Ui = m_vItem[Param.vItem[i]];
+        auto& Ui = m_ItemAdapter[Param.vItem[i]];
         auto& Meta = vMetadata[i];
 
         if (!Meta.CoverPixel.IsEmpty())
@@ -253,14 +174,14 @@ void CPageList::PlBeginLoadMetadata(int idxList) noexcept
     TSKPARAM_LOAD_META_DATA Param
     {
         .pList = App->ListManager().At(idxList).pList,
-        .pImageList = m_vListInfo[idxList].pImageList
+        .pImageList = m_FileAdapter[idxList].pImageList
     };
 
     m_GLList.GetController().ForEachItem(
         [&](const Dui::CListView::TController::FOR_ITEM& e)
         {
             auto& Meta = Param.pList->FlAt(e.idx.Item);
-            if (!Meta.s.bUpdated || m_vItem[e.idx.Item].idxImage < 0)
+            if (!Meta.s.bUpdated || m_ItemAdapter[e.idx.Item].idxImage < 0)
                 if (Param.pList->FlIsSearching())
                     Param.vItem.PushBack(Param.pList->FlAtSearch(e.idx.Item));
                 else
@@ -277,8 +198,6 @@ void CPageList::PlBeginLoadMetadata(int idxList) noexcept
 const RefPtr<CPlayList>& CPageList::PlCurrent() const noexcept
 {
     const auto idx = m_TBLPlayList.GetController().ItmGetSelected();
-    if (idx < 0)
-        return {};
     return App->ListManager().At(idx).pList;
 }
 
@@ -336,7 +255,7 @@ HRESULT CPageList::IlUploadDefaultCover(eck::CD2DImageList* pImageList) noexcept
     hr = pScaler->CopyPixels(
         &rc,
         cxTile * sizeof(UINT),
-        Buffer.Size(),
+        (UINT)Buffer.Size(),
         (BYTE*)Buffer.Data());
     if (FAILED(hr))
         return hr;
@@ -374,10 +293,9 @@ HRESULT CPageList::IlDpiChanged() noexcept
     const auto idx = m_TBLPlayList.GetController().ItmGetSelected();
     if (idx < 0)
         return S_FALSE;
-    m_vListInfo[idx].pImageList = IlCreate();
-    for (auto& e : m_vItem)
-        e.idxImage = -1;
-    m_GLList.SetImageList(m_vListInfo[idx].pImageList);
+    m_FileAdapter[idx].pImageList = IlCreate();
+    m_ItemAdapter.InvalidateImage();
+    m_GLList.SetImageList(m_FileAdapter[idx].pImageList);
     m_GLList.Invalidate();// TODO: 仅无效化图标
     PlBeginLoadMetadata();
     return S_OK;
@@ -434,7 +352,7 @@ void CPageList::OnListSwitch() noexcept
     const auto idx = m_TBLPlayList.GetController().ItmGetSelected();
     if (idx < 0)
         return;
-    auto& e = m_vListInfo[idx];
+    auto& e = m_FileAdapter[idx];
     if (!e.pImageList)
         e.pImageList = IlCreate();
     m_GLList.SetImageList(e.pImageList);
@@ -458,7 +376,7 @@ void CPageList::InitializeUi() noexcept
         m_TBLPlayList.Create({}, Dui::DES_VISIBLE, 0,
             0, 0, ListFileListWidth, 0, this);
         m_TBLPlayList.GetController().MtSetBottomExtra(PlayPanelHeight);
-        m_TBLPlayList.SetAdapter(this);
+        m_TBLPlayList.SetAdapter(&m_FileAdapter);
         m_TBLPlayList.ReCalculateItem();
         m_LytPlayList.LobAddObject(
             {
@@ -533,7 +451,7 @@ void CPageList::InitializeUi() noexcept
         m_GLList.Create({}, Dui::DES_VISIBLE, 0,
             0, 0, 0, 0, this);
         m_GLList.SetTextFormat(pTextFormat.Get());
-        m_GLList.SetAdapter(this);
+        m_GLList.SetAdapter(&m_ItemAdapter);
 
         auto& Controller = m_GLList.GetController();
         Controller.SetView(Dui::CListView::View::List);
@@ -543,7 +461,7 @@ void CPageList::InitializeUi() noexcept
 
         auto& Header = m_GLList.GetHeader();
         EckCounter(ARRAYSIZE(ColumnName), i)
-            Header.InsertItem(i, ColumnName[i], ColumnWidth[i]);
+            Header.InsertItem((UINT)i, ColumnName[i], ColumnWidth[i]);
         Header.SetTextFormat(pTextFormat.Get());
 
         m_LytList.LobAddObject(
@@ -694,7 +612,7 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
     //case Dui::EWM_COLORSCHEMECHANGED:
     //{
-    //    for (auto& e : m_vListInfo)
+    //    for (auto& e : m_FileAdapter.GetListInfo())
     //    {
     //        if (e.pImageList)
     //            IlUploadDefaultCover(e.pImageList.Get());

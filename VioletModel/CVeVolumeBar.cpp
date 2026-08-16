@@ -49,6 +49,7 @@ void CVeVolumeBar::ShowAnimation() noexcept
     ECKBOOLNOT(m_bShow);
     SetStyle(GetStyle() | Dui::DES_VISIBLE);
     SetCompositor(&m_PageAn);
+    m_bAnimating = TRUE;
     if (m_bShow)
         m_ecShowing.Start(0.f, 1.f);
     else

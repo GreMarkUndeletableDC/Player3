@@ -40,7 +40,7 @@ enum class AutoNextMode : BYTE
 
     Maximum,
 };
-EckInlineNdCe AutoNextMode operator++(AutoNextMode& eMode) noexcept
+EckInlineCe AutoNextMode operator++(AutoNextMode& eMode) noexcept
 {
     return eMode = AutoNextMode((eck::UnderlyingType_T<AutoNextMode>)eMode + 1);
 }

@@ -221,6 +221,9 @@
     <ClCompile Include="CVeBase.cpp">
       <Filter>UI\元素</Filter>
     </ClCompile>
+    <ClCompile Include="CPageList_Adapter.cpp">
+      <Filter>UI\容器</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">

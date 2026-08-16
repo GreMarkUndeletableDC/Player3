@@ -337,7 +337,7 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             MiBeginScrollExpand(TRUE);
         ItmDelayComplete();
         ScrManualScrolling();
-        m_SB.GetScrollView().OnMouseWheel2(-GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA);
+        m_SB.GetScrollView().OnMouseWheel2(float(-GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA));
         GetWindow().KctWake();
     }
     return 0;
@@ -718,7 +718,6 @@ void CVeLyric::ItmLayout() noexcept
     DWRITE_TEXT_METRICS tm;
 
     float y = yInit;
-    float cxItem, cyItem;
 
     const auto fMaxScale = GetTheme()->GetMetric(IdMeMaximumScale, DefaultMaximumScale);
     const auto cxyItemMargin = GetTheme()->GetMetric(IdMeItemMargin, DefaultItemMargin);

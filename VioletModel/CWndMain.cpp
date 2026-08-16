@@ -54,6 +54,7 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     CBass::Initialize();
     App->Player().GetEventChain().Connect(this, &CWindowMain::OnPlayEvent);
 
+    KctStartTimer();
     KctRegisterTimeLine(this);
     RdSetBackColor(0);
 
@@ -306,6 +307,7 @@ LRESULT CWindowMain::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         break;
     case WM_SIZE:
     {
+        RdLockUpdate();
         const auto lResult = __super::OnMessage(uMsg, wParam, lParam);
         PageClearAnimation();
         const auto cxClient = GetClientWidthLogical();
@@ -336,6 +338,7 @@ LRESULT CWindowMain::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
                 cxClient,
                 cyClient - TabToPagePadding });
         LayoutPlayPanel();
+        RdUnlockUpdate();
         return lResult;
     }
 
