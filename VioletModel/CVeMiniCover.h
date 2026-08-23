@@ -5,11 +5,9 @@ class CVeMiniCover : public CVeBase, public eck::ITimeLine
 {
 public:
     constexpr static float
-        PlayPageArrowSize = 30.f// TODO: 由主题定义
+        PlayPageArrowSize = 30.f
         ;
 private:
-    Dui::CBitmap m_BitmapCover{};
-    Dui::CBitmap m_BitmapArrowUp{};
     eck::EasingCurve<eck::Easing::FOutCubic> m_ec{};
 
     int m_msLastInterval{};
@@ -21,8 +19,6 @@ private:
     void OnColorSchemeChanged(BOOL bForceUpdateCover) noexcept;
 public:
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
-
-    void SetCoverBitmap(const Dui::CBitmap& Bitmap) noexcept { m_BitmapCover = Bitmap; }
 
     void TlTick(int ms) noexcept override;
     BOOL TlIsValid() noexcept override { return m_bAnActive; }

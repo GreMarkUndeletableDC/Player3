@@ -49,11 +49,11 @@ PlayResult CPlayer::PlayWorker(int idx) noexcept
     {
         if (pCover->IsLink())
             m_dwLastHrOrBassErr = eck::WicLoadSource(
-                m_pBitmapCover.AtSelfClear(), pCover->GetPath().Data());
+                m_pBitmapCover.SelfClear(), pCover->GetPath().Data());
         else
         {
             const auto pStream = new eck::CStreamView{ pCover->GetData() };
-            m_dwLastHrOrBassErr = eck::WicLoadSource(m_pBitmapCover.AtSelf(), pStream);
+            m_dwLastHrOrBassErr = eck::WicLoadSource(m_pBitmapCover.Self(), pStream);
             pStream->Release();
         }
     }

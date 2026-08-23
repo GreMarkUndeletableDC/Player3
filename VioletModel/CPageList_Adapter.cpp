@@ -48,6 +48,12 @@ void CPlayListFileAdapter::LcaColumnWidthChanged(int idxCol, float cxNew) noexce
 {
 }
 
+void CPlayListFileAdapter::OnDataChanged() noexcept
+{
+    m_vList.clear();
+    m_vList.resize(App->ListManager().GetCount());
+}
+
 // =======================================================
 
 LvIndex CPlayListItemAdapter::LcaGetCount() const noexcept
@@ -81,6 +87,8 @@ void CPlayListItemAdapter::LcaGet(const LvIndex& idx, int idxCol,
         break;
     case LvProperty::Image:
     {
+        if (idxCol != 0)
+            break;
         const auto idxImage = m_vItem[idx.Item].idxImage;
         Data = idxImage < 0 ? CPageList::DefaultCoverIndex : idxImage;
     }
@@ -126,12 +134,25 @@ void CPlayListItemAdapter::LcaSet(const LvIndex& idx, int idxCol,
 void CPlayListItemAdapter::LcaColumnWidthChanged(int idxCol, float cxNew) noexcept
 {
     // TODO: 考虑cxNew
-    for (auto& e : m_vItem)
-        e.pTextLayout[idxCol].Clear();
+    if (idxCol < 0)
+        for (auto& e : m_vItem)
+            for (auto& pTl : e.pTextLayout)
+                pTl.Clear();
+    else
+        for (auto& e : m_vItem)
+            e.pTextLayout[idxCol].Clear();
 }
 
 void CPlayListItemAdapter::InvalidateImage() noexcept
 {
     for (auto& e : m_vItem)
         e.idxImage = -1;
+}
+
+void CPlayListItemAdapter::SetList(RefPtr<CPlayList> pList) noexcept
+{
+    m_pList = std::move(pList);
+    m_vItem.clear();
+    if (m_pList)
+        m_vItem.resize(m_pList->FlGetCount());
 }

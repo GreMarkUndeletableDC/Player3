@@ -159,11 +159,11 @@ LRESULT CWndLrc::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             0, 0, 0, 0, nullptr, this);
         ComPtr<IDWriteTextFormat> pTfLrc;
         auto& FontFactory = App->GetFontFactory();;
-        FontFactory.NewFont(pTfLrc.AtSelfClear(),
+        FontFactory.NewFont(pTfLrc.SelfClear(),
             eck::Alignment::Near, eck::Alignment::Near, 30, 700);
         pTfLrc->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
         m_Lrc.SetTextFormat(pTfLrc.Get());
-        FontFactory.NewFont(pTfLrc.AtSelfClear(),
+        FontFactory.NewFont(pTfLrc.SelfClear(),
             eck::Alignment::Near, eck::Alignment::Near, 20, 500);
         pTfLrc->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
         m_Lrc.SetTextFormatTranslation(pTfLrc.Get());

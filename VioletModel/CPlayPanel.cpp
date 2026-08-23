@@ -71,13 +71,14 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         const auto pWnd = &GetWindow();
 
         ComPtr<IDWriteTextFormat> pTfTitle;
-        App->GetFontFactory().NewFont(pTfTitle.AtSelf(), eck::Alignment::Near,
+        App->GetFontFactory().NewFont(pTfTitle.Self(), eck::Alignment::Near,
             eck::Alignment::Center, (float)NormalFontSize, 700);
         pTfTitle->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
         float x = MiniCoverLeftPosition;
         m_Cover.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
             x, MiniCoverTopPosition, MiniCoverSize, MiniCoverSize, this, pWnd);
+        m_Cover.SetId(ELEID_MINICOVER);
         x += (MiniCoverSize + PlayPanelTextPadding);
 
         float y = TitleTopPosition;

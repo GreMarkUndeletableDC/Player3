@@ -59,7 +59,7 @@ HRESULT CVioletAtlas::AtlasInitialize() noexcept
     const auto cchOld = rsPath.Size();
 
     rsPath.PushBack(LR"(\Skin\Atlas.png)"sv);
-    hr = eck::WicLoadSource(m_pAtlasWic.AtSelfClear(), rsPath.Data());
+    hr = eck::WicLoadSource(m_pAtlasWic.SelfClear(), rsPath.Data());
     if (FAILED(hr))
         return hr;
 
@@ -143,7 +143,7 @@ HRESULT CVioletAtlas::CoverInitialize() noexcept
     auto rsPath{ eck::GetRunningPath() };
     rsPath.PushBack(LR"(\Skin\DefaultCover.png)"sv);
     ComPtr<IWICBitmapSource> pDefaultCover;
-    hr = eck::WicLoadSource(pDefaultCover.AtSelfClear(), rsPath.Data());
+    hr = eck::WicLoadSource(pDefaultCover.SelfClear(), rsPath.Data());
     if (FAILED(hr))
         return hr;
 
@@ -171,28 +171,12 @@ HRESULT CVioletAtlas::CoverRealize() noexcept
     Prop.pixelFormat = { DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED };
     Prop.dpiX = Prop.dpiY = 96.f;
 
-    constexpr D2D1_SIZE_U Size{ CoverWidth * 2 + CoverAtlasGap, CoverHeight };
+    constexpr D2D1_SIZE_U Size{ CoverWidth, CoverHeight };
 
     hr = m_pDC->CreateBitmap(Size, nullptr, 0, Prop, m_pCoverD2D.AtClear());
     if (FAILED(hr))
         return hr;
-
-    eck::UniquePtr<eck::DelVA<BYTE>> pBuffer{
-        (BYTE*)eck::VAllocate((CoverWidth + CoverAtlasGap) * CoverHeight * sizeof(UINT)) };
-
-    constexpr WICRect rc{ 0, 0, CoverWidth, CoverHeight };
-    hr = m_pDefaultCoverWic->CopyPixels(&rc,
-        (CoverWidth + CoverAtlasGap) * sizeof(UINT),
-        CoverWidth * CoverHeight * sizeof(UINT),
-        pBuffer.get());
-    if (FAILED(hr))
-        return hr;
-
-    constexpr D2D1_RECT_U rcDst{ 0, 0, CoverWidth + CoverAtlasGap, CoverHeight };
-    return m_pCoverD2D->CopyFromMemory(
-        &rcDst,
-        pBuffer.get(),
-        (CoverWidth + CoverAtlasGap) * sizeof(UINT));
+    return InternalCoverUpdate(m_pDefaultCoverWic.Get());
 }
 
 Dui::CBitmap CVioletAtlas::CoverGetCurrentImage() noexcept
@@ -207,14 +191,39 @@ Dui::CBitmap CVioletAtlas::CoverGetSubImage(AppImage eImg) noexcept
     Dui::CBitmap Bitmap{};
 
     D2D1_RECT_F rc;
-    rc.left = (eImg == AppImage::DefaultCover) ?
-        0.f : float(CoverWidth + CoverAtlasGap);
+    rc.left = 0.f;
     rc.top = 0.f;
-    rc.right = rc.left + CoverWidth;
+    rc.right = (float)CoverWidth;
     rc.bottom = (float)CoverHeight;
 
     Bitmap.Set(m_pCoverD2D.Get(), &rc);
     return Bitmap;
+}
+
+HRESULT CVioletAtlas::InternalCoverUpdate(IWICBitmapSource* pBitmap) noexcept
+{
+    eck::UniquePtr<eck::DelVA<BYTE>> pBuffer{
+        (BYTE*)eck::VAllocate(CoverWidth * CoverHeight * sizeof(UINT)) };
+
+    constexpr WICRect rc{ 0, 0, CoverWidth, CoverHeight };
+    const auto hr = pBitmap->CopyPixels(&rc,
+        CoverWidth * sizeof(UINT),
+        CoverWidth * CoverHeight * sizeof(UINT),
+        pBuffer.get());
+    if (FAILED(hr))
+        return hr;
+
+    constexpr D2D1_RECT_U rcDst
+    {
+        0,
+        0,
+        CoverWidth,
+        CoverHeight
+    };
+    return m_pCoverD2D->CopyFromMemory(
+        &rcDst,
+        pBuffer.get(),
+        CoverWidth * sizeof(UINT));
 }
 
 HRESULT CVioletAtlas::CoverUpdate(IWICBitmapSource* pBitmap) noexcept
@@ -225,26 +234,21 @@ HRESULT CVioletAtlas::CoverUpdate(IWICBitmapSource* pBitmap) noexcept
         return S_OK;
     }
 
-    eck::UniquePtr<eck::DelVA<BYTE>> pBuffer{
-    (BYTE*)eck::VAllocate(CoverWidth * CoverHeight * sizeof(UINT)) };
+    HRESULT hr;
 
-    constexpr WICRect rc{ 0, 0, CoverWidth, CoverHeight };
-    const auto hr = pBitmap->CopyPixels(&rc,
-        CoverWidth * sizeof(UINT),
-        CoverWidth * CoverHeight * sizeof(UINT),
-        pBuffer.get());
+    ComPtr<IWICBitmapScaler> pScaler;
+    hr = eck::g_pWicFactory->CreateBitmapScaler(&pScaler);
     if (FAILED(hr))
         return hr;
 
-    constexpr D2D1_RECT_U rcDst{
-        CoverWidth + CoverAtlasGap,
-        0,
-        CoverWidth * 2 + CoverAtlasGap,
-        CoverHeight };
-    return m_pCoverD2D->CopyFromMemory(
-        &rcDst,
-        pBuffer.get(),
-        CoverWidth * sizeof(UINT));
+    hr = pScaler->Initialize(
+        pBitmap,
+        CoverWidth, CoverHeight,
+        WICBitmapInterpolationModeFant);
+    if (FAILED(hr))
+        return hr;
+
+    return InternalCoverUpdate(pScaler.Get());
 }
 
 HRESULT CVioletAtlas::SingleInitialize() noexcept

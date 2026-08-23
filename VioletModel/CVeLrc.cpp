@@ -119,6 +119,8 @@ float CVeLyric::ItmPaint(int idx) noexcept
         .fScale = m_fAnValue,
         .kAnSelBkg = e.kAnSelBkg,
         .kScrollExpand = m_kScrollExpand,
+        .pTlMain = e.pTlMain.Get(),
+        .pTlTranslation = e.pTlTranslation.Get(),
     };
     if (e.bAnSelBkg)
         Opt.uFlags |= LRIF_AN_SEL_BKG;
@@ -147,10 +149,13 @@ float CVeLyric::ItmPaint(int idx) noexcept
         eck::TcvFromInt(EckArgString(szDbg), idx, 10, TRUE, &pEnd);
         const auto cchDbg = int(pEnd - szDbg);
 
+        auto rc{ ItmGetRect(idx) };
+        ElementToClient(rc);
+
         GetDC()->DrawTextW(
             szDbg, cchDbg,
             GetTextFormat().Get(),
-            ItmGetRect(idx),
+            rc,
             GetWindow().CcSetBrushColor(D2D1::ColorF{
                 (ItmIsDelaying() && ItmInDelayRange(idx)) ?
                 D2D1::ColorF::Green : D2D1::ColorF::Red }));
@@ -736,6 +741,8 @@ void CVeLyric::ItmLayout() noexcept
         e.y = y;
         e.cx = 0.f;
         e.cy = 0.f;
+        e.cxMain = 0.f;
+        e.cxTranslation = 0.f;
 
         // -- Main
 
@@ -747,6 +754,7 @@ void CVeLyric::ItmLayout() noexcept
         if (e.pTlMain)
         {
             e.pTlMain->GetMetrics(&tm);
+            e.cxMain = tm.width;
             e.cx = std::max(e.cx, tm.width);
             e.cy += tm.height;
         }
@@ -763,6 +771,7 @@ void CVeLyric::ItmLayout() noexcept
             if (e.pTlTranslation)
             {
                 e.pTlTranslation->GetMetrics(&tm);
+                e.cxTranslation = tm.width;
                 e.cx = std::max(e.cx, tm.width);
                 e.cy += (tm.height + dPadding);
             }

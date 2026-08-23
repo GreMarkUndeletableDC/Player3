@@ -51,7 +51,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     App = new CApplication{};
     CApplication::Init();
     //#ifdef _DEBUG
-    App->ListManager().Add()->LtmSetName(L"测试列表"sv);
+    App->ListManager().LoadList(L"D:\\test - 副本"sv);
+    auto pList = App->ListManager().AtList(4);
+    pList->LtmEnsureLoaded();
+    App->Player().SetList(pList);
     //#endif
 
     const auto pWnd = new CWindowMain{};

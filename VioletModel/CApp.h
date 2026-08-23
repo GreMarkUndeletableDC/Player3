@@ -32,6 +32,7 @@ enum
     IDT_LRC_MOUSELEAVE,
 
     ELEID_PLAYPAGE_BACK,
+    ELEID_MINICOVER,
     ELEID_VOLBAR_TRACK,
 
     TE_COMM_TICK = 200,
@@ -44,7 +45,6 @@ enum
 {
     ELEN_PLACEHOLDER = Dui::ENC_PRIVATE_BEGIN,
     ELEN_PAGE_CHANGE,		// [CTabPanel]边栏被单击时(NMLTITEMINDEX*)
-    ELEN_MINICOVER_CLICK,	// [CMiniCover]封面被单击时
     ELEN_DTLRC_GET_TIME,	// [CVeDesktopLyric]取当前播放器时间(NM_DTL_GET_TIME*)
     ELEN_PLAYPAGE_LBTN_UP,	// [CPagePlaying]左键弹起
 };

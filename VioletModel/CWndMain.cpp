@@ -44,7 +44,7 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
             case Dui::UIHE_CREATE:
             {
                 if (eck::PtcCurrent()->bAppDarkMode)
-                    pEle->SetStyle(pEle->GetStyle() | Dui::DES_DARK_MODE);
+                    pEle->SetStyle(pEle->GetStyle() | Dui::DES_DARK_MODE | Dui::DES_DBG_FRAME);
             }
             break;
             }
@@ -69,13 +69,13 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     BlurSetUseLayer(TRUE);
 
     ComPtr<IDWriteTextFormat> pTfPageTitle, pTfLeft, pTfCenter;
-    App->GetFontFactory().NewFont(pTfPageTitle.AtSelf(), eck::Alignment::Near,
+    App->GetFontFactory().NewFont(pTfPageTitle.Self(), eck::Alignment::Near,
         eck::Alignment::Center, (float)PageTitleFontHeight, 600);
     pTfPageTitle->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
-    App->GetFontFactory().NewFont(pTfLeft.AtSelf(), eck::Alignment::Near,
+    App->GetFontFactory().NewFont(pTfLeft.Self(), eck::Alignment::Near,
         eck::Alignment::Center, (float)NormalFontSize);
     pTfLeft->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
-    App->GetFontFactory().NewFont(pTfCenter.AtSelf(), eck::Alignment::Center,
+    App->GetFontFactory().NewFont(pTfCenter.Self(), eck::Alignment::Center,
         eck::Alignment::Center, (float)NormalFontSize);
     pTfCenter->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
@@ -114,32 +114,32 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     m_PagePlaying.Create({}, 0, 0,
         0, 0, 0, 0, nullptr, this);
     m_PagePlaying.SetTextFormat(pTfLeft.Get());
-    App->GetFontFactory().NewFont(pTfPP.AtSelfClear(), eck::Alignment::Near,
+    App->GetFontFactory().NewFont(pTfPP.SelfClear(), eck::Alignment::Near,
         eck::Alignment::Center, (float)LabelFontHeight, 600);
     pTfPP->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
     m_PagePlaying.SetLabelTextFormatTitle(pTfPP.Get());
-    App->GetFontFactory().NewFont(pTfPP.AtSelfClear(), eck::Alignment::Near,
+    App->GetFontFactory().NewFont(pTfPP.SelfClear(), eck::Alignment::Near,
         eck::Alignment::Center, (float)LabelFontHeight);
     pTfPP->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
     m_PagePlaying.SetLabelTextFormat(pTfPP.Get());
     // 进度条
-    m_TBProgress.Create({}, Dui::DES_VISIBLE, 0,
+    m_TBProgress.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, ProgressBarWidth, ProgressBarHeight, nullptr, this);
     m_TBProgress.SetRange(0, 100);
     m_TBProgress.SetTrackPosition(50);
     m_TBProgress.SetTrackSize(ProgressBarTrackHeight);
     m_TBProgress.SetThinTrack(TRUE);
     // 按钮 上一曲
-    m_BTPrev.Create({}, Dui::DES_VISIBLE, 0,
+    m_BTPrev.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, CircleButtonSize, CircleButtonSize, nullptr, this);
     // 按钮 播放/暂停
-    m_BTPlay.Create({}, Dui::DES_VISIBLE, 0,
+    m_BTPlay.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, PlayCircleButtonSize, PlayCircleButtonSize, nullptr, this);
     // 按钮 下一曲
-    m_BTNext.Create({}, Dui::DES_VISIBLE, 0,
+    m_BTNext.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, CircleButtonSize, CircleButtonSize, nullptr, this);
     // 按钮 播放模式
-    m_BTAutoNext.Create({}, Dui::DES_VISIBLE, 0,
+    m_BTAutoNext.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, CircleButtonSize, CircleButtonSize, nullptr, this);
     m_BTAutoNext.GetEventChain().Connect(
         [](UINT uMsg, WPARAM, LPARAM, eck::Slot&) -> LRESULT
@@ -153,10 +153,10 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
             return 0;
         });
     // 按钮 歌词
-    m_BTLrc.Create({}, Dui::DES_VISIBLE, 0,
+    m_BTLrc.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, CircleButtonSize, CircleButtonSize, nullptr, this);
     // 按钮 音量
-    m_BTVol.Create({}, Dui::DES_VISIBLE, 0,
+    m_BTVol.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, CircleButtonSize, CircleButtonSize, nullptr, this);
     // 标题栏
     m_TitleBar.Create({}, Dui::DES_VISIBLE, 0,
@@ -247,6 +247,7 @@ void CWindowMain::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     {
         m_pAtlas->CoverUpdate(App->Player().GetCover().Get());
         m_PagePlaying.UpdateBlurredCover();
+        m_CompPlayPageAn.SetOverlayBitmap(m_pAtlas->CoverGetCurrentImage());
 
         m_msProgTimer = 0;
         SmtcUpdateTimeLineRange();
@@ -428,13 +429,6 @@ LRESULT CWindowMain::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) no
         }
     }
     return 0;
-
-    case ELEN_MINICOVER_CLICK:
-    {
-        PpaPrepare();
-        KctWake();
-    }
-    return 0;
     case ELEN_PLAYPAGE_LBTN_UP:
     {
         if (m_bPPAnActive)
@@ -467,7 +461,9 @@ LRESULT CWindowMain::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) no
             m_VolBar.SetPosition(x, y);
             m_VolBar.ShowAnimation();
         }
-        else if (pEle->GetId() == ELEID_PLAYPAGE_BACK)
+        else if (
+            pEle->GetId() == ELEID_PLAYPAGE_BACK ||
+            pEle->GetId() == ELEID_MINICOVER)
         {
             PpaPrepare();
             KctWake();
@@ -610,9 +606,7 @@ void CWindowMain::PpaTick(int ms) noexcept
     const auto xRef = GetClientWidthLogical() / 2.f;
     const auto yRef = GetClientHeightLogical() / 2.f;
     m_CompNormalPageAn.SetMatrix(
-        D2D1::Matrix3x2F::Translation(xRef, yRef) *
-        D2D1::Matrix3x2F::Scale(kScale, kScale) *
-        D2D1::Matrix3x2F::Translation(-xRef, -yRef));
+        D2D1::Matrix3x2F::Scale(kScale, kScale, { xRef, yRef }));
     m_CompNormalPageAn.SetOpacity(1.f - m_PlayPageAn.K);
 
     D2D1_POINT_2F pt[4];

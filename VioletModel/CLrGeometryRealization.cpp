@@ -22,8 +22,8 @@ void CLyricRendererD2D::ReCreateFadeBrush() noexcept
     const D2D1_GRADIENT_STOP Stop[]
     {
         {},
-        { k,{.a = 1.f } },
-        { 1.f - k,{.a = 1.f } },
+        { k, {.a = 1.f } },
+        { 1.f - k, {.a = 1.f } },
         { 1.f },
     };
     ComPtr<ID2D1GradientStopCollection> pStopCollection;
@@ -71,8 +71,6 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
 {
     EckAssert(Opt.idx >= 0 && Opt.idx < (int)m_vItem.size());
     const auto& Item = m_vItem[Opt.idx];
-    D2D1_MATRIX_3X2_F Mat0;
-    m_pDC->GetTransform(&Mat0);
 
     const auto cxyLineMargin = GetHostElement()->GetTheme()->
         GetMetric(CVeLyric::IdMeItemMargin, CVeLyric::DefaultItemMargin);
@@ -90,12 +88,6 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
         ptScale.x = GetViewWidth();
         break;
     }
-
-    D2D1_MATRIX_3X2_F Mat{ Mat0 };
-    const auto cyExtra = (Opt.cy - cxyLineMargin * 2.f) *
-        (fMaxScale - 1.f) / 2.f;
-    Mat.dx += cxyLineMargin;
-    Mat.dy += (Opt.y + cxyLineMargin + cyExtra);
 
     if (!Item.bCacheValid)
     {
@@ -138,7 +130,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
         eck::GetTextLayoutPathGeometry(
             EckArgArrayR(pTl), cyPadding,
             x, 0.f,
-            pPathGeometry.AtSelf(),
+            pPathGeometry.Self(),
             xDpi,
             TRUE);
 
@@ -153,6 +145,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
     if (Opt.ss)
     {
         D2D1_RECT_F rc{ Opt.x, Opt.y, Opt.x + Opt.cx, Opt.y + Opt.cy };
+        pEle->ElementToClient(rc);
         if ((Opt.uFlags & LRIF_AN_SEL_BKG) && (Opt.ss == CVeLyric::SsHot))
         {
             const auto dxy = -cxyLineMargin * Opt.kAnSelBkg;
@@ -182,6 +175,15 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
                 Opt.prcClip);
     }
 
+    D2D1_MATRIX_3X2_F Mat0;
+    m_pDC->GetTransform(&Mat0);
+    D2D1_MATRIX_3X2_F Mat{ Mat0 };
+    const auto cyExtra = (Opt.cy - cxyLineMargin * 2.f) *
+        (fMaxScale - 1.f) / 2.f;
+    Mat.dx += (cxyLineMargin + pEle->GetOffsetInClient().x);
+    Mat.dy += (Opt.y + cxyLineMargin + cyExtra + pEle->GetOffsetInClient().y);
+
+    D2D1_COLOR_F crText;
     if (Opt.uFlags & LRIF_PREV_AN)
     {
         const auto k = fMaxScale + 1.f - Opt.fScale;
@@ -194,7 +196,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
             1.f - m);
         if (!argb)
             argb = 0;
-        pEle->GetWindow().CcSetBrushColor(eck::ArgbToD2DColorF(*argb));
+        crText = eck::ArgbToD2DColorF(*argb);
     }
     else if (Opt.uFlags & LRIF_CURR_AN)
     {
@@ -207,7 +209,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
             m);
         if (!argb)
             argb = 0;
-        pEle->GetWindow().CcSetBrushColor(eck::ArgbToD2DColorF(*argb));
+        crText = eck::ArgbToD2DColorF(*argb);
     }
     else
     {
@@ -218,9 +220,11 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
         }
         else
             m_pDC->SetTransform(Mat);
-        pEle->GetWindow().CcSetBrushColor(pEle->GetTheme()->GetColorD2D(
-            (Opt.uFlags & LRIF_CURR_AN) ? CVeLyric::IdCrTextActive : CVeLyric::IdCrText));
+        crText = pEle->GetTheme()->GetColorD2D(
+            (Opt.uFlags & LRIF_CURR_AN) ? CVeLyric::IdCrTextActive : CVeLyric::IdCrText);
     }
+    crText = D2D1::ColorF{ D2D1::ColorF::White };
+    pEle->GetWindow().CcSetBrushColor(crText);
     m_pDC->DrawGeometryRealization(Item.pGrMain.Get(), pEle->GetWindow().CcGetBrush());
     m_pDC->SetTransform(Mat0);
 }

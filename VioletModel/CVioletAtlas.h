@@ -76,7 +76,6 @@ class CVioletAtlas
 public:
     constexpr static UINT CoverWidth = 500;
     constexpr static UINT CoverHeight = 500;
-    constexpr static UINT CoverAtlasGap = 1;
 
     constexpr static size_t AtlasSubImageIndexBegin = (size_t)AppImage::Detail_AtlasMinimum + 1;
     constexpr static size_t AtlasSubImageCount =
@@ -113,6 +112,9 @@ private:
     ComPtr<ID2D1Bitmap1> m_pCoverD2D{};
     ComPtr<IWICBitmapSource> m_pDefaultCoverWic{};// 大小为 CoverWidth * CoverHeight
     BOOL m_bDefaultCover{ TRUE };// 当前是否使用默认封面
+
+    // 输入尺寸完全匹配的图像
+    HRESULT InternalCoverUpdate(IWICBitmapSource* pBitmap) noexcept;
 public:
     HRESULT PrepareRealization(ID2D1DeviceContext* pDC) noexcept;
 

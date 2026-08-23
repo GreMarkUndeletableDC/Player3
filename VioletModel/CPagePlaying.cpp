@@ -17,59 +17,70 @@ void CPagePlaying::UpdateBlurredCover() noexcept
     GetDC()->SetTransform(D2D1::Matrix3x2F::Identity());
     GetDC()->BeginDraw();
     GetDC()->Clear(D2D1::ColorF(D2D1::ColorF::White));// TODO:主题色
-
-    // -- 填充计算
-
-    float cx0, cy0; // 原始大小
-    float cyRgn;    // 截取区域高
-    float cx, cy;   // 截取后图片大小
-    D2D_POINT_2F pt;// 画出位置
+    float xDpi, yDpi;
+    GetDC()->GetDpi(&xDpi, &yDpi);
+    GetDC()->SetDpi(96.f, 96.f);
 
     const auto Cover = GetAtlas()->CoverGetCurrentImage();
     const auto rcSrc = Cover.GetActualSourceRect();
-    cx0 = rcSrc.right - rcSrc.left;
-    cy0 = rcSrc.bottom - rcSrc.top;
+    const auto cx0 = rcSrc.right - rcSrc.left;
+    const auto cy0 = rcSrc.bottom - rcSrc.top;
 
-    cyRgn = cyEle / cxEle * cx0;
-    if (cyRgn < cy0)// 1. 宽较大  cxClient / cxPic = cyClient / cyRgn
+    const D2D1_RECT_F rcEle{ 0.f, 0.f, cxEle, cyEle };
+    D2D1_RECT_F rcScaled{ rcSrc };
+    eck::AdjustRectToFillAnother(rcScaled, rcEle);
+
+    ComPtr<ID2D1Image> pInput;
+    D2D1::Matrix3x2F Mat{ D2D1::Matrix3x2F::Identity() };
+    if (Cover.GetSourceRect())
     {
-        cx = cxEle;
-        cy = cx * cy0 / cx0;
-        pt = { 0.f, (cyEle - cy) / 2 };
+        ComPtr<ID2D1Effect> pFxCrop;
+        GetDC()->CreateEffect(CLSID_D2D1Crop, &pFxCrop);
+        pFxCrop->SetInput(0, Cover.Get());
+        pFxCrop->SetValue(D2D1_CROP_PROP_RECT, rcSrc);
+        pFxCrop->GetOutput(&pInput);
+        Mat.dx = rcSrc.left;
+        Mat.dy = rcSrc.top;
     }
-    else// 2. 高较大  cyClient / cyPic = cxClient / cxRgn
-    {
-        cy = cyEle;
-        cx = cx0 * cy / cy0;
-        pt = { (cxEle - cx) / 2, 0.f };
-    }
+    else
+        pInput = Cover.Get();
 
-    // -- 模糊 
+    ComPtr<ID2D1Effect> pFxTransform, pFxCrop, pFxBlur;
+    GetDC()->CreateEffect(CLSID_D2D12DAffineTransform, &pFxTransform);
+    pFxTransform->SetInput(0, pInput.Get());
+    Mat.m11 = (rcScaled.right - rcScaled.left) / cx0;
+    Mat.m22 = (rcScaled.bottom - rcScaled.top) / cy0;
+    Mat.dx += (rcScaled.left - Mat.m11 * rcSrc.left);
+    Mat.dy += (rcScaled.top - Mat.m22 * rcSrc.top);
+    pFxTransform->SetValue(
+        D2D1_2DAFFINETRANSFORM_PROP_TRANSFORM_MATRIX,
+        Mat);
+    pFxTransform->SetValue(
+        D2D1_2DAFFINETRANSFORM_PROP_BORDER_MODE,
+        D2D1_BORDER_MODE_HARD);
+    pFxTransform->SetValue(
+        D2D1_2DAFFINETRANSFORM_PROP_INTERPOLATION_MODE,
+        D2D1_2DAFFINETRANSFORM_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
 
-    // TODO 优化为一次裁剪
-    ComPtr<ID2D1Effect> pFxCrop0, pFxScale, pFxCrop1, pFxBlur;
-    GetDC()->CreateEffect(CLSID_D2D1Crop, &pFxCrop0);
-    pFxCrop0->SetInput(0, Cover.Get());
-    pFxCrop0->SetValue(D2D1_CROP_PROP_RECT, rcSrc);
-
-    GetDC()->CreateEffect(CLSID_D2D1Scale, &pFxScale);
-    pFxScale->SetInputEffect(0, pFxCrop0.Get());
-    pFxScale->SetValue(D2D1_SCALE_PROP_SCALE,
-        D2D1::Vector2F(cx / cx0, cy / cy0));
-
-    GetDC()->CreateEffect(CLSID_D2D1Crop, &pFxCrop1);
-    pFxCrop1->SetInputEffect(0, pFxScale.Get());
-    pFxCrop1->SetValue(D2D1_CROP_PROP_RECT,
-        D2D1::RectF(pt.x, pt.y, pt.x + cxEle, pt.y + cyEle));
+    GetDC()->CreateEffect(CLSID_D2D1Crop, &pFxCrop);
+    pFxCrop->SetInputEffect(0, pFxTransform.Get());
+    pFxCrop->SetValue(D2D1_CROP_PROP_RECT, rcEle);
 
     GetDC()->CreateEffect(CLSID_D2D1GaussianBlur, &pFxBlur);
-    pFxBlur->SetInputEffect(0, pFxCrop1.Get());
-    pFxBlur->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, 40.f);
-    pFxBlur->SetValue(D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, D2D1_BORDER_MODE_HARD);
-    pFxBlur->SetValue(D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION,
+    pFxBlur->SetInputEffect(0, pFxCrop.Get());
+    pFxBlur->SetValue(
+        D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION,
+        40.f);
+    pFxBlur->SetValue(
+        D2D1_GAUSSIANBLUR_PROP_BORDER_MODE,
+        D2D1_BORDER_MODE_HARD);
+    pFxBlur->SetValue(
+        D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION,
         D2D1_GAUSSIANBLUR_OPTIMIZATION_SPEED);
 
     GetDC()->DrawImage(pFxBlur.Get(), { 0.f, 0.f });
+
+    GetDC()->SetDpi(xDpi, yDpi);
 
     // -- 半透明遮罩
 
@@ -144,10 +155,10 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             if (!(Size.width < cx || Size.width / 2.f > cx ||
                 Size.height < cy || Size.height / 2.f > cy))
                 goto Update;
-            GetWindow().RdCreateBitmapLogical(cx, cy, m_pBitmapBlurredCover.AtSelfClear());
+            GetWindow().RdCreateBitmapLogical(cx, cy, m_pBitmapBlurredCover.SelfClear());
         }
         else
-            GetWindow().RdCreateBitmapLogical(cx, cy, m_pBitmapBlurredCover.AtSelf());
+            GetWindow().RdCreateBitmapLogical(cx, cy, m_pBitmapBlurredCover.Self());
     Update:;
         UpdateBlurredCover();
 
@@ -195,7 +206,7 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         const auto cx = GetWidth();
         const auto cy = GetHeight();
-        GetWindow().RdCreateBitmapLogical(cx, cy, m_pBitmapBlurredCover.AtSelfClear());
+        GetWindow().RdCreateBitmapLogical(cx, cy, m_pBitmapBlurredCover.SelfClear());
         UpdateBlurredCover();
     }
     break;
@@ -256,10 +267,10 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
         ComPtr<IDWriteTextFormat> pTfLrc;
         auto& FontFactory = App->GetFontFactory();;
-        FontFactory.NewFont(pTfLrc.AtSelfClear(),
+        FontFactory.NewFont(pTfLrc.SelfClear(),
             eck::Alignment::Near, eck::Alignment::Near, 25, 700);
         m_Lyric.SetTextFormat(pTfLrc.Get());
-        FontFactory.NewFont(pTfLrc.AtSelfClear(),
+        FontFactory.NewFont(pTfLrc.SelfClear(),
             eck::Alignment::Near, eck::Alignment::Near, 21, 500);
         m_Lyric.SetTextFormatTranslation(pTfLrc.Get());
 

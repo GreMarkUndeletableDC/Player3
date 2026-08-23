@@ -6,9 +6,6 @@ constexpr static float CoverAnimationEndValue = 6.f;
 
 void CVeMiniCover::OnColorSchemeChanged(BOOL bForceUpdateCover) noexcept
 {
-    if (bForceUpdateCover)
-        m_BitmapCover = GetAtlas()->CoverGetCurrentImage();
-    m_BitmapArrowUp = GetAtlas()->AtlasGetD2D(AppImage::PlayPageUp);
 }
 
 LRESULT CVeMiniCover::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
@@ -21,41 +18,44 @@ LRESULT CVeMiniCover::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         BeginPaint(ps, wParam, lParam);
         float k;
 
-        if (m_BitmapCover.Get())
-        if (m_bAnActive)
-        {
-            k = m_ec.K;
-        BlurDC:
-            auto rcView{ GetRectInClientD2D() };
-            eck::InflateRect(rcView, k, k);
-            GetDC()->DrawBitmap(m_BitmapCover.Get(), rcView, 1.f,
-                D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, m_BitmapCover.GetSourceRect());
-            GetDC()->Flush();
-            GetWindow().CcReserveBitmapLogical(GetWidth(), GetHeight());
-            auto rcInTarget{ GetRectInClientD2D() };
-            eck::OffsetRect(rcInTarget, ps.ox, ps.oy);
-            GetWindow().BlurDrawDC(rcInTarget, {}, k);
-
-            rcView = GetRectInClientD2D();
-            rcView.left = (rcView.right - (float)PlayPageArrowSize) / 2;
-            rcView.right = rcView.left + (float)PlayPageArrowSize;
-            rcView.top = (rcView.bottom - (float)PlayPageArrowSize) / 2 +
-                (CoverAnimationEndValue - k) * 4.f/*箭头的行程因子*/;
-            rcView.bottom = rcView.top + (float)PlayPageArrowSize;
-            GetDC()->DrawBitmap(m_BitmapArrowUp.Get(), rcView, k / CoverAnimationEndValue,
-                D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, m_BitmapArrowUp.GetSourceRect());
-        }
-        else
-        {
-            if (m_bHover)
+        const auto& Cover = GetAtlas()->CoverGetCurrentImage();
+        if (Cover.Get())
+            if (m_bAnActive)
             {
-                k = CoverAnimationEndValue;
-                goto BlurDC;
+                k = m_ec.K;
+            BlurDC:
+                auto rcView{ GetRectInClientD2D() };
+                eck::InflateRect(rcView, k, k);
+                GetDC()->DrawBitmap(Cover.Get(), rcView, 1.f,
+                    D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, Cover.GetSourceRect());
+                GetDC()->Flush();
+                GetWindow().CcReserveBitmapLogical(GetWidth(), GetHeight());
+                auto rcInTarget{ GetRectInClientD2D() };
+                eck::OffsetRect(rcInTarget, ps.ox, ps.oy);
+                GetWindow().BlurDrawDC(rcInTarget, {}, k);
+
+                rcView = GetRectInClientD2D();
+                rcView.left = (rcView.right - (float)PlayPageArrowSize) / 2;
+                rcView.right = rcView.left + (float)PlayPageArrowSize;
+                rcView.top = (rcView.bottom - (float)PlayPageArrowSize) / 2 +
+                    (CoverAnimationEndValue - k) * 4.f/*箭头的行程因子*/;
+                rcView.bottom = rcView.top + (float)PlayPageArrowSize;
+
+                const auto& Icon = GetAtlas()->AtlasGetD2D(AppImage::PlayPageUp);
+                GetDC()->DrawBitmap(Icon.Get(), rcView, k / CoverAnimationEndValue,
+                    D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, Icon.GetSourceRect());
             }
             else
-                GetDC()->DrawBitmap(m_BitmapCover.Get(), GetRectInClientD2D(), 1.f,
-                    D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, m_BitmapCover.GetSourceRect());
-        }
+            {
+                if (m_bHover)
+                {
+                    k = CoverAnimationEndValue;
+                    goto BlurDC;
+                }
+                else
+                    GetDC()->DrawBitmap(Cover.Get(), GetRectInClientD2D(), 1.f,
+                        D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, Cover.GetSourceRect());
+            }
 
         DbgDrawFrame();
         EndPaint(ps);
@@ -115,12 +115,8 @@ LRESULT CVeMiniCover::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     }
     return 0;
     case WM_DESTROY:
-    {
-        m_BitmapCover = {};
-        m_BitmapArrowUp = {};
         GetWindow().KctUnregisterTimeLine(this);
-    }
-    break;
+        break;
     }
     return __super::OnEvent(uMsg, wParam, lParam);
 }

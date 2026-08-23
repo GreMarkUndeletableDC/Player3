@@ -22,6 +22,7 @@ private:
     void LcaColumnWidthChanged(int idxCol, float cxNew) noexcept override;
 public:
     EckInlineNdCe auto& operator[](size_t idx) noexcept { return m_vList[idx]; }
+    void OnDataChanged() noexcept;
 };
 
 class CPlayListItemAdapter : public Dui::CListView::IAdapter
@@ -57,6 +58,7 @@ private:
 public:
     EckInlineNdCe auto& operator[](size_t idx) noexcept { return m_vItem[idx]; }
     void InvalidateImage() noexcept;
+    void SetList(RefPtr<CPlayList> pList) noexcept;
 };
 
 class CPageList : public CVeBase
@@ -73,13 +75,6 @@ public:
 
     constexpr static int DefaultCoverIndex{};
 private:
-    struct TSKPARAM_LOAD_META_DATA
-    {
-        RefPtr<CPlayList> pList;
-        RefPtr<eck::CD2DImageList> pImageList;
-        eck::CTrivialBuffer<int> vItem;
-    };
-
     Dui::CEdit m_EDSearch{};
     Dui::CListView m_TBLPlayList{};
     eck::CLinearLayoutV m_LytPlayList{};
@@ -100,7 +95,10 @@ private:
 
     BOOL m_bSearchItemEditEmpty{};
 
-    eck::CoroTask<void> PlLoadMetadata(TSKPARAM_LOAD_META_DATA&& Param) noexcept;
+    eck::CoroTask<void> PlLoadMetadata(
+        RefPtr<CPlayList> pList,
+        RefPtr<eck::CD2DImageList> pImageList,
+        eck::CTrivialBuffer<int> vItem) noexcept;
     void PlBeginLoadMetadata(int idxList = -1) noexcept;
 
     const RefPtr<CPlayList>& PlCurrent() const noexcept;
