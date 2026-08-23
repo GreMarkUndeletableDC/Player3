@@ -19,12 +19,15 @@ public:
 
     void Initialize(
         Dui::CDuiWindow* pMainWindow,
-        ITaskbarList4* pTaskbarList,
         RefPtr<CVioletAtlas> pAtlas) noexcept
     {
         m_pMainWindow = pMainWindow;
-        m_pTaskbarList = pTaskbarList;
         m_pAtlas = std::move(pAtlas);
+    }
+
+    void SetTaskbarList(ITaskbarList4* pTaskbarList) noexcept
+    {
+        m_pTaskbarList = pTaskbarList;
     }
 
     // 保留，当前禁止调用

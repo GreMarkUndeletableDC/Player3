@@ -534,6 +534,8 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
         GetWindow().KctRegisterTimeLine(this);
 
+        SetTheme(Dui::CListView::TmDefaultTheme(FALSE).Get());
+
         m_pRenderer = std::make_unique<CLyricRendererD2D>();
         m_pRenderer->LrInitialize(this);
 

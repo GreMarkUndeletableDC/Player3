@@ -126,7 +126,8 @@ void CPlayListItemAdapter::LcaSet(const LvIndex& idx, int idxCol,
         m_vItem[idx.Item].uState = std::any_cast<LvState>(Data);
         break;
     case LvProperty::UiTextLayout:
-        m_vItem[idx.Item].pTextLayout[idxCol] = std::any_cast<ComPtr<IDWriteTextLayout>>(Data);
+        m_vItem[idx.Item].pTextLayout[idxCol] = std::move(
+            std::any_cast<ComPtr<IDWriteTextLayout>>(Data));
         break;
     }
 }

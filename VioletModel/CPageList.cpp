@@ -390,7 +390,9 @@ void CPageList::InitializeUi() noexcept
 
         m_TBLPlayList.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
             0, 0, ListFileListWidth, 0, this);
-        m_TBLPlayList.GetController().MtSetBottomExtra(PlayPanelHeight);
+        auto& Controller = m_TBLPlayList.GetController();
+        Controller.MtSetBottomExtra(PlayPanelHeight);
+        Controller.SetClearSelectionInSpace(FALSE);
         m_TBLPlayList.SetAdapter(&m_FileAdapter);
         m_TBLPlayList.ReCalculateItem();
         m_LytPlayList.LobAddObject(

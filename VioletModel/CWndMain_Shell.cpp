@@ -41,7 +41,6 @@ HRESULT CWindowMain::TblCreateGhostWindow(PCWSTR pszText) noexcept
 {
     m_WndTbGhost.Initialize(
         this,
-        m_pTaskbarList.Get(),
         m_pAtlas);
     m_WndTbGhost.Create(pszText, WS_OVERLAPPEDWINDOW,
         WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
@@ -128,8 +127,16 @@ HRESULT CWindowMain::TblInitialize() noexcept
 {
     if (m_pTaskbarList.Get())
         return S_FALSE;
-    m_pTaskbarList.CreateInstance(CLSID_TaskbarList);
-    return m_pTaskbarList->HrInit();
+    HRESULT hr;
+
+    hr = m_pTaskbarList.CreateInstance(CLSID_TaskbarList);
+    if (FAILED(hr))
+        return hr;
+    hr = m_pTaskbarList->HrInit();
+    if (FAILED(hr))
+        return hr;
+    m_WndTbGhost.SetTaskbarList(m_pTaskbarList.Get());
+    return S_OK;
 }
 
 BOOL CWindowMain::TblOnCommand(WPARAM wParam) noexcept

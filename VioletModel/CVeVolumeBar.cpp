@@ -35,6 +35,7 @@ LRESULT CVeVolumeBar::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         m_TrackBar.SetRange(0, 200);
         m_TrackBar.SetTrackPosition(100);
         m_TrackBar.SetTrackSize(TrackBarHeight);
+        m_TrackBar.SetThumbTrack(TRUE);
     }
     return 0;
     case WM_DESTROY:
