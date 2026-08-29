@@ -81,37 +81,37 @@
     <ClInclude Include="CVeCover.h">
       <Filter>UI\元素</Filter>
     </ClInclude>
-    <ClInclude Include="CVeLrc.h">
+    <ClInclude Include="CVeLyric.h">
       <Filter>UI\元素</Filter>
     </ClInclude>
     <ClInclude Include="CVeMiniCover.h">
       <Filter>UI\元素</Filter>
     </ClInclude>
-    <ClInclude Include="CCompPlayPageAn.h">
+    <ClInclude Include="CCompositorPlayPage.h">
       <Filter>UI\其他</Filter>
     </ClInclude>
     <ClInclude Include="CPlayList.h">
       <Filter>逻辑</Filter>
     </ClInclude>
-    <ClInclude Include="CWndMain.h">
+    <ClInclude Include="CWindowMain.h">
       <Filter>窗口</Filter>
     </ClInclude>
-    <ClInclude Include="CPlayListMgr.h">
+    <ClInclude Include="CPlayListManager.h">
       <Filter>逻辑</Filter>
     </ClInclude>
-    <ClInclude Include="CWndTbGhost.h">
+    <ClInclude Include="CWindowGhost.h">
       <Filter>窗口</Filter>
     </ClInclude>
-    <ClInclude Include="CWndLrc.h">
+    <ClInclude Include="CWindowLyric.h">
       <Filter>窗口</Filter>
     </ClInclude>
-    <ClInclude Include="CVeDtLrc.h">
+    <ClInclude Include="CVeDesktopLyric.h">
       <Filter>UI\元素</Filter>
     </ClInclude>
     <ClInclude Include="CVeVolumeBar.h">
       <Filter>UI\元素</Filter>
     </ClInclude>
-    <ClInclude Include="CPlayListFile.h">
+    <ClInclude Include="PlayListFile.h">
       <Filter>逻辑</Filter>
     </ClInclude>
     <ClInclude Include="CApp.h">
@@ -120,13 +120,13 @@
     <ClInclude Include="Utils.h">
       <Filter>程序</Filter>
     </ClInclude>
-    <ClInclude Include="CLrGeometryRealization.h">
+    <ClInclude Include="CLyricRendererD2D.h">
       <Filter>UI\其他</Filter>
     </ClInclude>
     <ClInclude Include="CLyricRendererBase.h">
       <Filter>UI\其他</Filter>
     </ClInclude>
-    <ClInclude Include="CVioletAtlas.h">
+    <ClInclude Include="CImageManager.h">
       <Filter>UI\其他</Filter>
     </ClInclude>
     <ClInclude Include="CVeBase.h">
@@ -170,7 +170,7 @@
     <ClCompile Include="CVeCover.cpp">
       <Filter>UI\元素</Filter>
     </ClCompile>
-    <ClCompile Include="CVeLrc.cpp">
+    <ClCompile Include="CVeLyric.cpp">
       <Filter>UI\元素</Filter>
     </ClCompile>
     <ClCompile Include="CVeMiniCover.cpp">
@@ -179,28 +179,28 @@
     <ClCompile Include="CPlayList.cpp">
       <Filter>逻辑</Filter>
     </ClCompile>
-    <ClCompile Include="CWndMain.cpp">
+    <ClCompile Include="CWindowMain.cpp">
       <Filter>窗口</Filter>
     </ClCompile>
-    <ClCompile Include="CPlayListMgr.cpp">
+    <ClCompile Include="CPlayListManager.cpp">
       <Filter>逻辑</Filter>
     </ClCompile>
-    <ClCompile Include="CWndTbGhost.cpp">
+    <ClCompile Include="CWindowGhost.cpp">
       <Filter>窗口</Filter>
     </ClCompile>
-    <ClCompile Include="CWndMain_Shell.cpp">
+    <ClCompile Include="CWindowMain_Shell.cpp">
       <Filter>窗口</Filter>
     </ClCompile>
-    <ClCompile Include="CWndLrc.cpp">
+    <ClCompile Include="CWindowLyric.cpp">
       <Filter>窗口</Filter>
     </ClCompile>
-    <ClCompile Include="CVeDtLrc.cpp">
+    <ClCompile Include="CVeDesktopLyric.cpp">
       <Filter>UI\元素</Filter>
     </ClCompile>
     <ClCompile Include="CVeVolumeBar.cpp">
       <Filter>UI\元素</Filter>
     </ClCompile>
-    <ClCompile Include="CPlayListFile.cpp">
+    <ClCompile Include="PlayListFile.cpp">
       <Filter>逻辑</Filter>
     </ClCompile>
     <ClCompile Include="CApp.cpp">
@@ -212,10 +212,10 @@
     <ClCompile Include="Utils.cpp">
       <Filter>程序</Filter>
     </ClCompile>
-    <ClCompile Include="CLrGeometryRealization.cpp">
+    <ClCompile Include="CLyricRendererD2D.cpp">
       <Filter>UI\其他</Filter>
     </ClCompile>
-    <ClCompile Include="CVioletAtlas.cpp">
+    <ClCompile Include="CImageManager.cpp">
       <Filter>UI\其他</Filter>
     </ClCompile>
     <ClCompile Include="CVeBase.cpp">

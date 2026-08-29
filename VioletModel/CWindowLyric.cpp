@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
-#include "CWndLrc.h"
+#include "CWindowLyric.h"
 #include "CApp.h"
 
 
-void CWndLrc::OnPlayEvent(const PLAY_EVT_PARAM& e)
+void CWindowLyric::OnPlayEvent(const PLAY_EVT_PARAM& e)
 {
     switch (e.eEvent)
     {
@@ -16,7 +16,7 @@ void CWndLrc::OnPlayEvent(const PLAY_EVT_PARAM& e)
     }
 }
 
-LRESULT CWndLrc::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT CWindowLyric::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     switch (uMsg)
     {
@@ -101,7 +101,7 @@ LRESULT CWndLrc::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         const auto lResult = __super::OnMessage(uMsg, wParam, lParam);
 
-        App->Player().GetEventChain().Connect(this, &CWndLrc::OnPlayEvent);
+        App->Player().GetEventChain().Connect(this, &CWindowLyric::OnPlayEvent);
         KctRegisterTimeLine(this);
 
         constexpr eck::LYTMARGINS Mar{ .r = CxyLrcPadding };
@@ -176,7 +176,7 @@ LRESULT CWndLrc::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     return __super::OnMessage(uMsg, wParam, lParam);
 }
 
-LRESULT CWndLrc::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) noexcept
+LRESULT CWindowLyric::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) noexcept
 {
     if (pEle == &m_Lrc)
         switch (pnm->uNotify)
@@ -201,7 +201,7 @@ LRESULT CWndLrc::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) noexce
     return __super::OnElementNotify(pEle, pnm);
 }
 
-LRESULT CWndLrc::OnRenderEvent(UINT uMsg, Dui::RENDER_EVENT& e) noexcept
+LRESULT CWindowLyric::OnRenderEvent(UINT uMsg, Dui::RENDER_EVENT& e) noexcept
 {
     if (uMsg == Dui::RE_FILLBACK)
     {
@@ -219,7 +219,7 @@ LRESULT CWndLrc::OnRenderEvent(UINT uMsg, Dui::RENDER_EVENT& e) noexcept
     return __super::OnRenderEvent(uMsg, e);
 }
 
-void CWndLrc::TlTick(int iMs) noexcept
+void CWindowLyric::TlTick(int iMs) noexcept
 {
     if (m_bAnFade)
     {

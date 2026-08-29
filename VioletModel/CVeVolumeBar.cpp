@@ -61,8 +61,7 @@ void CVeVolumeBar::ShowAnimation() noexcept
 void CVeVolumeBar::OnVolumeChanged(float fVol) noexcept
 {
     WCHAR szVol[eck::TcvIntBufferSize<int>()];
-    PWCH pEnd;
-    eck::TcvFromInt(EckArgString(szVol), (int)fVol, 10, TRUE, &pEnd);
+    const auto [_, pEnd] = eck::TcvFromInt(EckArgString(szVol), (int)fVol);
     m_LAVol.SetText(std::wstring_view{ szVol, pEnd });
     m_LAVol.Invalidate();
 }

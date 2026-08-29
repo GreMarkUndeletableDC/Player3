@@ -1,10 +1,9 @@
 ﻿#pragma once
 #include "CVeCover.h"
-#include "CVeLrc.h"
-#include "CVeBase.h"
+#include "CVeLyric.h"
 #include "CPlayer.h"
 
-class CPagePlaying : public CVeBase
+class CPagePlaying final : public CVeBase
 {
 public:
     constexpr static float

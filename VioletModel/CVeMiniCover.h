@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "CVeBase.h"
 
-class CVeMiniCover : public CVeBase, public eck::ITimeLine
+class CVeMiniCover final : public CVeBase, public eck::ITimeLine
 {
 public:
     constexpr static float

@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "CPlayListMgr.h"
+#include "CPlayListManager.h"
 
 void CPlayListManager::LoadList(std::wstring_view svPath, BOOL bClear) noexcept
 {

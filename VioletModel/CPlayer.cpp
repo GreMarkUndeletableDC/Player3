@@ -41,7 +41,7 @@ PlayResult CPlayer::PlayWorker(int idx) noexcept
     Opt.svArtistDiv = {};
     Opt.svCommDiv = {};
     Opt.uFlags = Tag::SMOF_MOVE;
-    VltGetMusicInfo(e.rsFile.Data(), m_MusicInfo, Opt);
+    ReadMetadata(e.rsFile.Data(), m_MusicInfo, Opt);
 
     m_pBitmapCover.Clear();
     const auto pCover = m_MusicInfo.GetMainCover();

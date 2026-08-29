@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
-#include "CLrGeometryRealization.h"
-#include "CVeLrc.h"
+#include "CLyricRendererD2D.h"
+#include "CVeLyric.h"
 
 static constexpr D2D1_COLOR_F InterpolateColor(
     const D2D1_COLOR_F& c1, const D2D1_COLOR_F& c2, float k) noexcept
@@ -14,7 +14,7 @@ static constexpr D2D1_COLOR_F InterpolateColor(
 
 void CLyricRendererD2D::ReCreateFadeBrush() noexcept
 {
-    m_pBrFade.Clear();
+    m_pBrushFade.Clear();
     if (!(GetFlags() & LRCF_TOP_BOTTOM_FADE))
         return;
     constexpr float CyLrcGradient = 50.f;
@@ -31,7 +31,7 @@ void CLyricRendererD2D::ReCreateFadeBrush() noexcept
     D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES Prop;
     Prop.startPoint = {};
     Prop.endPoint = { 0.f, GetViewHeight() };
-    m_pDC->CreateLinearGradientBrush(Prop, pStopCollection.Get(), &m_pBrFade);
+    m_pDC->CreateLinearGradientBrush(Prop, pStopCollection.Get(), &m_pBrushFade);
 }
 
 HRESULT CLyricRendererD2D::LrInitialize(Dui::CElement* pEle) noexcept
@@ -50,7 +50,7 @@ void CLyricRendererD2D::LrBeginDraw() noexcept
     {
         D2D1_LAYER_PARAMETERS1 LyParam{ D2D1::LayerParameters1() };
         LyParam.contentBounds = { 0.f, 0.f, GetViewWidth(), GetViewHeight() };
-        LyParam.opacityBrush = m_pBrFade.Get();
+        LyParam.opacityBrush = m_pBrushFade.Get();
         m_pDC->PushLayer(LyParam, nullptr);
     }
 }
@@ -79,7 +79,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
 
     D2D1_POINT_2F ptScale{};
     ptScale.y = Opt.cy / 2.f - cxyLineMargin;
-    switch (Opt.eAlignH)
+    switch (Opt.eAlign)
     {
     case eck::Alignment::Center:
         ptScale.x = GetViewWidth() / 2.f;
@@ -109,7 +109,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
         }
 
         float x[2]{};
-        switch (Opt.eAlignH)
+        switch (Opt.eAlign)
         {
         case eck::Alignment::Center:
             x[0] = (GetViewWidth() - Opt.cxMain) / 2.f;
@@ -138,7 +138,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
             pPathGeometry.Get(),
             D2D1::ComputeFlatteningTolerance(
                 D2D1::Matrix3x2F::Identity(), xDpi, yDpi, fMaxScale),
-            Item.pGrMain.AtClear());
+            Item.pGeometry.AtClear());
     }
 
     const auto pEle = eck::DbgDynamicCast<CVeLyric*>(GetHostElement());
@@ -146,7 +146,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
     {
         D2D1_RECT_F rc{ Opt.x, Opt.y, Opt.x + Opt.cx, Opt.y + Opt.cy };
         pEle->ElementToClient(rc);
-        if ((Opt.uFlags & LRIF_AN_SEL_BKG) && (Opt.ss == CVeLyric::SsHot))
+        if ((Opt.uFlags & LRIF_AN_BACK) && (Opt.ss == CVeLyric::SsHot))
         {
             const auto dxy = -cxyLineMargin * Opt.kAnSelBkg;
             eck::InflateRect(rc, dxy, dxy);
@@ -180,8 +180,8 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
     D2D1_MATRIX_3X2_F Mat{ Mat0 };
     const auto cyExtra = (Opt.cy - cxyLineMargin * 2.f) *
         (fMaxScale - 1.f) / 2.f;
-    Mat.dx += (cxyLineMargin + pEle->GetOffsetInClient().x);
-    Mat.dy += (Opt.y + cxyLineMargin + cyExtra + pEle->GetOffsetInClient().y);
+    Mat.dx += (pEle->GetOffsetInClient().x + cxyLineMargin);
+    Mat.dy += (pEle->GetOffsetInClient().y + cxyLineMargin + Opt.y + cyExtra);
 
     D2D1_COLOR_F crText;
     if (Opt.uFlags & LRIF_PREV_AN)
@@ -225,7 +225,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
     }
     crText = D2D1::ColorF{ D2D1::ColorF::White };
     pEle->GetWindow().CcSetBrushColor(crText);
-    m_pDC->DrawGeometryRealization(Item.pGrMain.Get(), pEle->GetWindow().CcGetBrush());
+    m_pDC->DrawGeometryRealization(Item.pGeometry.Get(), pEle->GetWindow().CcGetBrush());
     m_pDC->SetTransform(Mat0);
 }
 
@@ -248,10 +248,10 @@ void CLyricRendererD2D::LrSetViewSize(float cx, float cy) noexcept
 
 void CLyricRendererD2D::LrDpiChanged(float fNewDpi) noexcept
 {
-    LrInvalidate();
+    LrInvalidateCache();
 }
 
-void CLyricRendererD2D::LrInvalidate() noexcept
+void CLyricRendererD2D::LrInvalidateCache() noexcept
 {
     for (auto& e : m_vItem)
         e.bCacheValid = FALSE;

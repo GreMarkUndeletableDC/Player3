@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "CWndMain.h"
+#include "CWindowMain.h"
 #include "CApp.h"
 
 
@@ -8,7 +8,17 @@ CTabPanel::LvIndex CTabPanel::LcaGetCount() const noexcept
     return { .Item = 4 };
 }
 
-void CTabPanel::OnColorSchemeChanged()
+void CTabPanel::LcaGet(const LvIndex& idx, int idxCol,
+    LvProperty eProp, std::any& Data) const noexcept
+{
+}
+
+void CTabPanel::LcaSet(const LvIndex& idx, int idxCol,
+    LvProperty eProp, std::any& Data, BOOL bMove) noexcept
+{
+}
+
+void CTabPanel::OnColorSchemeChanged() noexcept
 {
     m_LAIcon.SetBitmap(GetAtlas()->AtlasGetD2D(AppImage::WindowLogo));
 }

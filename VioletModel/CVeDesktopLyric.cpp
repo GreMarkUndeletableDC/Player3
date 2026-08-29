@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "CVeDtLrc.h"
+#include "CVeDesktopLyric.h"
 #include "CApp.h"
 
 

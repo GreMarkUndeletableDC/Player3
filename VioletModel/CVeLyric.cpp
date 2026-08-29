@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
-#include "CVeLrc.h"
-#include "CLrGeometryRealization.h"
+#include "CVeLyric.h"
+#include "CLyricRendererD2D.h"
 
 enum
 {
@@ -109,7 +109,7 @@ float CVeLyric::ItmPaint(int idx) noexcept
     LRD_DRAW Opt
     {
         .idx = idx,
-        .eAlignH = m_eAlignH,
+        .eAlign = m_eAlignH,
         .x = e.x,
         .y = e.y,
         .cx = e.cx,
@@ -123,7 +123,7 @@ float CVeLyric::ItmPaint(int idx) noexcept
         .pTlTranslation = e.pTlTranslation.Get(),
     };
     if (e.bAnSelBkg)
-        Opt.uFlags |= LRIF_AN_SEL_BKG;
+        Opt.uFlags |= LRIF_AN_BACK;
     if (m_bScrollExpand || MiIsManualScroll())
         Opt.uFlags |= LRIF_SCROLL_EXPAND;
 
@@ -145,15 +145,14 @@ float CVeLyric::ItmPaint(int idx) noexcept
 #ifdef _DEBUG
     {
         WCHAR szDbg[eck::TcvIntBufferSize<int>()];
-        PWCH pEnd;
-        eck::TcvFromInt(EckArgString(szDbg), idx, 10, TRUE, &pEnd);
-        const auto cchDbg = int(pEnd - szDbg);
+        const auto [_, pEnd] = eck::TcvFromInt(EckArgString(szDbg), idx);
 
         auto rc{ ItmGetRect(idx) };
+        rc.right = rc.left + GetWidth();
         ElementToClient(rc);
 
         GetDC()->DrawTextW(
-            szDbg, cchDbg,
+            szDbg, int(pEnd - szDbg),
             GetTextFormat().Get(),
             rc,
             GetWindow().CcSetBrushColor(D2D1::ColorF{

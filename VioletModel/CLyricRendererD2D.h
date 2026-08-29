@@ -6,16 +6,16 @@ class CLyricRendererD2D final : public CLyricRendererBase
 private:
     struct ITEM
     {
-        ComPtr<ID2D1GeometryRealization> pGrMain{};
+        ComPtr<ID2D1GeometryRealization> pGeometry{};
         float cxMax{};
         BOOLEAN bMultiLine{};
         BOOLEAN bCacheValid{};
     };
 
     ComPtr<ID2D1DeviceContext1> m_pDC{};
-    ComPtr<ID2D1LinearGradientBrush> m_pBrFade{};
+    ComPtr<ID2D1LinearGradientBrush> m_pBrushFade{};
 
-    ComPtr<ID2D1GeometryRealization> m_pGrEmptyText{};
+    ComPtr<ID2D1GeometryRealization> m_pGeometryEmptyText{};
     float m_cxEmptyText{};
     float m_cyEmptyText{};
 
@@ -30,5 +30,5 @@ public:
     void LrDrawItem(const LRD_DRAW& Opt) noexcept override;
     void LrSetViewSize(float cx, float cy) noexcept override;
     void LrDpiChanged(float fNewDpi) noexcept override;
-    void LrInvalidate() noexcept override;
+    void LrInvalidateCache() noexcept override;
 };

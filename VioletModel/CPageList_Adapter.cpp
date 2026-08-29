@@ -106,7 +106,7 @@ void CPlayListItemAdapter::LcaGet(const LvIndex& idx, int idxCol,
         {
             const auto uSecTime = e.s.uSecTime;
             if (uSecTime)
-                rs.Format(L"%d:%02d", uSecTime / 60, uSecTime % 60);
+                rs.Format(L"%02d:%02d", uSecTime / 60, uSecTime % 60);
             else
                 rs.Clear();
         }

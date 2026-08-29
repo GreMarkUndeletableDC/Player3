@@ -1,12 +1,12 @@
 ﻿#pragma once
-#include "CVioletAtlas.h"
+#include "CImageManager.h"
 
 class CWindowGhost final : public eck::CWindow
 {
 private:
     Dui::CDuiWindow* m_pMainWindow{};
     ComPtr<ITaskbarList4> m_pTaskbarList{};
-    RefPtr<CVioletAtlas> m_pAtlas{ RefPtr<CVioletAtlas>::Make() };
+    RefPtr<CImageManager> m_pAtlas{};
 
     HBITMAP m_hbmLivePreviewCache{};// 实时预览位图缓存
     HBITMAP m_hbmThumbnailCache{};  // 缩略图位图缓存
@@ -19,7 +19,7 @@ public:
 
     void Initialize(
         Dui::CDuiWindow* pMainWindow,
-        RefPtr<CVioletAtlas> pAtlas) noexcept
+        RefPtr<CImageManager> pAtlas) noexcept
     {
         m_pMainWindow = pMainWindow;
         m_pAtlas = std::move(pAtlas);

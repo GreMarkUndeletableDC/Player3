@@ -6,11 +6,11 @@
 #include "CPagePlaying.h"
 #include "CTabPanel.h"
 #include "CPlayPanel.h"
-#include "CCompPlayPageAn.h"
-#include "CWndTbGhost.h"
+#include "CCompositorPlayPage.h"
+#include "CWindowGhost.h"
 #include "CVeVolumeBar.h"
-#include "CWndLrc.h"
-#include "CVioletAtlas.h"
+#include "CWindowLyric.h"
+#include "CImageManager.h"
 
 class CWindowMain final : public Dui::CDuiWindow, public eck::ITimeLine
 {
@@ -99,7 +99,7 @@ private:
     ComPtr<ITaskbarList4> m_pTaskbarList{};
     CWindowGhost m_WndTbGhost{};
 
-    RefPtr<CVioletAtlas> m_pAtlas{ RefPtr<CVioletAtlas>::Make() };
+    RefPtr<CImageManager> m_pAtlas{ RefPtr<CImageManager>::Make() };
 
 #if VIOLET_WINRT
     WinMedia::SystemMediaTransportControls m_Smtc{ nullptr };

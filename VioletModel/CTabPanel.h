@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "CVeBase.h"
 
-class CTabPanel : public CVeBase, public Dui::CListView::IAdapter
+class CTabPanel final : public CVeBase, public Dui::CListView::IAdapter
 {
 public:
     constexpr static float
@@ -18,15 +18,13 @@ private:
 
     LvIndex LcaGetCount() const noexcept override;
     void LcaGet(const LvIndex& idx, int idxCol,
-        LvProperty eProp, std::any& Data) const noexcept override {
-    }
+        LvProperty eProp, std::any& Data) const noexcept override;
     void LcaSet(const LvIndex& idx, int idxCol,
-        LvProperty eProp, std::any& Data, BOOL bMove = FALSE) noexcept override {
-    }
+        LvProperty eProp, std::any& Data, BOOL bMove = FALSE) noexcept override;
 
-    void OnColorSchemeChanged();
+    void OnColorSchemeChanged() noexcept;
 public:
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 
-    EckInlineNdCe auto& GetTabList() { return m_TAB; }
+    EckInlineNdCe auto& GetTabList() noexcept { return m_TAB; }
 };

@@ -2,7 +2,7 @@
 #include "CVeBase.h"
 #include "CPlayList.h"
 
-class CPlayListFileAdapter : public Dui::CListView::IAdapter
+class CPlayListFileAdapter final : public Dui::CListView::IAdapter
 {
 private:
     struct Item
@@ -91,7 +91,7 @@ private:
 
     eck::CLinearLayoutH m_Lyt{};
 
-    int m_cxIl{}, m_cyIl{};
+    int m_cxIlPixel{}, m_cyIlPixel{};
 
     BOOL m_bSearchItemEditEmpty{};
 

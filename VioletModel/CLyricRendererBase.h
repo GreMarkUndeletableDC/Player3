@@ -11,15 +11,15 @@ struct LRD_TEXT_METRICS
 enum : BYTE
 {
     LRIF_NONE = 0,
-    LRIF_AN_SEL_BKG = 1 << 0,
-    LRIF_PREV_AN = 1 << 1,
-    LRIF_CURR_AN = 1 << 2,
-    LRIF_SCROLL_EXPAND = 1 << 3,
+    LRIF_AN_BACK = 1 << 0,          // 正在运行项目背景动画
+    LRIF_PREV_AN = 1 << 1,          // 正在缩小到常规大小
+    LRIF_CURR_AN = 1 << 2,          // 正在放大到高亮大小
+    LRIF_SCROLL_EXPAND = 1 << 3,    // 由于用户滚动，所有项目正在放大到高亮大小
 
-    LRCF_TOP_BOTTOM_FADE = 1 << 0,
-    LRCF_DESKTOP_LYRIC = 1 << 1,
-    LRCF_BORDER = 1 << 2,
-    LRCF_SHADOW = 1 << 3,
+    LRCF_TOP_BOTTOM_FADE = 1 << 0,  // 显示上下的渐隐带
+    LRCF_DESKTOP_LYRIC = 1 << 1,    // 渲染桌面歌词而不是滚动歌词
+    LRCF_BORDER = 1 << 2,           // 文本带有描边
+    LRCF_SHADOW = 1 << 3,           // 文本带有阴影
 };
 
 // 如无特殊说明，坐标相对元素
@@ -27,21 +27,21 @@ struct LRD_DRAW
 {
     int idx{};
 
-    BYTE uFlags{};      // LRIF_*
-    eck::Alignment eAlignH{};
+    BYTE uFlags{};          // LRIF_*
+    eck::Alignment eAlign{};
     BYTE ss{};
 
-    float x;
-    float y;
-    float cx;
-    float cy;
+    float x{};
+    float y{};
+    float cx{};
+    float cy{};
 
-    float cxMain;
-    float cxTranslation;
+    float cxMain{};
+    float cxTranslation{};
 
-    float fScale;       // 当前缩放，对于常规情况必须设为1
-    float kAnSelBkg;    // 0~1，指定LRIF_AN_SEL_BKG时有效
-    float kScrollExpand;// 0~1，指定LRIF_SCROLL_EXPAND时有效
+    float fScale{};         // 当前缩放，对于常规情况必须设为1
+    float kAnSelBkg{};      // 0 ~ 1，指定LRIF_AN_BACK时有效
+    float kScrollExpand{};  // 0 ~ 1，指定LRIF_SCROLL_EXPAND时有效
 
     ComPtr<IDWriteTextLayout> pTlMain{};
     ComPtr<IDWriteTextLayout> pTlTranslation{};
@@ -49,11 +49,7 @@ struct LRD_DRAW
     const D2D1_RECT_F* prcClip{};// 相对客户区
 };
 
-struct LRD_EMTRY_TEXT
-{
-    std::wstring_view svText;
-};
-
+// 歌词渲染器根据标志渲染一组已排版文本
 class CLyricRendererBase
 {
 private:
@@ -92,7 +88,7 @@ public:
     virtual void LrDpiChanged(float fNewDpi) noexcept = 0;
 
     // 清除所有缓存
-    virtual void LrInvalidate() noexcept = 0;
+    virtual void LrInvalidateCache() noexcept = 0;
 
     virtual void LrSetFlags(UINT uFlags) noexcept { m_uFlags = uFlags; }
 

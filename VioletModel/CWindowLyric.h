@@ -1,8 +1,8 @@
 ﻿#pragma once
-#include "CVeDtLrc.h"
+#include "CVeDesktopLyric.h"
 #include "CPlayer.h"
 
-class CWndLrc : public Dui::CDuiWindow, public eck::ITimeLine
+class CWindowLyric : public Dui::CDuiWindow, public eck::ITimeLine
 {
 private:
     Dui::CButton m_BTPrev{}, m_BTPlay{}, m_BTNext{}, m_BTLock{}, m_BTClose{};
@@ -15,7 +15,7 @@ private:
     BOOLEAN m_bAnFade{};
     eck::EasingCurve<eck::Easing::FOutCubic> m_AnFade{};
 
-    RefPtr<CVioletAtlas> m_pAtlas{};
+    RefPtr<CImageManager> m_pAtlas{};
 
     void OnPlayEvent(const PLAY_EVT_PARAM& e);
 public:

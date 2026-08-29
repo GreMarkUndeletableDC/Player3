@@ -6,7 +6,7 @@ struct NM_DTL_GET_TIME : Dui::ELENMHDR
     float fTime;
 };
 
-class CVeDesktopLyric : public CVeBase, public eck::ITimeLine
+class CVeDesktopLyric final : public CVeBase, public eck::ITimeLine
 {
 public:
     constexpr static int c_InvalidCacheIdx = std::numeric_limits<int>::min();

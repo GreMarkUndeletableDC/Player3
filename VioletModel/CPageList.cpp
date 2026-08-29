@@ -30,8 +30,8 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
 
     std::vector<METADATA> vMetadata{ vItem.Size() };
 
-    const auto cxIlTile = m_cxIl + pImageList->GetPadding();
-    const auto cyIlTile = m_cyIl + pImageList->GetPadding();
+    const auto cxIlTile = m_cxIlPixel + pImageList->GetPadding();
+    const auto cyIlTile = m_cyIlPixel + pImageList->GetPadding();
 
     // -- 检查加载需求
     BOOL bNeedUpdate{};
@@ -41,8 +41,8 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
         vMetadata[i].mi.uMask = Tag::MIM_NONE;
         if (!e.s.bUpdated)
         {
-            vMetadata[i].mi.uMask |= Tag::MIM_TITLE | Tag::MIM_ARTIST |
-                Tag::MIM_ALBUM;
+            vMetadata[i].mi.uMask |=
+                (Tag::MIM_TITLE | Tag::MIM_ARTIST | Tag::MIM_ALBUM);
             e.s.bUpdated = TRUE;
             bNeedUpdate = TRUE;
         }
@@ -88,8 +88,8 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
         Meta.uSecTime = uSecTime;
 
         // -- 取元数据
-        VltGetMusicInfo(e.rsFile.Data(), Meta.mi, Opt);
-        const auto pCover = (Tag::Picture*)Meta.mi.GetMainCover();
+        ReadMetadata(e.rsFile.Data(), Meta.mi, Opt);
+        const auto pCover = Meta.mi.GetMainCover();
         if (pCover)
         {
             ComPtr<IWICBitmapSource> pBitmap;
@@ -102,16 +102,16 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
             hr = eck::WicLoadSource(
                 pBitmap.Self(),
                 pStream.Get(),
-                m_cxIl, m_cyIl,
+                m_cxIlPixel, m_cyIlPixel,
                 eck::DefaultWicPixelFormat,
                 WICBitmapInterpolationModeFant);// 绝大部分都是缩小操作
             if (FAILED(hr))
                 continue;
 
-            Meta.CoverPixel.ReSize(cxIlTile * cyIlTile * sizeof(UINT));
+            Meta.CoverPixel.ReSize(cxIlTile * cyIlTile);
             RtlZeroMemory(Meta.CoverPixel.Data(), Meta.CoverPixel.ByteSize());
 
-            const WICRect rc{ 0, 0, m_cxIl, m_cyIl };
+            const WICRect rc{ 0, 0, m_cxIlPixel, m_cyIlPixel };
             hr = pBitmap->CopyPixels(
                 &rc,
                 cxIlTile * sizeof(UINT),
@@ -246,24 +246,21 @@ HRESULT CPageList::IlUploadDefaultCover(eck::CD2DImageList* pImageList) noexcept
     HRESULT hr;
     ComPtr<IWICBitmapScaler> pScaler;
 
-    hr = eck::g_pWicFactory->CreateBitmapScaler(&pScaler);
-    if (FAILED(hr))
-        return hr;
-
-    hr = pScaler->Initialize(
+    hr = eck::WicScaleBitmap(
+        pScaler.Self(),
         GetAtlas()->CoverGetDefaultWicBitmap().Get(),
-        m_cxIl, m_cyIl,
+        m_cxIlPixel, m_cyIlPixel,
         WICBitmapInterpolationModeFant);
     if (FAILED(hr))
         return hr;
 
-    const auto cxTile = m_cxIl + pImageList->GetPadding();
-    const auto cyTile = m_cyIl + pImageList->GetPadding();
+    const auto cxTile = m_cxIlPixel + pImageList->GetPadding();
+    const auto cyTile = m_cyIlPixel + pImageList->GetPadding();
 
     eck::CTrivialBuffer<UINT> Buffer{};
     Buffer.ReSize(cxTile * cyTile * sizeof(UINT));
 
-    const WICRect rc{ 0, 0, m_cxIl, m_cyIl };
+    const WICRect rc{ 0, 0, m_cxIlPixel, m_cyIlPixel };
     hr = pScaler->CopyPixels(
         &rc,
         cxTile * sizeof(UINT),
@@ -289,8 +286,8 @@ RefPtr<eck::CD2DImageList> CPageList::IlCreate() noexcept
     const auto iDpi = GetWindow().GetUserDpi();
     auto p = RefPtr<eck::CD2DImageList>::Make(
         (float)iDpi,
-        eck::DpiScale((float)m_cxIl, 96, iDpi),
-        eck::DpiScale((float)m_cyIl, 96, iDpi));
+        eck::DpiScale((float)m_cxIlPixel, 96, iDpi),
+        eck::DpiScale((float)m_cyIlPixel, 96, iDpi));
     p->BindRenderTarget(GetDC());
     IlUploadDefaultCover(p.Get());
     return p;
@@ -298,7 +295,7 @@ RefPtr<eck::CD2DImageList> CPageList::IlCreate() noexcept
 
 void CPageList::IlUpdateTilePixelSize() noexcept
 {
-    m_cxIl = m_cyIl = (int)LogicalToPixel(CoverSize);
+    m_cxIlPixel = m_cyIlPixel = (int)LogicalToPixel(CoverSize);
 }
 
 HRESULT CPageList::IlDpiChanged() noexcept

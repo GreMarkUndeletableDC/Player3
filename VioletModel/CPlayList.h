@@ -1,6 +1,6 @@
 ﻿#pragma once
 // 所有索引如无特别说明，均为真实平面列表索引（而不是搜索列表等的索引）
-class CPlayList final
+class CPlayList
 {
 private:
     struct Item

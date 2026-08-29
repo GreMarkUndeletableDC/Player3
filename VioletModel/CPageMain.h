@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "CVeBase.h"
 
-class CPageMain : public CVeBase
+class CPageMain final : public CVeBase
 {
 private:
     Dui::CButton m_BTOpenFile{};

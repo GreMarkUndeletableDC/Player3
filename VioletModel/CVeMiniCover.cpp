@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CVeMiniCover.h"
-#include "CWndMain.h"
+#include "CWindowMain.h"
 
 constexpr static float CoverAnimationEndValue = 6.f;
 
@@ -18,7 +18,7 @@ LRESULT CVeMiniCover::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         BeginPaint(ps, wParam, lParam);
         float k;
 
-        const auto& Cover = GetAtlas()->CoverGetCurrentImage();
+        const auto& Cover = GetAtlas()->CoverGetD2D();
         if (Cover.Get())
             if (m_bAnActive)
             {

@@ -21,7 +21,7 @@ void CPagePlaying::UpdateBlurredCover() noexcept
     GetDC()->GetDpi(&xDpi, &yDpi);
     GetDC()->SetDpi(96.f, 96.f);
 
-    const auto Cover = GetAtlas()->CoverGetCurrentImage();
+    const auto Cover = GetAtlas()->CoverGetD2D();
     const auto rcSrc = Cover.GetActualSourceRect();
     const auto cx0 = rcSrc.right - rcSrc.left;
     const auto cy0 = rcSrc.bottom - rcSrc.top;
@@ -46,6 +46,7 @@ void CPagePlaying::UpdateBlurredCover() noexcept
         pInput = Cover.Get();
 
     ComPtr<ID2D1Effect> pFxTransform, pFxCrop, pFxBlur;
+
     GetDC()->CreateEffect(CLSID_D2D12DAffineTransform, &pFxTransform);
     pFxTransform->SetInput(0, pInput.Get());
     Mat.m11 = (rcScaled.right - rcScaled.left) / cx0;
@@ -122,9 +123,9 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
 
 void CPagePlaying::SetEmptyText() noexcept
 {
-    m_LATitle.SetText(L"Violet Model");
-    m_LAArtist.SetText(L"AuroraStudio");
-    m_LAAlbum.SetText(L"VC++/Win32");
+    m_LATitle.SetText(L"Violet Model"sv);
+    m_LAArtist.SetText(L"AuroraStudio"sv);
+    m_LAAlbum.SetText(L"VC++/Win32"sv);
 }
 
 void CPagePlaying::OnColorSchemeChanged() noexcept
@@ -139,8 +140,12 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         Dui::PAINTINFO ps;
         BeginPaint(ps, wParam, lParam);
-        GetDC()->DrawBitmap(m_pBitmapBlurredCover.Get(), ps.rcClipInEle,
-            1.f, D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR, ps.rcClipInEle);
+        GetDC()->DrawBitmap(
+            m_pBitmapBlurredCover.Get(),
+            ps.rcClipInEle,
+            1.f,
+            D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
+            ps.rcClipInEle);
         EndPaint(ps);
     }
     return 0;
@@ -154,12 +159,12 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             const auto Size = m_pBitmapBlurredCover->GetSize();
             if (!(Size.width < cx || Size.width / 2.f > cx ||
                 Size.height < cy || Size.height / 2.f > cy))
-                goto Update;
-            GetWindow().RdCreateBitmapLogical(cx, cy, m_pBitmapBlurredCover.SelfClear());
+                goto SkipReCreate;
         }
-        else
-            GetWindow().RdCreateBitmapLogical(cx, cy, m_pBitmapBlurredCover.Self());
-    Update:;
+        GetWindow().RdCreateBitmapLogical(
+            cx, cy,
+            m_pBitmapBlurredCover.Self());
+    SkipReCreate:
         UpdateBlurredCover();
 
         const auto cxMinGap = cx * 1.f / 20.f;

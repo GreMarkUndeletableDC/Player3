@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "CWndMain.h"
+#include "CWindowMain.h"
 #include "CApp.h"
 
 const static UINT MsgTaskbarButtonCreated{ RegisterWindowMessageW(L"TaskbarButtonCreated") };
@@ -11,11 +11,11 @@ EckInlineNdCe AppImage AutoNextModeToGImg(AutoNextMode eMode) noexcept
 {
     switch (eMode)
     {
-    case AutoNextMode::ListLoop: return AppImage::Circle;
-    case AutoNextMode::List: return AppImage::ArrowRight3;
-    case AutoNextMode::Random: return AppImage::ArrowCross;
-    case AutoNextMode::SingleLoop: return AppImage::CircleOne;
-    case AutoNextMode::Single: return AppImage::ArrowRight1;
+    case AutoNextMode::ListLoop:    return AppImage::Circle;
+    case AutoNextMode::List:        return AppImage::ArrowRight3;
+    case AutoNextMode::Random:      return AppImage::ArrowCross;
+    case AutoNextMode::SingleLoop:  return AppImage::CircleOne;
+    case AutoNextMode::Single:      return AppImage::ArrowRight1;
     }
     ECK_UNREACHABLE;
 }
@@ -247,7 +247,7 @@ void CWindowMain::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     {
         m_pAtlas->CoverUpdate(App->Player().GetCover().Get());
         m_PagePlaying.UpdateBlurredCover();
-        m_CompPlayPageAn.SetOverlayBitmap(m_pAtlas->CoverGetCurrentImage());
+        m_CompPlayPageAn.SetOverlayBitmap(m_pAtlas->CoverGetD2D());
 
         m_msProgTimer = 0;
         SmtcUpdateTimeLineRange();

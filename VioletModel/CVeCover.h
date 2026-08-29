@@ -1,19 +1,12 @@
 ﻿#pragma once
 #include "CVeBase.h"
 
-class CVeCover : public CVeBase
+class CVeCover final : public CVeBase
 {
 private:
-    ID2D1Bitmap1* m_pBmp{};
+    Dui::CBitmap m_BitmapCover{};
 public:
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 
-    void SetBitmap(ID2D1Bitmap1* pBmp)
-    {
-        std::swap(m_pBmp, pBmp);
-        if (m_pBmp)
-            m_pBmp->AddRef();
-        if (pBmp)
-            pBmp->Release();
-    }
+    void SetBitmap(const Dui::CBitmap& Bitmap) noexcept { m_BitmapCover = Bitmap; }
 };

@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "CWndMain.h"
+#include "CWindowMain.h"
 #include "CApp.h"
 
 enum
@@ -15,18 +15,15 @@ HRESULT CWindowMain::TblScaleButtonImage(
 {
     HRESULT hr;
 
-    ComPtr<IWICBitmapScaler> pScaler;
-    hr = eck::g_pWicFactory->CreateBitmapScaler(&pScaler);
-    if (FAILED(hr))
-        return hr;
-
     ComPtr<IWICBitmapSource> pBitmap;
     hr = m_pAtlas->AtlasCropWicBitmap(eImage, pBitmap);
     if (FAILED(hr))
         return hr;
 
     const auto cxy = eck::DpiScale(20, GetWindowDpi());
-    hr = pScaler->Initialize(
+    ComPtr<IWICBitmapScaler> pScaler;
+    hr = eck::WicScaleBitmap(
+        pScaler.Self(),
         pBitmap.Get(),
         cxy, cxy,
         WICBitmapInterpolationModeFant);
@@ -39,9 +36,7 @@ HRESULT CWindowMain::TblScaleButtonImage(
 
 HRESULT CWindowMain::TblCreateGhostWindow(PCWSTR pszText) noexcept
 {
-    m_WndTbGhost.Initialize(
-        this,
-        m_pAtlas);
+    m_WndTbGhost.Initialize(this, m_pAtlas);
     m_WndTbGhost.Create(pszText, WS_OVERLAPPEDWINDOW,
         WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
         -32000, -32000, 0, 0, nullptr, nullptr);
@@ -57,12 +52,18 @@ HRESULT CWindowMain::TblSetup() noexcept
 
     HICON hiPrev, hiNext;
     ComPtr<IWICBitmapSource> pBitmap;
+
     TblScaleButtonImage(AppImage::PreviousSolid, pBitmap);
     eck::WicCreateIcon(hiPrev, pBitmap.Get());
+
     TblScaleButtonImage(AppImage::TriangleSolid, pBitmap);
+    DestroyIcon(m_hiTbPlay);
     eck::WicCreateIcon(m_hiTbPlay, pBitmap.Get());
+
     TblScaleButtonImage(AppImage::PauseSolid, pBitmap);
+    DestroyIcon(m_hiTbPause);
     eck::WicCreateIcon(m_hiTbPause, pBitmap.Get());
+
     TblScaleButtonImage(AppImage::NextSolid, pBitmap);
     eck::WicCreateIcon(hiNext, pBitmap.Get());
 
@@ -96,10 +97,15 @@ HRESULT CWindowMain::TblUpdateToolBarIcon() noexcept
     ComPtr<IWICBitmapSource> pBitmap;
     TblScaleButtonImage(AppImage::PreviousSolid, pBitmap);
     eck::WicCreateIcon(hiPrev, pBitmap.Get());
+
     TblScaleButtonImage(AppImage::TriangleSolid, pBitmap);
+    DestroyIcon(m_hiTbPlay);
     eck::WicCreateIcon(m_hiTbPlay, pBitmap.Get());
+
     TblScaleButtonImage(AppImage::PauseSolid, pBitmap);
+    DestroyIcon(m_hiTbPause);
     eck::WicCreateIcon(m_hiTbPause, pBitmap.Get());
+
     TblScaleButtonImage(AppImage::NextSolid, pBitmap);
     eck::WicCreateIcon(hiNext, pBitmap.Get());
 

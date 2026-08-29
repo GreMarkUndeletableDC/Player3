@@ -2,7 +2,7 @@
 #include "CVeBase.h"
 #include "CLyricRendererBase.h"
 
-class CVeLyric : public CVeBase, public eck::ITimeLine
+class CVeLyric final : public CVeBase, public eck::ITimeLine
 {
     // Mi = Mouse Idle
     // Itm = Item

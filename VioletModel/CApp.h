@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "CPlayer.h"
-#include "CPlayListMgr.h"
+#include "CPlayListManager.h"
 
 constexpr PCWSTR MainWndPageName[]
 {

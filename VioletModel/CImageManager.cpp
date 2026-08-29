@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "CVioletAtlas.h"
+#include "CImageManager.h"
 #include "CApp.h"
 
 constexpr std::string_view AtlasSubImageFile[]
@@ -36,23 +36,23 @@ constexpr std::string_view AtlasSubImageFile[]
     "/TriangleSolid.png"sv,
     "/WindowLogo.png"sv,
 };
-static_assert(ARRAYSIZE(AtlasSubImageFile) == CVioletAtlas::AtlasSubImageCount);
+static_assert(ARRAYSIZE(AtlasSubImageFile) == CImageManager::AtlasSubImageCount);
 
 constexpr std::wstring_view SingleImageFile[]
 {
     {},
 };
-static_assert(ARRAYSIZE(SingleImageFile) == CVioletAtlas::SingleImageCount);
+static_assert(ARRAYSIZE(SingleImageFile) == CImageManager::SingleImageCount);
 
 
 
-HRESULT CVioletAtlas::PrepareRealization(ID2D1DeviceContext* pDC) noexcept
+HRESULT CImageManager::PrepareRealization(ID2D1DeviceContext* pDC) noexcept
 {
     m_pDC = pDC;
     return S_OK;
 }
 
-HRESULT CVioletAtlas::AtlasInitialize() noexcept
+HRESULT CImageManager::AtlasInitialize() noexcept
 {
     HRESULT hr;
     auto rsPath{ eck::GetRunningPath() };
@@ -94,13 +94,13 @@ HRESULT CVioletAtlas::AtlasInitialize() noexcept
     return S_OK;
 }
 
-HRESULT CVioletAtlas::AtlasRealize() noexcept
+HRESULT CImageManager::AtlasRealize() noexcept
 {
     return m_pDC->CreateBitmapFromWicBitmap(
         m_pAtlasWic.Get(), m_pAtlasD2D.AtClear());
 }
 
-HRESULT CVioletAtlas::AtlasCropWicBitmap(
+HRESULT CImageManager::AtlasCropWicBitmap(
     AppImage eImg,
     Eck_Out_buffer_ ComPtr<IWICBitmapSource>& pBitmap) const noexcept
 {
@@ -128,7 +128,7 @@ HRESULT CVioletAtlas::AtlasCropWicBitmap(
     return S_OK;
 }
 
-Dui::CBitmap CVioletAtlas::AtlasGetD2D(AppImage eImg) const noexcept
+Dui::CBitmap CImageManager::AtlasGetD2D(AppImage eImg) const noexcept
 {
     Dui::CBitmap Bitmap{};
     const auto rc{ eck::MakeD2DRectF(m_SubImage[(size_t)eImg - AtlasSubImageIndexBegin].rc) };
@@ -136,7 +136,7 @@ Dui::CBitmap CVioletAtlas::AtlasGetD2D(AppImage eImg) const noexcept
     return Bitmap;
 }
 
-HRESULT CVioletAtlas::CoverInitialize() noexcept
+HRESULT CImageManager::CoverInitialize() noexcept
 {
     HRESULT hr;
 
@@ -148,12 +148,8 @@ HRESULT CVioletAtlas::CoverInitialize() noexcept
         return hr;
 
     ComPtr<IWICBitmapScaler> pScaler;
-    hr = eck::g_pWicFactory->CreateBitmapScaler(&pScaler);
-    if (FAILED(hr))
-        return hr;
-
-    hr = pScaler->Initialize(
-        pDefaultCover.Get(),
+    hr = eck::WicScaleBitmap(
+        pScaler.Self(), pDefaultCover.Get(),
         CoverWidth, CoverHeight,
         WICBitmapInterpolationModeFant);
     if (FAILED(hr))
@@ -163,100 +159,72 @@ HRESULT CVioletAtlas::CoverInitialize() noexcept
     return S_OK;
 }
 
-HRESULT CVioletAtlas::CoverRealize() noexcept
+HRESULT CImageManager::CoverRealize() noexcept
 {
-    HRESULT hr;
-
     D2D1_BITMAP_PROPERTIES1 Prop{};
     Prop.pixelFormat = { DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED };
     Prop.dpiX = Prop.dpiY = 96.f;
 
     constexpr D2D1_SIZE_U Size{ CoverWidth, CoverHeight };
 
-    hr = m_pDC->CreateBitmap(Size, nullptr, 0, Prop, m_pCoverD2D.AtClear());
+    const auto hr = m_pDC->CreateBitmap(Size, nullptr, 0, Prop, m_pCoverD2D.AtClear());
     if (FAILED(hr))
         return hr;
     return InternalCoverUpdate(m_pDefaultCoverWic.Get());
 }
 
-Dui::CBitmap CVioletAtlas::CoverGetCurrentImage() noexcept
+Dui::CBitmap CImageManager::CoverGetD2D() noexcept
 {
-    return CoverGetSubImage(m_bDefaultCover ?
-        AppImage::DefaultCover : AppImage::CurrentCover);
-}
-
-Dui::CBitmap CVioletAtlas::CoverGetSubImage(AppImage eImg) noexcept
-{
-    eck::CheckBool(eImg == AppImage::DefaultCover || eImg == AppImage::CurrentCover);
     Dui::CBitmap Bitmap{};
-
-    D2D1_RECT_F rc;
-    rc.left = 0.f;
-    rc.top = 0.f;
-    rc.right = (float)CoverWidth;
-    rc.bottom = (float)CoverHeight;
-
-    Bitmap.Set(m_pCoverD2D.Get(), &rc);
+    Bitmap.Set(m_pCoverD2D.Get());
     return Bitmap;
 }
 
-HRESULT CVioletAtlas::InternalCoverUpdate(IWICBitmapSource* pBitmap) noexcept
+HRESULT CImageManager::InternalCoverUpdate(IWICBitmapSource* pBitmap) noexcept
 {
     eck::UniquePtr<eck::DelVA<BYTE>> pBuffer{
         (BYTE*)eck::VAllocate(CoverWidth * CoverHeight * sizeof(UINT)) };
 
     constexpr WICRect rc{ 0, 0, CoverWidth, CoverHeight };
-    const auto hr = pBitmap->CopyPixels(&rc,
+    const auto hr = pBitmap->CopyPixels(
+        &rc,
         CoverWidth * sizeof(UINT),
         CoverWidth * CoverHeight * sizeof(UINT),
         pBuffer.get());
     if (FAILED(hr))
         return hr;
 
-    constexpr D2D1_RECT_U rcDst
-    {
-        0,
-        0,
-        CoverWidth,
-        CoverHeight
-    };
+    constexpr D2D1_RECT_U rcDst{ 0, 0, CoverWidth, CoverHeight };
     return m_pCoverD2D->CopyFromMemory(
         &rcDst,
         pBuffer.get(),
         CoverWidth * sizeof(UINT));
 }
 
-HRESULT CVioletAtlas::CoverUpdate(IWICBitmapSource* pBitmap) noexcept
+HRESULT CImageManager::CoverUpdate(IWICBitmapSource* pBitmap) noexcept
 {
-    if (!pBitmap)
+    if (pBitmap)
     {
-        m_bDefaultCover = TRUE;
-        return S_OK;
+        m_bDefaultCover = FALSE;
+        ComPtr<IWICBitmapScaler> pScaler;
+        const auto hr = eck::WicScaleBitmap(
+            pScaler.Self(), pBitmap,
+            CoverWidth, CoverHeight,
+            WICBitmapInterpolationModeFant);
+        if (FAILED(hr))
+            return hr;
+        return InternalCoverUpdate(pScaler.Get());
     }
-
-    HRESULT hr;
-
-    ComPtr<IWICBitmapScaler> pScaler;
-    hr = eck::g_pWicFactory->CreateBitmapScaler(&pScaler);
-    if (FAILED(hr))
-        return hr;
-
-    hr = pScaler->Initialize(
-        pBitmap,
-        CoverWidth, CoverHeight,
-        WICBitmapInterpolationModeFant);
-    if (FAILED(hr))
-        return hr;
-
-    return InternalCoverUpdate(pScaler.Get());
+    m_bDefaultCover = TRUE;
+    return InternalCoverUpdate(m_pDefaultCoverWic.Get());
 }
 
-HRESULT CVioletAtlas::SingleInitialize() noexcept
+HRESULT CImageManager::SingleInitialize() noexcept
 {
     return E_NOTIMPL;
 }
 
-Dui::CBitmap CVioletAtlas::SingleGetImage(AppImage eImg) noexcept
+Dui::CBitmap CImageManager::SingleGetImage(AppImage eImg) noexcept
 {
-    return Dui::CBitmap();
+    return {};
 }
