@@ -17,10 +17,6 @@ private:
     float m_fDefSpeed = 0.f;
     float m_fVolume = 1.f;
 public:
-    static int GetError(PCWSTR* ppszErr = nullptr) noexcept;
-
-    static PCWSTR GetErrorMessage(int iErrCode) noexcept;
-
     EckInline static BOOL Initialize(
         int iDevice = -1,
         DWORD dwFreq = 44100,
@@ -30,25 +26,17 @@ public:
         return BASS_Init(iDevice, dwFreq, dwFlags, hWnd, nullptr);
     }
 
-    EckInline static BOOL Free() noexcept
-    {
-        return BASS_Free();
-    }
+    EckInline static BOOL Free() noexcept { return BASS_Free(); }
 
-    EckInline static DWORD GetVersion() noexcept
-    {
-        return BASS_GetVersion();
-    }
+    EckInline static DWORD GetVersion() noexcept { return BASS_GetVersion(); }
+    EckInline static int GetError() noexcept { return BASS_ErrorGetCode(); }
+    static std::wstring_view GetErrorMessage(int iErrCode) noexcept;
 
-    EckInline static void VersionToString(DWORD dw, Eck_Out_buffer_ eck::CStringW& rs) noexcept
-    {
-        const WORD wHigh = HIWORD(dw);
-        const WORD wLow = LOWORD(dw);
-        rs.Format(L"%d.%d.%d.%d", (int)HIBYTE(wHigh), (int)LOBYTE(wHigh),
-            (int)HIBYTE(wLow), (int)LOBYTE(wLow));
-    }
+    static void VersionToString(
+        DWORD dw,
+        Eck_Out_buffer_ eck::CStringW& rs) noexcept;
 
-    ~CBass();
+    ~CBass() noexcept { Close(); }
 
     DWORD Open(
         PCWSTR pszFile,
@@ -89,10 +77,9 @@ public:
 
     EckInline float GetSpeed() const noexcept
     {
-        if (eck::FloatEqual(m_fDefSpeed, 0.f))
+        if (m_fDefSpeed == 0.f)
             return 0.f;
-        else [[likely]]
-            return GetAttribute(BASS_ATTRIB_FREQ) / m_fDefSpeed;
+        return GetAttribute(BASS_ATTRIB_FREQ) / m_fDefSpeed;
     }
 
     EckInline BOOL SetPosition(double fTime) const noexcept
@@ -105,23 +92,28 @@ public:
         return BASS_ChannelSetAttribute(m_hStream, dwAttr, f);
     }
 
-    EckInline float GetAttribute(DWORD dwAttr, _Out_ BOOL* pb = nullptr) const noexcept
+    EckInline float GetAttribute(
+        DWORD dwAttr,
+        _Out_opt_ BOOL* pbOk = nullptr) const noexcept
     {
         float f{};
         const auto b = BASS_ChannelGetAttribute(m_hStream, dwAttr, &f);
-        if (pb)
-            *pb = b;
+        if (pbOk) *pbOk = b;
         return f;
     }
 
     EckInline double GetPosition() const noexcept
     {
-        return BASS_ChannelBytes2Seconds(m_hStream, BASS_ChannelGetPosition(m_hStream, BASS_POS_BYTE));
+        return BASS_ChannelBytes2Seconds(
+            m_hStream,
+            BASS_ChannelGetPosition(m_hStream, BASS_POS_BYTE));
     }
 
     EckInline double GetLength() const noexcept
     {
-        return BASS_ChannelBytes2Seconds(m_hStream, BASS_ChannelGetLength(m_hStream, BASS_POS_BYTE));
+        return BASS_ChannelBytes2Seconds(
+            m_hStream,
+            BASS_ChannelGetLength(m_hStream, BASS_POS_BYTE));
     }
 
     void Close() noexcept;
@@ -133,7 +125,9 @@ public:
         return BASS_ChannelGetLevel(m_hStream);
     }
 
-    EckInline DWORD GetData(float* pBuf, DWORD cbBuf) const noexcept
+    EckInline DWORD GetData(
+        _Out_writes_bytes_(cbBuf) float* pBuf,
+        DWORD cbBuf) const noexcept
     {
         return BASS_ChannelGetData(m_hStream, pBuf, cbBuf);
     }

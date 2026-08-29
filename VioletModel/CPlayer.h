@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "CPlayList.h"
+#include "CBass.h"
 
 enum class PlayEvent
 {

@@ -78,7 +78,6 @@ using LvState = eck::UiBasic::Lc::TState;
 #include "Bass\bass_fx.h"
 #include "Bass\bassmidi.h"
 
-#include "CBass.h"
 
 struct PLDATA// 结构稳定，不能修改
 {

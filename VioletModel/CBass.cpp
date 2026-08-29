@@ -1,51 +1,58 @@
 ﻿#include "pch.h"
+#include "CBass.h"
 
-static const std::unordered_map<int, PCWSTR> c_BassErrorMap
+static const std::pair<int, std::wstring_view> BassErrorMap[]
 {
-    { -1, L"BASS_ERROR_UNKNOWN"      },
-    {  0, L"BASS_OK"                 },
-    {  1, L"BASS_ERROR_MEM"          },
-    {  2, L"BASS_ERROR_FILEOPEN"     },
-    {  3, L"BASS_ERROR_DRIVER"       },
-    {  4, L"BASS_ERROR_BUFLOST"      },
-    {  5, L"BASS_ERROR_HANDLE"       },
-    {  6, L"BASS_ERROR_FORMAT"       },
-    {  7, L"BASS_ERROR_POSITION"     },
-    {  8, L"BASS_ERROR_INIT"         },
-    {  9, L"BASS_ERROR_START"        },
-    { 10, L"BASS_ERROR_SSL"          },
-    { 14, L"BASS_ERROR_ALREADY"      },
-    { 17, L"BASS_ERROR_NOTAUDIO"     },
-    { 18, L"BASS_ERROR_NOCHAN"       },
-    { 19, L"BASS_ERROR_ILLTYPE"      },
-    { 20, L"BASS_ERROR_ILLPARAM"     },
-    { 21, L"BASS_ERROR_NO3D"         },
-    { 22, L"BASS_ERROR_NOEAX"        },
-    { 23, L"BASS_ERROR_DEVICE"       },
-    { 24, L"BASS_ERROR_NOPLAY"       },
-    { 25, L"BASS_ERROR_FREQ"         },
-    { 27, L"BASS_ERROR_NOTFILE"      },
-    { 29, L"BASS_ERROR_NOHW"         },
-    { 31, L"BASS_ERROR_EMPTY"        },
-    { 32, L"BASS_ERROR_NONET"        },
-    { 33, L"BASS_ERROR_CREATE"       },
-    { 34, L"BASS_ERROR_NOFX"         },
-    { 37, L"BASS_ERROR_NOTAVAIL"     },
-    { 38, L"BASS_ERROR_DECODE"       },
-    { 39, L"BASS_ERROR_DX"           },
-    { 40, L"BASS_ERROR_TIMEOUT"      },
-    { 41, L"BASS_ERROR_FILEFORM"     },
-    { 42, L"BASS_ERROR_SPEAKER"      },
-    { 43, L"BASS_ERROR_VERSION"      },
-    { 44, L"BASS_ERROR_CODEC"        },
-    { 45, L"BASS_ERROR_ENDED"        },
-    { 46, L"BASS_ERROR_BUSY"         },
-    { 47, L"BASS_ERROR_UNSTREAMABLE" },
+    { -1, L"BASS_ERROR_UNKNOWN"sv      },
+    {  0, L"BASS_OK"sv                 },
+    {  1, L"BASS_ERROR_MEM"sv          },
+    {  2, L"BASS_ERROR_FILEOPEN"sv     },
+    {  3, L"BASS_ERROR_DRIVER"sv       },
+    {  4, L"BASS_ERROR_BUFLOST"sv      },
+    {  5, L"BASS_ERROR_HANDLE"sv       },
+    {  6, L"BASS_ERROR_FORMAT"sv       },
+    {  7, L"BASS_ERROR_POSITION"sv     },
+    {  8, L"BASS_ERROR_INIT"sv         },
+    {  9, L"BASS_ERROR_START"sv        },
+    { 10, L"BASS_ERROR_SSL"sv          },
+    { 14, L"BASS_ERROR_ALREADY"sv      },
+    { 17, L"BASS_ERROR_NOTAUDIO"sv     },
+    { 18, L"BASS_ERROR_NOCHAN"sv       },
+    { 19, L"BASS_ERROR_ILLTYPE"sv      },
+    { 20, L"BASS_ERROR_ILLPARAM"sv     },
+    { 21, L"BASS_ERROR_NO3D"sv         },
+    { 22, L"BASS_ERROR_NOEAX"sv        },
+    { 23, L"BASS_ERROR_DEVICE"sv       },
+    { 24, L"BASS_ERROR_NOPLAY"sv       },
+    { 25, L"BASS_ERROR_FREQ"sv         },
+    { 27, L"BASS_ERROR_NOTFILE"sv      },
+    { 29, L"BASS_ERROR_NOHW"sv         },
+    { 31, L"BASS_ERROR_EMPTY"sv        },
+    { 32, L"BASS_ERROR_NONET"sv        },
+    { 33, L"BASS_ERROR_CREATE"sv       },
+    { 34, L"BASS_ERROR_NOFX"sv         },
+    { 37, L"BASS_ERROR_NOTAVAIL"sv     },
+    { 38, L"BASS_ERROR_DECODE"sv       },
+    { 39, L"BASS_ERROR_DX"sv           },
+    { 40, L"BASS_ERROR_TIMEOUT"sv      },
+    { 41, L"BASS_ERROR_FILEFORM"sv     },
+    { 42, L"BASS_ERROR_SPEAKER"sv      },
+    { 43, L"BASS_ERROR_VERSION"sv      },
+    { 44, L"BASS_ERROR_CODEC"sv        },
+    { 45, L"BASS_ERROR_ENDED"sv        },
+    { 46, L"BASS_ERROR_BUSY"sv         },
+    { 47, L"BASS_ERROR_UNSTREAMABLE"sv },
 };
 
-CBass::~CBass()
+
+void CBass::VersionToString(DWORD dw, Eck_Out_buffer_ eck::CStringW& rs) noexcept
 {
-    Close();
+    const WORD wHigh = HIWORD(dw);
+    const WORD wLow = LOWORD(dw);
+    rs.Format(
+        L"%d.%d.%d.%d",
+        (int)HIBYTE(wHigh), (int)LOBYTE(wHigh),
+        (int)HIBYTE(wLow), (int)LOBYTE(wLow));
 }
 
 DWORD CBass::Open(PCWSTR pszFile, DWORD dwFlagsHS, DWORD dwFlagsHM, DWORD dwFlagsHMIDI) noexcept
@@ -101,25 +108,13 @@ void CBass::Close() noexcept
     m_hStream = 0;
 }
 
-int CBass::GetError(PCWSTR* ppszErr) noexcept
+std::wstring_view CBass::GetErrorMessage(int iErrCode) noexcept
 {
-    int ii = BASS_ErrorGetCode();
-    if (ppszErr)
-    {
-        auto it = c_BassErrorMap.find(ii);
-        if (it == c_BassErrorMap.end())
-            *ppszErr = c_BassErrorMap.at(-1);
-        else
-            *ppszErr = it->second;
-    }
-    return ii;
-}
-
-PCWSTR CBass::GetErrorMessage(int iErrCode) noexcept
-{
-    auto it = c_BassErrorMap.find(iErrCode);
-    if (it == c_BassErrorMap.end())
-        return c_BassErrorMap.at(-1);
+    const auto it = std::lower_bound(
+        std::begin(BassErrorMap), std::end(BassErrorMap), iErrCode,
+        [](const auto& a, const auto& b) { return a.first < b; });
+    if (it == std::end(BassErrorMap))
+        return L"(Unknown)"sv;
     else
         return it->second;
 }
