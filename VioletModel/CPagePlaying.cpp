@@ -90,6 +90,8 @@ void CPagePlaying::UpdateBlurredCover() noexcept
 
     GetDC()->EndDraw();
     GetDC()->SetTarget(pOldTarget.Get());
+
+    m_Cover.SetBitmap(GetAtlas()->CoverGetD2D());
 }
 
 void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept

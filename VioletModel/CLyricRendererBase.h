@@ -25,26 +25,26 @@ enum : BYTE
 // 如无特殊说明，坐标相对元素
 struct LRD_DRAW
 {
-    int idx{};
+    int idx;
 
-    BYTE uFlags{};          // LRIF_*
-    eck::Alignment eAlign{};
-    BYTE ss{};
+    BYTE uFlags;            // LRIF_*
+    eck::Alignment eAlign;
+    BYTE ss;
 
-    float x{};
-    float y{};
-    float cx{};
-    float cy{};
+    float x;
+    float y;
+    float cx;
+    float cy;
 
-    float cxMain{};
-    float cxTranslation{};
+    float cxMain;
+    float cxTranslation;
 
-    float fScale{};         // 当前缩放，对于常规情况必须设为1
-    float kAnSelBkg{};      // 0 ~ 1，指定LRIF_AN_BACK时有效
-    float kScrollExpand{};  // 0 ~ 1，指定LRIF_SCROLL_EXPAND时有效
+    float fScale;           // 当前缩放，对于常规情况必须设为1
+    float kAnSelBkg;        // 0 ~ 1，指定LRIF_AN_BACK时有效
+    float kScrollExpand;    // 0 ~ 1，指定LRIF_SCROLL_EXPAND时有效
 
-    ComPtr<IDWriteTextLayout> pTlMain{};
-    ComPtr<IDWriteTextLayout> pTlTranslation{};
+    IDWriteTextLayout* pTlMain{};
+    IDWriteTextLayout* pTlTranslation{};
 
     const D2D1_RECT_F* prcClip{};// 相对客户区
 };

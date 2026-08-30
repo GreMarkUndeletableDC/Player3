@@ -17,8 +17,8 @@ void CLyricRendererD2D::ReCreateFadeBrush() noexcept
     m_pBrushFade.Clear();
     if (!(GetFlags() & LRCF_TOP_BOTTOM_FADE))
         return;
-    constexpr float CyLrcGradient = 50.f;
-    const auto k = CyLrcGradient / GetViewHeight();
+    constexpr float GradientHeight = 50.f;
+    const auto k = GradientHeight / GetViewHeight();
     const D2D1_GRADIENT_STOP Stop[]
     {
         {},
@@ -125,7 +125,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
         m_pDC->GetDpi(&xDpi, &yDpi);
 
         ComPtr<ID2D1PathGeometry1> pPathGeometry;
-        IDWriteTextLayout* const pTl[]{ Opt.pTlMain.Get(), Opt.pTlTranslation.Get() };
+        IDWriteTextLayout* const pTl[]{ Opt.pTlMain, Opt.pTlTranslation };
         constexpr float cyPadding[]{ 5.f,0.f };
         eck::GetTextLayoutPathGeometry(
             EckArgArrayR(pTl), cyPadding,
@@ -223,7 +223,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
         crText = pEle->GetTheme()->GetColorD2D(
             (Opt.uFlags & LRIF_CURR_AN) ? CVeLyric::IdCrTextActive : CVeLyric::IdCrText);
     }
-    crText = D2D1::ColorF{ D2D1::ColorF::White };
+    crText = D2D1::ColorF{ D2D1::ColorF::Black };
     pEle->GetWindow().CcSetBrushColor(crText);
     m_pDC->DrawGeometryRealization(Item.pGeometry.Get(), pEle->GetWindow().CcGetBrush());
     m_pDC->SetTransform(Mat0);

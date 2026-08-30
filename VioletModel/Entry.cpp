@@ -16,6 +16,7 @@
 #pragma comment(lib, R"(Bass\bassmidi.lib)")
 #endif
 #pragma comment(lib, "RuntimeObject.lib")
+#include <map>
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     _In_ PWSTR pszCmdLine, _In_ int nCmdShow)

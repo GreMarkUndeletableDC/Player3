@@ -11,8 +11,11 @@ enum
 
 constexpr inline float DurationSelectionBack{ 100.f };  // 歌词选中背景动画时长
 constexpr inline float DurationScrollExpand{ 200.f };   // 滚动展开动画时长
-constexpr inline float DurationDelay{ 600.f };          // 每个项目的延迟动画时长
-constexpr inline float DurationMaxItemDelay{ 310.f };   // 延迟间隔
+constexpr inline float DurationDelay{ 500.f };          // 每个项目的延迟动画时长
+
+constexpr inline float DurationItemDelay{ 350.f };      // 基准延迟间隔，所有动画在此时间内启动完毕
+constexpr inline float DurationItemDelayMaximum{ 70.f };
+constexpr inline float DurationItemDelayMinimum{ 12.f };
 
 void CVeLyric::ScrAnimationCallback(const Dui::IScrollController::SCC_CALLBACK_DATA& Data) noexcept
 {
@@ -74,11 +77,6 @@ void CVeLyric::ItmReCalculateTop() noexcept
         return;
     }
     m_idxTop = ItmIndexFromY(0.f);
-    // VLTBUG 250804
-    // 先前调整过ItmIndexFromY使坐标实际上命中项目顶边减去行间距，
-    // 可能导致项目顶边可见，但减去行间距后不可见
-    // 追加：即使未调整此函数，仍有可能出现项目顶边不可见的情况
-    // 此处命中不到任何项目的情况下，总使顶端项目为最后一个项目
     if (m_idxTop < 0)
         m_idxTop = (int)m_vItem.size() - 1;
 }
@@ -212,15 +210,17 @@ void CVeLyric::MiBeginScrollExpand(BOOL bEnlarge) noexcept
 void CVeLyric::ItmDelayPrepare(float dy) noexcept
 {
     float y;
-    m_bItemAnDelay = TRUE;// 马上要启动滚动条时间线，无需唤醒渲染线程
+    m_bItemAnDelay = TRUE;// 马上要启动滚动条时间线，无需KctWake
     m_bDelayScrollUp = (dy > 0.f);
     int i;
     const auto& Curr = m_vItem[m_idxCurr];
     // 当前（含）以上
     y = ItmGetCurrentItemTarget() - Curr.cy / 2.f + Curr.cy + m_cyLinePadding;
     m_idxDelayBegin = 0;
+    m_cCurrDelay = 0;
     for (int i = m_idxCurr; i >= 0; --i)
     {
+        ++m_cCurrDelay;
         auto& e = m_vItem[i];
         y -= (e.cy + m_cyLinePadding);
         e.yAnDelayDst = y;
@@ -230,7 +230,10 @@ void CVeLyric::ItmDelayPrepare(float dy) noexcept
         {
             m_idxDelayBegin = i;
             if (m_bDelayScrollUp)
+            {
                 m_yMinMaxDelayPos = e.yAnDelaySrc;
+                m_idxDelaySavedEnd = i;
+            }
             break;
         }
     }
@@ -239,6 +242,7 @@ void CVeLyric::ItmDelayPrepare(float dy) noexcept
     m_idxDelayEnd = (int)m_vItem.size() - 1;
     for (i = m_idxCurr + 1; i < (int)m_vItem.size(); ++i)
     {
+        ++m_cCurrDelay;
         auto& e = m_vItem[i];
         e.yAnDelayDst = y;
         e.yAnDelaySrc = e.y;
@@ -248,7 +252,10 @@ void CVeLyric::ItmDelayPrepare(float dy) noexcept
         {
             m_idxDelayEnd = i;
             if (!m_bDelayScrollUp)
+            {
                 m_yMinMaxDelayPos = e.yAnDelaySrc;
+                m_idxDelaySavedEnd = i;
+            }
             break;
         }
     }
@@ -260,14 +267,19 @@ void CVeLyric::ItmDelayComplete() noexcept
     m_bItemAnDelay = FALSE;
 }
 
-BOOL CVeLyric::ItmIsDelayEnd(const ITEM& e) noexcept
+BOOL CVeLyric::ItmIsDelayEnd(int idx) noexcept
 {
-    const auto cy = GetHeight();
-    const auto msDelay = DurationMaxItemDelay * ((m_idxDelayEnd - m_idxDelayBegin + 1) / 10.f);
-    if (m_bDelayScrollUp)
-        return e.msDelay >= (msDelay * ((e.yAnDelaySrc - m_yMinMaxDelayPos) / cy));
-    else
-        return e.msDelay >= (msDelay * ((m_yMinMaxDelayPos - e.yAnDelaySrc) / cy));
+    const auto& e = m_vItem[idx];
+    if (m_cCurrDelay < 0)
+        return TRUE;
+    const auto dt = std::clamp(
+        DurationItemDelay / m_cCurrDelay,
+        DurationItemDelayMinimum,
+        DurationItemDelayMaximum);
+    const auto i = m_bDelayScrollUp ?
+        idx - m_idxDelaySavedEnd :
+        m_idxDelaySavedEnd - idx;
+    return e.msDelay >= dt * i;
 }
 
 LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
@@ -642,20 +654,21 @@ void CVeLyric::TlTick(int iMs) noexcept
             ItmInvalidate(i);
         }
         if (m_bItemAnDelay && ItmInDelayRange(i))
-            if (ItmIsDelayEnd(e))
+            if (ItmIsDelayEnd(i))
             {
+                const auto j = m_bDelayScrollUp ?
+                    i - m_idxDelaySavedEnd :
+                    m_idxDelaySavedEnd - i;
+
                 e.msAnDelay += iMs;
                 auto k = eck::Easing::OutExpo(
-                    e.msAnDelay, 0.f, 1.f, DurationDelay);
-                // VLTBUG 250822
-                // 缓动函数内部的钳位会导致某些曲线结束位置会产生较大的跳变，
-                // ECK已修改，取消了所有钳位，并且在外部应使用k作为终点条件
+                    e.msAnDelay,
+                    0.f,
+                    1.f,
+                    DurationDelay + (j * 30));
                 if (fabs(e.y - e.yAnDelayDst) < 0.4f &&// 动画结束
                     ((m_bDelayScrollUp ? m_idxDelayBegin : m_idxDelayEnd) == i))
                 {
-                    // VLTBUG 250916
-                    // OutExpo本身平缓区域过大，在此裁去一部分防止动画空转浪费GPU资源
-                    // 必须按顺序停止动画，仅当上一动画结束时才判定当前动画完成
                     k = 1.f;
                     e.msDelay = 0.f;
                     e.msAnDelay = 0.f;

@@ -14,7 +14,7 @@ LRESULT CWindowGhost::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcep
         DwmSetWindowAttribute(Handle, DWMWA_FORCE_ICONIC_REPRESENTATION, &b, sizeof(b));
 
         const auto ptc = eck::PtcCurrent();
-        EckCheckPointer(ptc->hGhost);
+        EckCheckBool(!ptc->hGhost);
         ptc->hGhost = Handle;
     }
     return 0;

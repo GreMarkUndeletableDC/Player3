@@ -84,6 +84,8 @@ private:
 
     int m_idxDelayBegin{ -1 };
     int m_idxDelayEnd{ -1 };
+    int m_idxDelaySavedEnd{ -1 };
+    int m_cCurrDelay{};
 
     float m_yMinMaxDelayPos{};
     float m_msItemAnDelay{ 200.f }; // 当前行发生更改时歌词行之间开始动画的延迟
@@ -147,7 +149,7 @@ private:
             m_idxDelayEnd >= m_idxDelayBegin;
     }
 
-    BOOL ItmIsDelayEnd(const ITEM& e) noexcept;
+    BOOL ItmIsDelayEnd(int idx) noexcept;
 public:
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 

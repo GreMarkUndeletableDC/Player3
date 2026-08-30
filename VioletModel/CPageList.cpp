@@ -115,7 +115,7 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
             hr = pBitmap->CopyPixels(
                 &rc,
                 cxIlTile * sizeof(UINT),
-                (UINT)Meta.CoverPixel.Size(),
+                (UINT)Meta.CoverPixel.ByteSize(),
                 (BYTE*)Meta.CoverPixel.Data());
             if (FAILED(hr))
                 Meta.CoverPixel.Clear();

@@ -7,7 +7,7 @@ const static UINT MsgTaskbarButtonCreated{ RegisterWindowMessageW(L"TaskbarButto
 constexpr static float PageSwitchAnimationDelta = 60.f;
 constexpr static float LabelFontHeight = 18.f;
 
-EckInlineNdCe AppImage AutoNextModeToGImg(AutoNextMode eMode) noexcept
+EckInlineNdCe AppImage AutoNextModeToAppImage(AutoNextMode eMode) noexcept
 {
     switch (eMode)
     {
@@ -236,7 +236,8 @@ void CWindowMain::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
         if (m_msProgTimer >= TE_PROG)
         {
             m_msProgTimer = 0;
-            m_TBProgress.SetTrackPosition(float(App->Player().GetCurrentTime() * ProgressTrackBarScale));
+            m_TBProgress.SetTrackPosition(float(
+                App->Player().GetCurrentTime() * ProgressTrackBarScale));
             m_TBProgress.Invalidate();
             TblUpdateProgress();
         }
@@ -451,7 +452,7 @@ LRESULT CWindowMain::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) no
         else if (pEle == &m_BTAutoNext)
         {
             const auto r = App->Player().NextAutoNextMode();
-            m_BTAutoNext.SetIcon(m_pAtlas->AtlasGetD2D(AutoNextModeToGImg(r)));
+            m_BTAutoNext.SetIcon(m_pAtlas->AtlasGetD2D(AutoNextModeToAppImage(r)));
             m_BTAutoNext.Invalidate();
         }
         else if (pEle == &m_BTVol)
@@ -574,32 +575,34 @@ void CWindowMain::PpaEnd() noexcept
 void CWindowMain::PpaTick(int ms) noexcept
 {
     Redraw(FALSE);
-    constexpr float MinDistance = 0.4f;
 
-    constexpr float MaxPPAnDuration = 700.f;
-    constexpr float DurOverlayOpacity = 150.f;
+    constexpr float MinimumDistance = 0.4f;
+    constexpr float MaximumDuration = 700.f;
+    constexpr float OverlayOpacityDuration = 150.f;
+
     constexpr float Duration[]
     {
-        MaxPPAnDuration,
-        MaxPPAnDuration * 5 / 6,
-        MaxPPAnDuration * 5 / 6,
-        MaxPPAnDuration * 4 / 6,
+        MaximumDuration,
+        MaximumDuration * 5 / 6,
+        MaximumDuration * 5 / 6,
+        MaximumDuration * 4 / 6,
     };
     constexpr float DurationR[]
     {
-        MaxPPAnDuration * 4 / 6,
-        MaxPPAnDuration * 8 / 9,
-        MaxPPAnDuration * 5 / 6,
-        MaxPPAnDuration,
+        MaximumDuration * 4 / 6,
+        MaximumDuration * 8 / 9,
+        MaximumDuration * 5 / 6,
+        MaximumDuration,
     };
-    if (!(m_bPPAnActive = m_PlayPageAn.Tick((float)ms, MaxPPAnDuration)))
+    if (!(m_bPPAnActive = m_PlayPageAn.Tick((float)ms, MaximumDuration)))
     {
         Redraw(FALSE);
         PpaEnd();
         return;
     }
     // 页面动画更新
-    const auto kOverlay = std::clamp(m_PlayPageAn.Time / DurOverlayOpacity, 0.f, 1.f);
+    const auto kOverlay = std::clamp(
+        m_PlayPageAn.Time / OverlayOpacityDuration, 0.f, 1.f);
     m_CompPlayPageAn.SetOpacity(m_bPPAnReverse ? (1.f - kOverlay) : kOverlay);
 
     const auto kScale = 1.f - m_PlayPageAn.K * 0.2f;
@@ -633,22 +636,20 @@ void CWindowMain::PpaTick(int ms) noexcept
             ptLarge[i].x, ptLarge[i].y, m_PPCornerAn[i].K, pt[i].x, pt[i].y);
         if (m_bPPAnReverse)
         {
-            if (fabs(ptLarge[i].x - pt[i].x) > MinDistance ||
-                fabs(ptLarge[i].y - pt[i].y) > MinDistance)
+            if (fabs(ptLarge[i].x - pt[i].x) > MinimumDistance ||
+                fabs(ptLarge[i].y - pt[i].y) > MinimumDistance)
                 bStillRunning = TRUE;
         }
         else
         {
-            if (fabs(ptMini[i].x - pt[i].x) > MinDistance ||
-                fabs(ptMini[i].y - pt[i].y) > MinDistance)
+            if (fabs(ptMini[i].x - pt[i].x) > MinimumDistance ||
+                fabs(ptMini[i].y - pt[i].y) > MinimumDistance)
                 bStillRunning = TRUE;
         }
     }
 
-    eck::CalculateDistortMatrix(m_rcPPLarge, pt,
-        *(D2D1_MATRIX_4X4_F*)m_CompPlayPageAn.AtMatrix());
-    eck::CalculateInverseDistortMatrix(m_rcPPLarge, pt,
-        *(D2D1_MATRIX_4X4_F*)m_CompPlayPageAn.AtMatrixR());
+    eck::CalculateDistortMatrix(m_rcPPLarge, pt, *m_CompPlayPageAn.AtMatrixD2D());
+    eck::CalculateInverseDistortMatrix(m_rcPPLarge, pt, *m_CompPlayPageAn.AtMatrixD2DR());
     if (!m_PagePlaying.GetCompositor())
         m_PagePlaying.SetCompositor(&m_CompPlayPageAn);
     if (!m_NormalPageContainer.GetCompositor())
@@ -688,7 +689,9 @@ void CWindowMain::LayoutPlayPanel() noexcept
     x += (PlayCircleButtonSize + CircleButtonPadding);
     m_BTNext.SetPosition(x, y);
     // 移动进度条
-    m_TBProgress.SetPosition((cxClient - ProgressBarWidth) / 2.f, cyClient - ProgressBarHeight - 6.f);
+    m_TBProgress.SetPosition(
+        (cxClient - ProgressBarWidth) / 2.f,
+        cyClient - ProgressBarHeight - 6.f);
 }
 
 void CWindowMain::OnColorSchemeChanged() noexcept
@@ -697,7 +700,7 @@ void CWindowMain::OnColorSchemeChanged() noexcept
     m_BTPlay.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Triangle));
     m_BTNext.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Next));
     m_BTAutoNext.SetIcon(m_pAtlas->AtlasGetD2D(
-        AutoNextModeToGImg(App->Player().GetAutoNextMode())));
+        AutoNextModeToAppImage(App->Player().GetAutoNextMode())));
     m_BTLrc.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Lyric));
     m_BTVol.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Speaker));
 }
