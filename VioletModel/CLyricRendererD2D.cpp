@@ -158,7 +158,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
                 pEle->GetTheme().Get(),
                 pEle->TmSimpleStyle(Opt.ss),
                 ssNull,
-                1.f - Opt.kAnSelBkg);
+                Opt.kAnSelBkg);
             pEle->GetTheme()->Draw(
                 pEle,
                 &ss,
