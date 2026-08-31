@@ -46,19 +46,20 @@ private:
 
         float yNoDelay{};   // 没有延迟的情况下歌词行的Y坐标
 
-        float kAnSelBkg{};  // 0~1
-        float msAnSelBkg{}; // 0~DurationSelectionBack
+        eck::EasingCurve<eck::Easing::FOutExpo> ecBack{};
         float yAnDelayDst{};// 目标位置
         float yAnDelaySrc{};// 起始位置
         float msAnDelay{};  // 0~DurationDelay，延迟动画曲线用
         float msDelay{};    // 0~DurationMaxItemDelay，已延迟时间，达到最大值时开始进行移动动画
         BITBOOL bSel : 1{};             // 选中
         BITBOOL bCacheValid : 1{};      // 前三个字段是否有效
-        BITBOOL bAnSelBkg : 1{};        // 正在运行项目热点背景动画
+        BITBOOL bAnBack : 1{};        // 正在运行项目热点背景动画
         BITBOOL bAnSelBkgEnlarge : 1{}; // 正在扩大，即鼠标已移入
 
-        void OnSetHot() noexcept;
-        void OnKillHot() noexcept;
+        // 如果有必要调用KctWake则返回TRUE
+
+        BOOL OnSetHot() noexcept;
+        BOOL OnKillHot() noexcept;
     };
 
     Dui::CScrollBar m_SB{};

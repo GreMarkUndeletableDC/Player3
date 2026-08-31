@@ -182,15 +182,40 @@ Dui::CBitmap CImageManager::CoverGetD2D() noexcept
 
 HRESULT CImageManager::InternalCoverUpdate(IWICBitmapSource* pBitmap) noexcept
 {
-    eck::UniquePtr<eck::DelVA<BYTE>> pBuffer{
-        (BYTE*)eck::VAllocate(CoverWidth * CoverHeight * sizeof(UINT)) };
+    HRESULT hr;
 
-    constexpr WICRect rc{ 0, 0, CoverWidth, CoverHeight };
-    const auto hr = pBitmap->CopyPixels(
-        &rc,
+    UINT cx, cy;
+    hr = pBitmap->GetSize(&cx, &cy);
+    if (FAILED(hr))
+        return hr;
+
+    ComPtr<IWICBitmapScaler> pScaler;
+    eck::RCWH rc{ 0, 0, (int)cx, (int)cy };
+    if (cx != (UINT)CoverWidth || cy != (UINT)CoverHeight)
+    {
+        constexpr eck::RCWH rcRef{ 0, 0, CoverWidth, CoverHeight };
+        eck::AdjustRectToFitAnother(rc, rcRef);
+
+        hr = eck::WicScaleBitmap(
+            pScaler.Self(),
+            pBitmap,
+            rc.cx,
+            rc.cy,
+            WICBitmapInterpolationModeFant);
+        if (FAILED(hr))
+            return hr;
+        pBitmap = pScaler.Get();
+    }
+
+    eck::UniquePtr<eck::DelVA<UINT>> pBuffer{
+        (UINT*)eck::VAllocate(CoverWidth * CoverHeight * sizeof(UINT)) };
+
+    const WICRect rcCopy{ 0, 0, (UINT)rc.cx, (UINT)rc.cy };
+    hr = pBitmap->CopyPixels(
+        &rcCopy,
         CoverWidth * sizeof(UINT),
         CoverWidth * CoverHeight * sizeof(UINT),
-        pBuffer.get());
+        (BYTE*)(pBuffer.get() + rc.x + rc.y * CoverHeight));
     if (FAILED(hr))
         return hr;
 
@@ -206,14 +231,7 @@ HRESULT CImageManager::CoverUpdate(IWICBitmapSource* pBitmap) noexcept
     if (pBitmap)
     {
         m_bDefaultCover = FALSE;
-        ComPtr<IWICBitmapScaler> pScaler;
-        const auto hr = eck::WicScaleBitmap(
-            pScaler.Self(), pBitmap,
-            CoverWidth, CoverHeight,
-            WICBitmapInterpolationModeFant);
-        if (FAILED(hr))
-            return hr;
-        return InternalCoverUpdate(pScaler.Get());
+        return InternalCoverUpdate(pBitmap);
     }
     m_bDefaultCover = TRUE;
     return InternalCoverUpdate(m_pDefaultCoverWic.Get());

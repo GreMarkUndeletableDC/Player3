@@ -9,7 +9,7 @@ enum
     T_MOUSEIDLEMAX = 4500,
 };
 
-constexpr inline float DurationSelectionBack{ 100.f };  // 歌词选中背景动画时长
+constexpr inline float DurationSelectionBack{ 300.f };  // 歌词选中背景动画时长
 constexpr inline float DurationScrollExpand{ 200.f };   // 滚动展开动画时长
 constexpr inline float DurationDelay{ 500.f };          // 每个项目的延迟动画时长
 
@@ -115,12 +115,12 @@ float CVeLyric::ItmPaint(int idx) noexcept
         .cxMain = e.cxMain,
         .cxTranslation = e.cxTranslation,
         .fScale = m_fAnValue,
-        .kAnSelBkg = e.kAnSelBkg,
+        .kAnSelBkg = e.ecBack.K,
         .kScrollExpand = m_kScrollExpand,
         .pTlMain = e.pTlMain.Get(),
         .pTlTranslation = e.pTlTranslation.Get(),
     };
-    if (e.bAnSelBkg)
+    if (e.bAnBack)
         Opt.uFlags |= LRIF_AN_BACK;
     if (m_bScrollExpand || MiIsManualScroll())
         Opt.uFlags |= LRIF_SCROLL_EXPAND;
@@ -133,7 +133,7 @@ float CVeLyric::ItmPaint(int idx) noexcept
     if (e.bSel)
         Opt.ss = SsSelected;
     else
-        if (idx == m_idxHot || e.bAnSelBkg)
+        if (idx == m_idxHot || e.bAnBack)
             Opt.ss = SsHot;
         else
             Opt.ss = SsNormal;
@@ -311,11 +311,12 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         if (idx != m_idxHot)
         {
             std::swap(idx, m_idxHot);
+            BOOL b{};
             if (idx >= 0)
-                m_vItem[idx].OnKillHot();
+                b = m_vItem[idx].OnKillHot();
             if (m_idxHot >= 0)
-                m_vItem[m_idxHot].OnSetHot();
-            if (!m_bAnSelBkg && (idx >= 0 || m_idxHot >= 0))
+                b = b || m_vItem[m_idxHot].OnSetHot();
+            if (b)
             {
                 m_bAnSelBkg = TRUE;
                 GetWindow().KctWake();
@@ -334,8 +335,7 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             std::swap(idx, m_idxHot);
             if (idx >= 0)
             {
-                m_vItem[idx].OnKillHot();
-                if (!m_bAnSelBkg)
+                if (m_vItem[idx].OnKillHot())
                 {
                     m_bAnSelBkg = TRUE;
                     GetWindow().KctWake();
@@ -639,19 +639,15 @@ void CVeLyric::TlTick(int iMs) noexcept
     for (; i >= 0 && i < (int)m_vItem.size(); (m_bDelayScrollUp ? ++i : --i))
     {
         auto& e = m_vItem[i];
-        if (e.bAnSelBkg)
+        if (e.bAnBack)
         {
-            if (e.bAnSelBkgEnlarge)
-                e.msAnSelBkg -= iMs;
-            else
-                e.msAnSelBkg += iMs;
-            e.kAnSelBkg = eck::Easing::Linear(
-                e.msAnSelBkg, 0.f, 1.f, DurationSelectionBack);
-            if (e.kAnSelBkg >= 1.f || e.kAnSelBkg <= 0.f)
-                e.bAnSelBkg = FALSE;
-            else
-                bAn = TRUE;
+            e.bAnBack = e.ecBack.Tick(iMs, DurationSelectionBack);
+            if (e.bAnBack &&
+                (e.bAnSelBkgEnlarge ? e.ecBack.K < 0.01f : e.ecBack.K >= 0.99f))
+                e.bAnBack = FALSE;
             ItmInvalidate(i);
+            if (e.bAnBack)
+                bAn = TRUE;
         }
         if (m_bItemAnDelay && ItmInDelayRange(i))
             if (ItmIsDelayEnd(i))
@@ -856,22 +852,26 @@ void CVeLyric::ScrFixItemPosition() noexcept
 }
 
 
-void CVeLyric::ITEM::OnSetHot() noexcept
+BOOL CVeLyric::ITEM::OnSetHot() noexcept
 {
-    if (!bAnSelBkg)
-    {
-        bAnSelBkg = TRUE;
-        msAnSelBkg = DurationSelectionBack;
-    }
     bAnSelBkgEnlarge = TRUE;
+    ecBack.Start(1.f, 0.f, bAnBack);
+    if (!bAnBack)
+    {
+        bAnBack = TRUE;
+        return TRUE;
+    }
+    return FALSE;
 }
 
-void CVeLyric::ITEM::OnKillHot() noexcept
+BOOL CVeLyric::ITEM::OnKillHot() noexcept
 {
-    if (!bAnSelBkg)
-    {
-        bAnSelBkg = TRUE;
-        msAnSelBkg = 0.f;
-    }
     bAnSelBkgEnlarge = FALSE;
+    ecBack.Start(0.f, 1.f, bAnBack);
+    if (!bAnBack)
+    {
+        bAnBack = TRUE;
+        return TRUE;
+    }
+    return FALSE;
 }

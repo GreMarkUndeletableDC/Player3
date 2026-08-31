@@ -248,7 +248,7 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
         App->Player().GetEventChain().Connect(this, &CPagePlaying::OnPlayEvent);
 
-        m_Cover.Create({}, Dui::DES_VISIBLE, 0,
+        m_Cover.Create({}, Dui::DES_VISIBLE | Dui::DES_NO_CLIP, 0,
             50, 50, 200, 200, this);
 
         m_Lyric.Create({}, Dui::DES_VISIBLE, 0,
