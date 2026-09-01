@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CWindowMain.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 
 LRESULT CWindowGhost::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept

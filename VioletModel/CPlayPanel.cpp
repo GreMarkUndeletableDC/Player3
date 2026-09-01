@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CPlayPanel.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 
 void CPlayPanel::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
@@ -71,7 +71,7 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         const auto pWnd = &GetWindow();
 
         ComPtr<IDWriteTextFormat> pTfTitle;
-        App->GetFontFactory().NewFont(pTfTitle.Self(), eck::Alignment::Near,
+        App->FontFactory().NewFont(pTfTitle.Self(), eck::Alignment::Near,
             eck::Alignment::Center, (float)NormalFontSize, 700);
         pTfTitle->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 

@@ -11,15 +11,16 @@ struct LRD_TEXT_METRICS
 enum : BYTE
 {
     LRIF_NONE = 0,
-    LRIF_AN_BACK = 1 << 0,          // 正在运行项目背景动画
-    LRIF_PREV_AN = 1 << 1,          // 正在缩小到常规大小
-    LRIF_CURR_AN = 1 << 2,          // 正在放大到高亮大小
-    LRIF_SCROLL_EXPAND = 1 << 3,    // 由于用户滚动，所有项目正在放大到高亮大小
+    LRIF_AN_BACK = 1 << 0,
+    LRIF_PREV_AN = 1 << 1,  // 正在缩小到常规大小
+    LRIF_CURR_AN = 1 << 2,  // 正在放大到高亮大小
+    LRIF_SCROLL_EXPAND = 1 << 3,
 
-    LRCF_TOP_BOTTOM_FADE = 1 << 0,  // 显示上下的渐隐带
-    LRCF_DESKTOP_LYRIC = 1 << 1,    // 渲染桌面歌词而不是滚动歌词
-    LRCF_BORDER = 1 << 2,           // 文本带有描边
-    LRCF_SHADOW = 1 << 3,           // 文本带有阴影
+    LRCF_TOP_BOTTOM_FADE = 1 << 0,
+    LRCF_DESKTOP_LYRIC = 1 << 1,
+    LRCF_BORDER = 1 << 2,
+    LRCF_SHADOW = 1 << 3,
+    LRCF_NO_TRANSLATION = 1 << 4,
 };
 
 // 如无特殊说明，坐标相对元素

@@ -2,15 +2,6 @@
 #include "CLyricRendererD2D.h"
 #include "CVeLyric.h"
 
-static constexpr D2D1_COLOR_F InterpolateColor(
-    const D2D1_COLOR_F& c1, const D2D1_COLOR_F& c2, float k) noexcept
-{
-    return {
-        c1.r + (c2.r - c1.r) * k,
-        c1.g + (c2.g - c1.g) * k,
-        c1.b + (c2.b - c1.b) * k,
-        c1.a + (c2.a - c1.a) * k };
-}
 
 void CLyricRendererD2D::ReCreateFadeBrush() noexcept
 {

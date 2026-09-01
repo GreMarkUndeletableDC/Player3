@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CPlayList.h"
-#include "CApp.h"
+#include "CApplication.h"
 #include "PlayListFile.h"
 
 void CPlayList::LtmSetFile(std::wstring_view svPath, std::wstring_view svFileName) noexcept

@@ -1,7 +1,10 @@
 ﻿#include "pch.h"
 #include "CWindowLyric.h"
-#include "CApp.h"
+#include "CApplication.h"
 
+constexpr static UINT_PTR IDT_LRC_MOUSELEAVE = 101;
+constexpr static UINT TE_LRC_MOUSELEAVE = 800;
+constexpr static UINT TE_LRC_MOUSELEAVE_FIRST = 1600;
 
 void CWindowLyric::OnPlayEvent(const PLAY_EVT_PARAM& e)
 {
@@ -158,7 +161,7 @@ LRESULT CWindowLyric::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcep
         m_Lrc.Create(nullptr, Dui::DES_VISIBLE, 0,
             0, 0, 0, 0, nullptr, this);
         ComPtr<IDWriteTextFormat> pTfLrc;
-        auto& FontFactory = App->GetFontFactory();;
+        auto& FontFactory = App->FontFactory();;
         FontFactory.NewFont(pTfLrc.SelfClear(),
             eck::Alignment::Near, eck::Alignment::Near, 30, 700);
         pTfLrc->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);

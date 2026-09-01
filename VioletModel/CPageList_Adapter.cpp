@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CPageList.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 
 LvIndex CPlayListFileAdapter::LcaGetCount() const noexcept

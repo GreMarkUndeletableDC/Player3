@@ -114,10 +114,7 @@
     <ClInclude Include="PlayListFile.h">
       <Filter>逻辑</Filter>
     </ClInclude>
-    <ClInclude Include="CApp.h">
-      <Filter>程序</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils.h">
+    <ClInclude Include="CApplication.h">
       <Filter>程序</Filter>
     </ClInclude>
     <ClInclude Include="CLyricRendererD2D.h">
@@ -203,13 +200,10 @@
     <ClCompile Include="PlayListFile.cpp">
       <Filter>逻辑</Filter>
     </ClCompile>
-    <ClCompile Include="CApp.cpp">
+    <ClCompile Include="CApplication.cpp">
       <Filter>程序</Filter>
     </ClCompile>
     <ClCompile Include="Entry.cpp">
-      <Filter>程序</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils.cpp">
       <Filter>程序</Filter>
     </ClCompile>
     <ClCompile Include="CLyricRendererD2D.cpp">

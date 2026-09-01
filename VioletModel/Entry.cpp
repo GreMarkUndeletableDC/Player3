@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "CApp.h"
+#include "CApplication.h"
 #include "CWindowMain.h"
 
 #include "eck\AutoLink.h"
@@ -50,7 +50,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     eck::PtcCurrent()->UpdateDefaultColor();
 
     App = new CApplication{};
-    CApplication::Init();
     //#ifdef _DEBUG
     App->ListManager().LoadList(L"D:\\test - 副本"sv);
     auto pList = App->ListManager().AtList(4);
@@ -59,7 +58,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     //#endif
 
     const auto pWnd = new CWindowMain{};
-    App->SetMainWindow(pWnd);
     const auto hMon = eck::GetOwnerMonitor(nullptr);
     const auto iDpi = eck::GetMonitorDpi(hMon);
     SIZE Size{ 940, 620 };

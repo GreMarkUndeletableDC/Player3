@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CWindowMain.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 
 CTabPanel::LvIndex CTabPanel::LcaGetCount() const noexcept

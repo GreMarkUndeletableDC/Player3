@@ -1,11 +1,23 @@
 ﻿#include "pch.h"
 #include "CWindowMain.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 const static UINT MessageTaskbarButtonCreated{ RegisterWindowMessageW(L"TaskbarButtonCreated") };
 
 constexpr static float PageSwitchAnimationDelta = 60.f;
 constexpr static float LabelFontHeight = 18.f;
+
+constexpr static std::wstring_view PageName[]
+{
+    L"主页"sv,
+    L"列表"sv,
+    L"效果"sv,
+    L"设置"sv,
+};
+
+constexpr static UINT_PTR IDT_COMM_TICK = 101;
+constexpr static UINT TE_COMM_TICK = 200;
+constexpr static UINT TE_PROG = TE_COMM_TICK * 2;
 
 EckInlineNdCe AppImage AutoNextModeToAppImage(AutoNextMode eMode) noexcept
 {
@@ -69,13 +81,13 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     BlurSetUseLayer(TRUE);
 
     ComPtr<IDWriteTextFormat> pTfPageTitle, pTfLeft, pTfCenter;
-    App->GetFontFactory().NewFont(pTfPageTitle.Self(), eck::Alignment::Near,
+    App->FontFactory().NewFont(pTfPageTitle.Self(), eck::Alignment::Near,
         eck::Alignment::Center, (float)PageTitleFontHeight, 600);
     pTfPageTitle->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
-    App->GetFontFactory().NewFont(pTfLeft.Self(), eck::Alignment::Near,
+    App->FontFactory().NewFont(pTfLeft.Self(), eck::Alignment::Near,
         eck::Alignment::Center, (float)NormalFontSize);
     pTfLeft->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
-    App->GetFontFactory().NewFont(pTfCenter.Self(), eck::Alignment::Center,
+    App->FontFactory().NewFont(pTfCenter.Self(), eck::Alignment::Center,
         eck::Alignment::Center, (float)NormalFontSize);
     pTfCenter->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
@@ -114,11 +126,11 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     m_PagePlaying.Create({}, 0, 0,
         0, 0, 0, 0, nullptr, this);
     m_PagePlaying.SetTextFormat(pTfLeft.Get());
-    App->GetFontFactory().NewFont(pTfPP.SelfClear(), eck::Alignment::Near,
+    App->FontFactory().NewFont(pTfPP.SelfClear(), eck::Alignment::Near,
         eck::Alignment::Center, (float)LabelFontHeight, 600);
     pTfPP->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
     m_PagePlaying.SetLabelTextFormatTitle(pTfPP.Get());
-    App->GetFontFactory().NewFont(pTfPP.SelfClear(), eck::Alignment::Near,
+    App->FontFactory().NewFont(pTfPP.SelfClear(), eck::Alignment::Near,
         eck::Alignment::Center, (float)LabelFontHeight);
     pTfPP->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
     m_PagePlaying.SetLabelTextFormat(pTfPP.Get());
@@ -189,7 +201,7 @@ void CWindowMain::PageShow(Page ePage, BOOL bAnimate) noexcept
     const auto bAlreadyVisible =
         (m_vPage[idxShow]->GetStyle() & Dui::DES_VISIBLE);
 
-    m_LAPageTitle.SetText(MainWndPageName[idxShow]);
+    m_LAPageTitle.SetText(PageName[idxShow]);
     m_LAPageTitle.Invalidate();
     m_vPage[idxShow]->SetVisible(TRUE);
     for (int i = 0; i < idxShow; ++i)

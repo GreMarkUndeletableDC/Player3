@@ -641,7 +641,7 @@ void CVeLyric::TlTick(int iMs) noexcept
         auto& e = m_vItem[i];
         if (e.bAnBack)
         {
-            e.bAnBack = e.ecBack.Tick(iMs, DurationSelectionBack);
+            e.bAnBack = e.ecBack.Tick((float)iMs, DurationSelectionBack);
             if (e.bAnBack &&
                 (e.bAnSelBkgEnlarge ? e.ecBack.K < 0.01f : e.ecBack.K >= 0.99f))
                 e.bAnBack = FALSE;

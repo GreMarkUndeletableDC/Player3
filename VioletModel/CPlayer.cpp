@@ -1,8 +1,6 @@
 ﻿#include "pch.h"
-#include "CApp.h"
+#include "CApplication.h"
 #include "CPlayList.h"
-#include "Utils.h"
-
 
 CPlayer::CPlayer() noexcept
 {

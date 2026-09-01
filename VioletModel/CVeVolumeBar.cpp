@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CVeVolumeBar.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 LRESULT CVeVolumeBar::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {

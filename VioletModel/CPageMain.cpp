@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CPageMain.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 LRESULT CPageMain::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {

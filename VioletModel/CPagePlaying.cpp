@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CPagePlaying.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 void CPagePlaying::UpdateBlurredCover() noexcept
 {
@@ -273,7 +273,7 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         OnColorSchemeChanged();
 
         ComPtr<IDWriteTextFormat> pTfLrc;
-        auto& FontFactory = App->GetFontFactory();;
+        auto& FontFactory = App->FontFactory();;
         FontFactory.NewFont(pTfLrc.SelfClear(),
             eck::Alignment::Near, eck::Alignment::Near, 25, 700);
         m_Lyric.SetTextFormat(pTfLrc.Get());

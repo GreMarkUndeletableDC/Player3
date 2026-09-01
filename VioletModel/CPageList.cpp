@@ -1,7 +1,6 @@
 ﻿#include "pch.h"
 #include "CPageList.h"
-#include "Utils.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 constexpr std::wstring_view ColumnName[]
 {
@@ -409,7 +408,7 @@ void CPageList::InitializeUi() noexcept
 
     {
         ComPtr<IDWriteTextFormat> pTextFormat;
-        App->GetFontFactory().NewFont(pTextFormat.Self(), eck::Alignment::Center,
+        App->FontFactory().NewFont(pTextFormat.Self(), eck::Alignment::Center,
             eck::Alignment::Center, (float)NormalFontSize, 400);
         pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
@@ -458,7 +457,7 @@ void CPageList::InitializeUi() noexcept
                 .uFlags = eck::LF_FIX_HEIGHT
             });
 
-        App->GetFontFactory().NewFont(pTextFormat.SelfClear(), eck::Alignment::Near,
+        App->FontFactory().NewFont(pTextFormat.SelfClear(), eck::Alignment::Near,
             eck::Alignment::Center, (float)NormalFontSize, 400, TRUE);
         pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 

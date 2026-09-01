@@ -1,10 +1,19 @@
 ﻿#include "pch.h"
-#include "Utils.h"
+#include "CApplication.h"
+
+CApplication* App{};
+
+CApplication::CApplication() noexcept
+{
+    m_ptcUiThread = eck::PtcCurrent();
+    EckAssert(m_ptcUiThread);
+    m_ListManager.LoadList((eck::GetRunningPath() + L"\\List").ToStringView());
+}
 
 Tag::Result ReadMetadata(
     _In_z_ PCWSTR pszFile,
-    Tag::SimpleData& mi,
-    const Tag::SIMPLE_OPT& Opt)
+    _Inout_ Tag::SimpleData& mi,
+    const Tag::SIMPLE_OPT& Opt) noexcept
 {
     Tag::CMediaFile mf{ pszFile };
     if (!mf.IsValid())

@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CVeDesktopLyric.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 
 LRESULT CVeDesktopLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept

@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CImageManager.h"
-#include "CApp.h"
+#include "CApplication.h"
 
 constexpr std::string_view AtlasSubImageFile[]
 {
@@ -210,7 +210,7 @@ HRESULT CImageManager::InternalCoverUpdate(IWICBitmapSource* pBitmap) noexcept
     eck::UniquePtr<eck::DelVA<UINT>> pBuffer{
         (UINT*)eck::VAllocate(CoverWidth * CoverHeight * sizeof(UINT)) };
 
-    const WICRect rcCopy{ 0, 0, (UINT)rc.cx, (UINT)rc.cy };
+    const WICRect rcCopy{ 0, 0, rc.cx, rc.cy };
     hr = pBitmap->CopyPixels(
         &rcCopy,
         CoverWidth * sizeof(UINT),

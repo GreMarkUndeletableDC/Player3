@@ -22,8 +22,6 @@ LRESULT CVeCover::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             D2D1_INTERPOLATION_MODE_LINEAR,
             m_BitmapCover.GetSourceRect());
 
-        GetDC()->DrawRectangle(rc, GetWindow().CcSetBrushColor(D2D1::ColorF{ D2D1::ColorF::Red }), 1.f);
-
         DbgDrawFrame();
         EndPaint(ps);
     }
