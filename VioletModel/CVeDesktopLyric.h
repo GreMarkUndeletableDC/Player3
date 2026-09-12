@@ -31,7 +31,7 @@ public:
 
     void TlTick(int iMs) noexcept override;
     BOOL TlIsValid() noexcept override { return FALSE; }
-    int TlGetCurrentInterval() noexcept override { return m_msLastInterval; }
+    int TlGetCurrentInterval() const noexcept override { return m_msLastInterval; }
 
     HRESULT LrcSetCurrentLine(int idx) noexcept;
     void LrcSetEmptyText(std::wstring_view svEmptyText) noexcept;

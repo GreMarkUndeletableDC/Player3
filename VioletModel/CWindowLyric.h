@@ -27,5 +27,5 @@ public:
 
     void TlTick(int iMs) noexcept override;
     BOOL TlIsValid() noexcept override { return m_bAnFade; }
-    int TlGetCurrentInterval() noexcept override { return 0; }
+    int TlGetCurrentInterval() const noexcept override { return 0; }
 };

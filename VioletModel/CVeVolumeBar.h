@@ -29,5 +29,5 @@ public:
 
     void TlTick(int ms) noexcept override;
     BOOL TlIsValid() noexcept override { return m_bAnimating; }
-    int TlGetCurrentInterval() noexcept override { return m_msLastInterval; }
+    int TlGetCurrentInterval() const noexcept override { return m_msLastInterval; }
 };

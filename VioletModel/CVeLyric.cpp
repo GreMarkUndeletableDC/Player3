@@ -23,7 +23,7 @@ void CVeLyric::ScrAnimationCallback(const Dui::IScrollController::SCC_CALLBACK_D
         return;
 
     const auto fMaxScale = GetTheme()->GetMetric(IdMeMaximumScale, DefaultMaximumScale);
-    auto& sv = m_SB.GetScrollView();// HACK TlGetCurrentInterval改为const
+    const auto& sv = m_SB.GetScrollView();
     if (m_bEnlarging)
     {
         m_fAnValue = eck::Easing::OutCubic(

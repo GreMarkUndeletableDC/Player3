@@ -165,7 +165,7 @@ public:
 
     void TlTick(int iMs) noexcept override;
     BOOL TlIsValid() noexcept override { return m_bAnSelBkg || m_bItemAnDelay; }
-    int TlGetCurrentInterval() noexcept override { return m_msLastInterval; }
+    int TlGetCurrentInterval() const noexcept override { return m_msLastInterval; }
 
     EckInlineNdCe BOOL IsEmpty() const noexcept { return m_vItem.empty(); }
 
