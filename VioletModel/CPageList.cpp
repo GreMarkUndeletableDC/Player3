@@ -247,7 +247,7 @@ HRESULT CPageList::IlUploadDefaultCover(eck::CD2DImageList* pImageList) noexcept
 
     hr = eck::WicScaleBitmap(
         pScaler.Self(),
-        GetAtlas()->CoverGetDefaultWicBitmap().Get(),
+        GetImageManager()->CoverGetDefaultWicBitmap().Get(),
         m_cxIlPixel, m_cyIlPixel,
         WICBitmapInterpolationModeFant);
     if (FAILED(hr))
@@ -415,7 +415,7 @@ void CPageList::InitializeUi() noexcept
         m_BTAddFile.Create(L"添加文件", Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
             0, 0, ButtonPadding, EditHeight, this);
         m_BTAddFile.SetTextFormat(pTextFormat.Get());
-        m_BTAddFile.SetIcon(GetAtlas()->AtlasGetD2D(AppImage::Plus));
+        m_BTAddFile.SetIcon(GetImageManager()->AtlasGetD2D(AppImage::Plus));
         m_LytTopBar.LobAddObject(
             {
                 .pObject = &m_BTAddFile,
@@ -425,7 +425,7 @@ void CPageList::InitializeUi() noexcept
         m_BTLocate.Create(L"定位当前", Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
             0, 0, ButtonPadding, EditHeight, this);
         m_BTLocate.SetTextFormat(pTextFormat.Get());
-        m_BTLocate.SetIcon(GetAtlas()->AtlasGetD2D(AppImage::Locate));
+        m_BTLocate.SetIcon(GetImageManager()->AtlasGetD2D(AppImage::Locate));
         m_LytTopBar.LobAddObject(
             {
                 .pObject = &m_BTLocate,

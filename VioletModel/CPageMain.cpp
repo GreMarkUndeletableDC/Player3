@@ -25,7 +25,7 @@ LRESULT CPageMain::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
         m_BTOpenFile.Create(L"打开文件", Dui::DES_VISIBLE, 0,
             0, 0, 140, 40, this);
-        m_BTOpenFile.SetIcon(GetAtlas()->AtlasGetD2D(AppImage::File));
+        m_BTOpenFile.SetIcon(GetImageManager()->AtlasGetD2D(AppImage::File));
         m_Lyt.LobAddObject(
             {
                 .pObject = &m_BTOpenFile,
@@ -35,7 +35,7 @@ LRESULT CPageMain::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
         m_BTOpenFolder.Create(L"打开文件夹", Dui::DES_VISIBLE, 0,
             0, 0, 140, 40, this);
-        m_BTOpenFolder.SetIcon(GetAtlas()->AtlasGetD2D(AppImage::Folder));
+        m_BTOpenFolder.SetIcon(GetImageManager()->AtlasGetD2D(AppImage::Folder));
         m_Lyt.LobAddObject(
             {
                 .pObject = &m_BTOpenFolder,

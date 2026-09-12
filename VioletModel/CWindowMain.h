@@ -99,7 +99,7 @@ private:
     ComPtr<ITaskbarList4> m_pTaskbarList{};
     CWindowGhost m_WndTbGhost{};
 
-    RefPtr<CImageManager> m_pAtlas{ RefPtr<CImageManager>::Make() };
+    RefPtr<CImageManager> m_pImageManager{ RefPtr<CImageManager>::Make() };
 
 #if VIOLET_WINRT
     WinMedia::SystemMediaTransportControls m_Smtc{ nullptr };

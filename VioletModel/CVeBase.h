@@ -8,7 +8,7 @@ public:
     const static inline UINT IdCrVolumeBarBorder = Dui::TmNextResourceId();
     const static inline UINT IdCrPalyPageMask = Dui::TmNextResourceId();
 private:
-    RefPtr<CImageManager> m_pAtlas{};
+    RefPtr<CImageManager> m_pImageManager{};
 public:
     static RcPtr<Dui::CTheme> TmMakeDefaultTheme(BOOL bDark) noexcept;
     static RcPtr<Dui::CColorCollection> TmMakeDefaultColorCollection(BOOL bDark) noexcept;
@@ -20,6 +20,6 @@ public:
 
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 
-    EckInline void SetAtlas(RefPtr<CImageManager> p) noexcept { m_pAtlas = std::move(p); }
-    EckInlineNdCe auto& GetAtlas() const noexcept { return m_pAtlas; }
+    EckInline void SetImageManager(RefPtr<CImageManager> p) noexcept { m_pImageManager = std::move(p); }
+    EckInlineNdCe auto& GetImageManager() const noexcept { return m_pImageManager; }
 };

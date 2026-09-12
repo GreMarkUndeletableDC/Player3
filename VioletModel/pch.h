@@ -1,6 +1,5 @@
 ﻿#pragma once
 #define _CRTDBG_MAP_ALLOC       1
-#define ECK_OPT_NO_PUGIXML      1
 
 #ifndef VIOLET_WINRT
 #define VIOLET_WINRT            0

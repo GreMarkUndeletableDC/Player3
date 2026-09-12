@@ -16,7 +16,7 @@ HRESULT CWindowMain::TblScaleButtonImage(
     HRESULT hr;
 
     ComPtr<IWICBitmapSource> pBitmap;
-    hr = m_pAtlas->AtlasCropWicBitmap(eImage, pBitmap);
+    hr = m_pImageManager->AtlasCropWicBitmap(eImage, pBitmap);
     if (FAILED(hr))
         return hr;
 
@@ -36,9 +36,11 @@ HRESULT CWindowMain::TblScaleButtonImage(
 
 HRESULT CWindowMain::TblCreateGhostWindow(PCWSTR pszText) noexcept
 {
-    m_WndTbGhost.Initialize(this, m_pAtlas);
-    m_WndTbGhost.Create(pszText, WS_OVERLAPPEDWINDOW,
-        WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+    m_WndTbGhost.Initialize(this, m_pImageManager);
+    m_WndTbGhost.Create(
+        pszText,
+        WS_OVERLAPPEDWINDOW,
+        WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_NOREDIRECTIONBITMAP,
         -32000, -32000, 0, 0, nullptr, nullptr);
     return S_OK;
 }
@@ -72,23 +74,23 @@ HRESULT CWindowMain::TblSetup() noexcept
     tb[0].dwMask = dwMask;
     tb[0].hIcon = hiPrev;
     tb[0].iId = IDTBB_PREV;
-    eck::TcsCopyLength(tb[0].szTip, EckArgArray(L"上一曲"));
+    EckCopyConstStringW(tb[0].szTip, L"上一曲");
 
     tb[1].dwMask = dwMask;
     tb[1].hIcon = m_hiTbPlay;
     tb[1].iId = IDTBB_PLAY;
-    eck::TcsCopyLength(tb[1].szTip, EckArgArray(L"播放"));
+    EckCopyConstStringW(tb[1].szTip, L"播放");
 
     tb[2].dwMask = dwMask;
     tb[2].hIcon = hiNext;
     tb[2].iId = IDTBB_NEXT;
-    eck::TcsCopyLength(tb[2].szTip, EckArgArray(L"下一曲"));
+    EckCopyConstStringW(tb[2].szTip, L"下一曲");
 
     const auto hr = m_pTaskbarList->ThumbBarAddButtons(
         m_WndTbGhost.Handle, ARRAYSIZE(tb), tb);
     DestroyIcon(hiNext);
     DestroyIcon(hiPrev);
-    return S_OK;
+    return hr;
 }
 
 HRESULT CWindowMain::TblUpdateToolBarIcon() noexcept
@@ -181,9 +183,9 @@ HRESULT CWindowMain::TblUpdateState() noexcept
     tb.iId = IDTBB_PLAY;
     tb.hIcon = bPauseIcon ? m_hiTbPause : m_hiTbPlay;
     if (bPauseIcon)
-        eck::TcsCopyLength(tb.szTip, EckArgArray(L"暂停"));
+        EckCopyConstStringW(tb.szTip, L"暂停");
     else
-        eck::TcsCopyLength(tb.szTip, EckArgArray(L"播放"));
+        EckCopyConstStringW(tb.szTip, L"播放");
     return m_pTaskbarList->ThumbBarUpdateButtons(m_WndTbGhost.Handle, 1, &tb);
 }
 
@@ -254,7 +256,7 @@ HRESULT CWindowMain::SmtcInitialize() noexcept
             const WinMedia::SystemMediaTransportControlsButtonPressedEventArgs& Args)
         {
             const auto eBtn = Args.Button();
-            m_ptcUiThread->Callback.EnQueueCallback([eBtn, this]
+            App->UiThreadContext()->Callback.EnQueueCallback([eBtn, this]
                 {
                     switch (eBtn)
                     {
@@ -308,10 +310,9 @@ eck::CoroTask<> CWindowMain::SmtcpCoroUpdateDisplay() noexcept
         using namespace winrt::Windows::Storage;
         using namespace winrt::Windows::Storage::Streams;
         auto Stream = u.Thumbnail();
-        if (pCover->bLink)
+        if (pCover->IsLink())
         {
-            auto Task{ StorageFile::GetFileFromPathAsync(
-                std::get<eck::CStringW>(pCover->varPic).Data()) };
+            auto Task{ StorageFile::GetFileFromPathAsync(pCover->GetPath().Data()) };
             Token.GetPromise().SetCanceller([](void* p)
                 {
                     ((decltype(Task)*)p)->Cancel();
@@ -324,8 +325,7 @@ eck::CoroTask<> CWindowMain::SmtcpCoroUpdateDisplay() noexcept
         {
             InMemoryRandomAccessStream InMemStream;
             DataWriter w{ InMemStream };
-            const auto& rb = std::get<eck::CRefBin>(pCover->varPic);
-            w.WriteBytes(winrt::array_view<const uint8_t>{ rb.Data(), (uint32_t)rb.Size() });
+            w.WriteBytes(pCover->GetData().ToSpan());
             auto Task{ w.StoreAsync() };
             Token.GetPromise().SetCanceller([](void* p)
                 {
@@ -348,7 +348,7 @@ HRESULT CWindowMain::SmtcUpdateDisplay() noexcept
         !m_TskSmtcUpdateDisplay.IsCompleted())
     {
         m_TskSmtcUpdateDisplay.TryCancel();
-        m_TskSmtcUpdateDisplay.SyncWait();
+        m_TskSmtcUpdateDisplay.Wait();
     }
     m_TskSmtcUpdateDisplay = SmtcpCoroUpdateDisplay();
     return S_OK;

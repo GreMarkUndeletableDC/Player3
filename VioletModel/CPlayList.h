@@ -31,7 +31,6 @@ private:
     BOOLEAN m_bSort{};
     BOOLEAN m_bLazyInit{};
     PlType m_eType{};
-
 public:
     static RefPtr<CPlayList> New() noexcept { return RefPtr<CPlayList>::Make(); }
 

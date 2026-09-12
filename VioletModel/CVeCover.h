@@ -8,5 +8,5 @@ private:
 public:
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 
-    void SetBitmap(const Dui::CBitmap& Bitmap) noexcept { m_BitmapCover = Bitmap; }
+    void SetBitmap(Dui::CBitmap Bitmap) noexcept { m_BitmapCover = std::move(Bitmap); }
 };

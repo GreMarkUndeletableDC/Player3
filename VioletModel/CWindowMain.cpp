@@ -29,17 +29,17 @@ EckInlineNdCe AppImage AutoNextModeToAppImage(AutoNextMode eMode) noexcept
     case AutoNextMode::SingleLoop: return AppImage::CircleOne;
     case AutoNextMode::Single:     return AppImage::ArrowRight1;
     }
-    ECK_UNREACHABLE;
+    return AppImage::Circle;
 }
 
 BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
 {
-    m_pAtlas->PrepareRealization(RdGetDC());
-    m_pAtlas->AtlasInitialize();
-    m_pAtlas->AtlasRealize();
-    m_pAtlas->CoverInitialize();
-    m_pAtlas->CoverRealize();
-    m_pAtlas->SingleInitialize();
+    m_pImageManager->PrepareRealization(RdGetDC());
+    m_pImageManager->AtlasInitialize();
+    m_pImageManager->AtlasRealize();
+    m_pImageManager->CoverInitialize();
+    m_pImageManager->CoverRealize();
+    m_pImageManager->SingleInitialize();
 
     GetUiHookEventChain().Connect(
         [this](Dui::CElement* pEle, const Dui::UIHOOK_EVENT* puhe, eck::Slot&) noexcept -> LRESULT
@@ -50,7 +50,7 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
             {
                 const auto p = dynamic_cast<CVeBase*>(pEle);
                 if (p)
-                    p->SetAtlas(m_pAtlas);
+                    p->SetImageManager(m_pImageManager);
             }
             break;
             case Dui::UIHE_CREATE:
@@ -258,9 +258,9 @@ void CWindowMain::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     break;
     case PlayEvent::Play:
     {
-        m_pAtlas->CoverUpdate(App->Player().GetCover().Get());
+        m_pImageManager->CoverUpdate(App->Player().GetCover().Get());
         m_PagePlaying.UpdateBlurredCover();
-        m_CompPlayPageAn.SetOverlayBitmap(m_pAtlas->CoverGetD2D());
+        m_CompPlayPageAn.SetOverlayBitmap(m_pImageManager->CoverGetD2D());
 
         m_msProgTimer = 0;
         SmtcUpdateTimeLineRange();
@@ -280,7 +280,7 @@ void CWindowMain::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     case PlayEvent::Resume:
     {
         SetTimer(Handle, IDT_COMM_TICK, TE_COMM_TICK, nullptr);
-        m_BTPlay.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Pause));
+        m_BTPlay.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Pause));
         m_BTPlay.Invalidate();
         TblUpdateState();
         SmtcUpdateState();
@@ -296,7 +296,7 @@ void CWindowMain::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     case PlayEvent::Pause:
     {
         KillTimer(Handle, IDT_COMM_TICK);
-        m_BTPlay.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Triangle));
+        m_BTPlay.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Triangle));
         m_BTPlay.Invalidate();
         TblUpdateState();
         SmtcUpdateState();
@@ -464,7 +464,7 @@ LRESULT CWindowMain::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) no
         else if (pEle == &m_BTAutoNext)
         {
             const auto r = App->Player().NextAutoNextMode();
-            m_BTAutoNext.SetIcon(m_pAtlas->AtlasGetD2D(AutoNextModeToAppImage(r)));
+            m_BTAutoNext.SetIcon(m_pImageManager->AtlasGetD2D(AutoNextModeToAppImage(r)));
             m_BTAutoNext.Invalidate();
         }
         else if (pEle == &m_BTVol)
@@ -627,16 +627,16 @@ void CWindowMain::PpaTick(int ms) noexcept
     D2D1_POINT_2F pt[4];
     const D2D1_POINT_2F ptMini[]
     {
-        { m_rcPPMini.left, m_rcPPMini.top },
-        { m_rcPPMini.right, m_rcPPMini.top },
-        { m_rcPPMini.left, m_rcPPMini.bottom },
+        { m_rcPPMini.left,  m_rcPPMini.top    },
+        { m_rcPPMini.right, m_rcPPMini.top    },
+        { m_rcPPMini.left,  m_rcPPMini.bottom },
         { m_rcPPMini.right, m_rcPPMini.bottom },
     };
     const D2D1_POINT_2F ptLarge[]
     {
-        { m_rcPPLarge.left, m_rcPPLarge.top },
-        { m_rcPPLarge.right, m_rcPPLarge.top },
-        { m_rcPPLarge.left, m_rcPPLarge.bottom },
+        { m_rcPPLarge.left,  m_rcPPLarge.top    },
+        { m_rcPPLarge.right, m_rcPPLarge.top    },
+        { m_rcPPLarge.left,  m_rcPPLarge.bottom },
         { m_rcPPLarge.right, m_rcPPLarge.bottom },
     };
     const auto pDur = m_bPPAnReverse ? DurationR : Duration;
@@ -644,8 +644,11 @@ void CWindowMain::PpaTick(int ms) noexcept
     EckCounter(4, i)
     {
         m_bPPCornerAnActive[i] = m_PPCornerAn[i].Tick((float)ms, pDur[i]);
-        eck::CalculatePointFromLineScale(ptMini[i].x, ptMini[i].y,
-            ptLarge[i].x, ptLarge[i].y, m_PPCornerAn[i].K, pt[i].x, pt[i].y);
+        eck::CalculatePointFromLineScale(
+            ptMini[i].x, ptMini[i].y,
+            ptLarge[i].x, ptLarge[i].y,
+            m_PPCornerAn[i].K,
+            pt[i].x, pt[i].y);
         if (m_bPPAnReverse)
         {
             if (fabs(ptLarge[i].x - pt[i].x) > MinimumDistance ||
@@ -708,11 +711,11 @@ void CWindowMain::LayoutPlayPanel() noexcept
 
 void CWindowMain::OnColorSchemeChanged() noexcept
 {
-    m_BTPrev.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Previous));
-    m_BTPlay.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Triangle));
-    m_BTNext.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Next));
-    m_BTAutoNext.SetIcon(m_pAtlas->AtlasGetD2D(
+    m_BTPrev.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Previous));
+    m_BTPlay.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Triangle));
+    m_BTNext.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Next));
+    m_BTAutoNext.SetIcon(m_pImageManager->AtlasGetD2D(
         AutoNextModeToAppImage(App->Player().GetAutoNextMode())));
-    m_BTLrc.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Lyric));
-    m_BTVol.SetIcon(m_pAtlas->AtlasGetD2D(AppImage::Speaker));
+    m_BTLrc.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Lyric));
+    m_BTVol.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Speaker));
 }

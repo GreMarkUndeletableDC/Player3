@@ -20,7 +20,7 @@ void CTabPanel::LcaSet(const LvIndex& idx, int idxCol,
 
 void CTabPanel::OnColorSchemeChanged() noexcept
 {
-    m_LAIcon.SetBitmap(GetAtlas()->AtlasGetD2D(AppImage::WindowLogo));
+    m_LAIcon.SetBitmap(GetImageManager()->AtlasGetD2D(AppImage::WindowLogo));
 }
 
 LRESULT CTabPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept

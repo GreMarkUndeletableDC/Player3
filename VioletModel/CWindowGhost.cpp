@@ -9,7 +9,7 @@ LRESULT CWindowGhost::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcep
     {
     case WM_CREATE:
     {
-        constexpr BOOL b = TRUE;
+        constexpr BOOL b{ TRUE };
         DwmSetWindowAttribute(Handle, DWMWA_HAS_ICONIC_BITMAP, &b, sizeof(b));
         DwmSetWindowAttribute(Handle, DWMWA_FORCE_ICONIC_REPRESENTATION, &b, sizeof(b));
 
@@ -23,17 +23,14 @@ LRESULT CWindowGhost::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcep
     {
         if (!m_hbmLivePreviewCache)
         {
-            BITMAPINFO bi{};
-            bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-            bi.bmiHeader.biWidth = bi.bmiHeader.biHeight = 1;
-            bi.bmiHeader.biPlanes = 1;
-            bi.bmiHeader.biBitCount = 32;
-            bi.bmiHeader.biCompression = BI_RGB;
-            DWORD* pdwBits;
-            // TODO: 不使用DIB
-            m_hbmLivePreviewCache = CreateDIBSection(nullptr,
-                &bi, DIB_RGB_COLORS, (void**)&pdwBits, nullptr, 0);
-            *pdwBits = 0x01000000;// 透明度为0将显示为完全不透明
+            // NOTE 260912
+            // 1. DwmSetIconicLivePreviewBitmap对传入句柄作GetObject验证，只接受DIB
+            // 2. dwmapi!CopyBitmapHelper将alpha全零位图判定为完全不透明
+            UINT* pBits{};
+            m_hbmLivePreviewCache =
+                eck::GdiCreate32bppDibSection(1, 1, (void**)&pBits);
+            if (pBits)
+                *pBits = 0x01000000;
         }
         DwmSetIconicLivePreviewBitmap(Handle, m_hbmLivePreviewCache, nullptr, 0);
     }
@@ -99,12 +96,12 @@ HRESULT CWindowGhost::SetIconicThumbnail(UINT cxMax, UINT cyMax) noexcept
 
     if (m_hbmThumbnailCache)
     {
-        BITMAP bmp;
-        GetObjectW(m_hbmThumbnailCache, sizeof(bmp), &bmp);
-        if (bmp.bmWidth <= (int)cxMax && bmp.bmHeight <= (int)cyMax)
+        BITMAP Bitmap;
+        if (GetObjectW(m_hbmThumbnailCache, sizeof(Bitmap), &Bitmap) &&
+            Bitmap.bmWidth <= (int)cxMax &&
+            Bitmap.bmHeight <= (int)cyMax)
             return DwmSetIconicThumbnail(Handle, m_hbmThumbnailCache, 0);
-        else
-            InvalidateThumbnailCache();
+        InvalidateThumbnailCache();
     }
 
     auto pCover = App->Player().GetCover();
@@ -124,13 +121,17 @@ HRESULT CWindowGhost::SetIconicThumbnail(UINT cxMax, UINT cyMax) noexcept
     }
 
     ComPtr<IWICBitmapScaler> pScaler;
-    if (FAILED(hr = eck::g_pWicFactory->CreateBitmapScaler(&pScaler)))
-        return hr;
-    hr = pScaler->Initialize(pCover.Get(), cx, cy, WICBitmapInterpolationModeFant);
+    hr = eck::WicScaleBitmap(
+        pScaler.Self(),
+        pCover.Get(),
+        cx, cy,
+        WICBitmapInterpolationModeFant);
     if (FAILED(hr))
         return hr;
+
     hr = eck::WicCreateDibSection(m_hbmThumbnailCache, pScaler.Get());
     if (FAILED(hr))
         return hr;
+
     return DwmSetIconicThumbnail(Handle, m_hbmThumbnailCache, 0);
 }

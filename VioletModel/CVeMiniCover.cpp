@@ -18,7 +18,7 @@ LRESULT CVeMiniCover::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         BeginPaint(ps, wParam, lParam);
         float k;
 
-        const auto& Cover = GetAtlas()->CoverGetD2D();
+        const auto& Cover = GetImageManager()->CoverGetD2D();
         if (Cover.Get())
             if (m_bAnActive)
             {
@@ -41,7 +41,7 @@ LRESULT CVeMiniCover::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
                     (CoverAnimationEndValue - k) * 4.f/*箭头的行程因子*/;
                 rcView.bottom = rcView.top + (float)PlayPageArrowSize;
 
-                const auto& Icon = GetAtlas()->AtlasGetD2D(AppImage::PlayPageUp);
+                const auto& Icon = GetImageManager()->AtlasGetD2D(AppImage::PlayPageUp);
                 GetDC()->DrawBitmap(Icon.Get(), rcView, k / CoverAnimationEndValue,
                     D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, Icon.GetSourceRect());
             }
