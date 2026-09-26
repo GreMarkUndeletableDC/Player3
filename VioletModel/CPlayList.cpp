@@ -50,7 +50,8 @@ int CPlayList::FlInsertEmpty(int idx) noexcept
 
 void CPlayList::FlDoSearch(std::wstring_view svKeyWord) noexcept
 {
-    m_vSearchResult.Clear();
+    m_bSearching = TRUE;
+    m_vSearch.Clear();
     if (svKeyWord.empty())
         return;
     for (int i{}; const auto& e : m_vFlat)
@@ -58,9 +59,15 @@ void CPlayList::FlDoSearch(std::wstring_view svKeyWord) noexcept
         if (e.rsName.FindI(svKeyWord) >= 0 ||
             e.rsArtist.FindI(svKeyWord) >= 0 ||
             e.rsAlbum.FindI(svKeyWord) >= 0)
-            m_vSearchResult.PushBack(i);
+            m_vSearch.PushBack(i);
         ++i;
     }
+}
+
+void CPlayList::FlExitSearch() noexcept
+{
+    m_bSearching = FALSE;
+    m_vSearch.Clear();
 }
 
 void CPlayList::FlShuffleRandom() noexcept

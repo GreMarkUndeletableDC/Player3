@@ -160,7 +160,7 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
             for (auto& pTl : Ui.pTextLayout)
                 pTl.Clear();// TODO: 选择性无效化
         }
-        m_GLList.GetController().InvalidateItem({ .Item = vItem[i] });
+        m_LVList.GetController().InvalidateItem({ .Item = vItem[i] });
     }
     GetWindow().RdUnlockUpdate();
 }
@@ -168,14 +168,14 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
 void CPageList::PlBeginLoadMetadata(int idxList) noexcept
 {
     if (idxList < 0)
-        idxList = m_TBLPlayList.GetController().ItmGetSelected();
+        idxList = m_LVPlayList.GetController().ItmGetSelected();
     if (idxList < 0)
         return;
 
     auto pList = App->ListManager().At(idxList).pList;
     eck::CTrivialBuffer<int> vItem{};
 
-    //m_GLList.GetController().ForEachItem(
+    //m_LVList.GetController().ForEachItem(
     //    [&](const Dui::CListView::TController::FOR_ITEM& e)
     //    {
     //        auto& Meta = pList->FlAt(e.idx.Item);
@@ -186,10 +186,12 @@ void CPageList::PlBeginLoadMetadata(int idxList) noexcept
     //                vItem.PushBack(e.idx.Item);
     //    },
     //    [](const Dui::CListView::TController::FOR_GROUP& e) {},
-    //    m_GLList.GetViewRect(),
+    //    m_LVList.GetViewRect(),
     //    FALSE);
 
-    EckCounter(pList->FlGetCount(), i)
+    const auto cItem = pList->FlIsSearching() ?
+        pList->FlGetSearchResultCount() : pList->FlGetCount();
+    EckCounter(cItem, i)
     {
         auto& Meta = pList->FlAt(i);
         if (!Meta.s.bUpdated || m_ItemAdapter[i].idxImage < 0)
@@ -208,11 +210,11 @@ void CPageList::PlBeginLoadMetadata(int idxList) noexcept
 
 const RefPtr<CPlayList>& CPageList::PlCurrent() const noexcept
 {
-    const auto idx = m_TBLPlayList.GetController().ItmGetSelected();
+    const auto idx = m_LVPlayList.GetController().ItmGetSelected();
     return App->ListManager().At(idx).pList;
 }
 
-int CPageList::PlSearchEditContent(CPlayList* pList) noexcept
+int CPageList::PlSearchEditContent(const RefPtr<CPlayList>& pList) noexcept
 {
     GETTEXTLENGTHEX gtl{};
     gtl.codepage = eck::CP_UTF16LE;
@@ -230,12 +232,14 @@ int CPageList::PlSearchEditContent(CPlayList* pList) noexcept
         m_EDSearchItem.GetTextEx(&gte, rsFilter.Data());
 
         pList->FlDoSearch(rsFilter.ToStringView());
+        m_ItemAdapter.InvalidateTextLayout();
         return pList->FlGetSearchResultCount();
     }
     else
     {
         m_bSearchItemEditEmpty = TRUE;
         pList->FlExitSearch();
+        m_ItemAdapter.InvalidateTextLayout();
         return pList->FlGetCount();
     }
 }
@@ -300,13 +304,13 @@ void CPageList::IlUpdateTilePixelSize() noexcept
 HRESULT CPageList::IlDpiChanged() noexcept
 {
     IlUpdateTilePixelSize();
-    const auto idx = m_TBLPlayList.GetController().ItmGetSelected();
+    const auto idx = m_LVPlayList.GetController().ItmGetSelected();
     if (idx < 0)
         return S_FALSE;
     m_FileAdapter[idx].pImageList = IlCreate();
     m_ItemAdapter.InvalidateImage();
-    m_GLList.SetImageList(m_FileAdapter[idx].pImageList);
-    m_GLList.Invalidate();// TODO: 仅无效化图标
+    m_LVList.SetImageList(m_FileAdapter[idx].pImageList);
+    m_LVList.Invalidate();// TODO: 仅无效化图标
     PlBeginLoadMetadata();
     return S_OK;
 }
@@ -359,16 +363,16 @@ HRESULT CPageList::OnMenuAddFile(CPlayList* pList, int idxInsert) noexcept
 
 void CPageList::OnListSwitch() noexcept
 {
-    const auto idx = m_TBLPlayList.GetController().ItmGetSelected();
+    const auto idx = m_LVPlayList.GetController().ItmGetSelected();
     if (idx < 0)
         return;
     auto& e = m_FileAdapter[idx];
     if (!e.pImageList)
         e.pImageList = IlCreate();
     m_ItemAdapter.SetList(App->ListManager().AtList(idx));
-    m_GLList.SetImageList(e.pImageList);
-    m_GLList.ReCalculateItem();
-    m_GLList.Invalidate();
+    m_LVList.SetImageList(e.pImageList);
+    m_LVList.ReCalculateItem();
+    m_LVList.Invalidate();
 }
 
 void CPageList::InitializeUi() noexcept
@@ -384,16 +388,16 @@ void CPageList::InitializeUi() noexcept
                 .uFlags = eck::LF_FIX_HEIGHT
             });
 
-        m_TBLPlayList.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
+        m_LVPlayList.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
             0, 0, ListFileListWidth, 0, this);
-        auto& Controller = m_TBLPlayList.GetController();
+        auto& Controller = m_LVPlayList.GetController();
         Controller.MtSetBottomExtra(PlayPanelHeight);
         Controller.SetClearSelectionInSpace(FALSE);
-        m_TBLPlayList.SetAdapter(&m_FileAdapter);
-        m_TBLPlayList.ReCalculateItem();
+        m_LVPlayList.SetAdapter(&m_FileAdapter);
+        m_LVPlayList.ReCalculateItem();
         m_LytPlayList.LobAddObject(
             {
-                .pObject = &m_TBLPlayList,
+                .pObject = &m_LVPlayList,
                 .uWeight = 1,
             });
 
@@ -461,26 +465,26 @@ void CPageList::InitializeUi() noexcept
             eck::Alignment::Center, (float)NormalFontSize, 400, TRUE);
         pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
-        m_GLList.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
+        m_LVList.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
             0, 0, 0, 0, this);
-        m_GLList.SetTextFormat(pTextFormat.Get());
-        m_GLList.SetAdapter(&m_ItemAdapter);
+        m_LVList.SetTextFormat(pTextFormat.Get());
+        m_LVList.SetAdapter(&m_ItemAdapter);
 
-        auto& Controller = m_GLList.GetController();
+        auto& Controller = m_LVList.GetController();
         Controller.SetView(Dui::CListView::View::List);
         Controller.MtSetItemHeight(ListItemHeight);
         Controller.MtSetBottomExtra(PlayPanelHeight);
         Controller.SetSelectionType(Dui::CListView::Selection::Multiple);
-        m_GLList.HdrEnable(TRUE);
+        m_LVList.HdrEnable(TRUE);
 
-        auto& Header = m_GLList.GetHeader();
+        auto& Header = m_LVList.GetHeader();
         EckCounter(ARRAYSIZE(ColumnName), i)
             Header.InsertItem((UINT)i, ColumnName[i], ColumnWidth[i]);
         Header.SetTextFormat(pTextFormat.Get());
 
         m_LytList.LobAddObject(
             {
-                .pObject = &m_GLList,
+                .pObject = &m_LVList,
                 .uFlags = eck::LF_FILL,
                 .uWeight = 1,
             });
@@ -492,7 +496,7 @@ void CPageList::InitializeUi() noexcept
             .uWeight = 1,
         });
 
-    m_GLList.GetEventChain().Connect(
+    m_LVList.GetEventChain().Connect(
         [&](UINT uMsg, WPARAM wParam, LPARAM lParam, eck::Slot&)
         {
             switch (uMsg)
@@ -501,7 +505,7 @@ void CPageList::InitializeUi() noexcept
             {
                 const auto pt = EagPoint(lParam);
                 Dui::CListView::TController::HT_INFO ht{ pt.x, pt.y };
-                const auto idx = m_GLList.GetController().HitTest(ht);
+                const auto idx = m_LVList.GetController().HitTest(ht);
                 if (idx.Item < 0)
                     break;
                 const auto pList = PlCurrent();
@@ -520,7 +524,7 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
     case WM_NOTIFY:
     {
-        if (wParam == (WPARAM)&m_TBLPlayList)
+        if (wParam == (WPARAM)&m_LVPlayList)
             switch (((Dui::ELENMHDR*)lParam)->uNotify)
             {
                 //case Dui::TBLE_SELCHANGED:
@@ -531,21 +535,21 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
                 //    IlReCreate(p->idx, FALSE);
                 //    const auto& e = App->ListManager().At(p->idx);
                 //    e.pList->LtmEnsureLoaded();
-                //    m_GLList.InvalidateCache();
-                //    m_GLList.SetImageList(e.pImageList.Get());
+                //    m_LVList.InvalidateCache();
+                //    m_LVList.SetImageList(e.pImageList.Get());
                 //    int cItem = e.pList->FlGetCount();
                 //    if (m_bSearchItemEditEmpty)
                 //        e.pList->FlExitSearch();
                 //    else
                 //        cItem = PlSearchEditContent(e.pList.get());
-                //    m_GLList.SetItemCount(cItem);
-                //    m_GLList.ReCalc();
-                //    m_GLList.Invalidate();
+                //    m_LVList.SetItemCount(cItem);
+                //    m_LVList.ReCalc();
+                //    m_LVList.Invalidate();
                 //    PlCheckVisibleItemMetadata(p->idx);
                 //}
                 return 0;
             }
-        else if (wParam == (WPARAM)&m_GLList)
+        else if (wParam == (WPARAM)&m_LVList)
             switch (((Dui::ELENMHDR*)lParam)->uNotify)
             {
                 //case Dui::LTE_SCROLLED:
@@ -571,8 +575,8 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
                 if (!pList)
                     break;
                 OnMenuAddFile(pList.Get(), -1);
-                m_GLList.ReCalculateItem();
-                m_GLList.Invalidate();
+                m_LVList.ReCalculateItem();
+                m_LVList.Invalidate();
                 PlBeginLoadMetadata();
             }
             return 0;
@@ -585,7 +589,7 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
                 const auto& pList = PlCurrent();
                 if (!pList)
                     break;
-                m_GLList.GetController().ItmEnsureVisible(
+                m_LVList.GetController().ItmEnsureVisible(
                     { .Item = pList->PlyGetCurrentItem() }, TRUE);
             }
             return 0;
@@ -601,9 +605,9 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
                 const auto& pList = PlCurrent();
                 if (!pList)
                     break;
-                PlSearchEditContent(pList.Get());
-                m_GLList.ReCalculateItem();
-                m_GLList.Invalidate();
+                PlSearchEditContent(pList);
+                m_LVList.ReCalculateItem();
+                m_LVList.Invalidate();
                 PlBeginLoadMetadata();
             }
             return 0;
@@ -618,7 +622,7 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
     case WM_SETFONT:
     {
-        m_TBLPlayList.SetTextFormat(GetTextFormat().Get());
+        m_LVPlayList.SetTextFormat(GetTextFormat().Get());
         m_EDSearch.SetTextFormat(GetTextFormat().Get());
         m_EDSearchItem.SetTextFormat(GetTextFormat().Get());
     }
@@ -639,7 +643,7 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         InitializeUi();
         IlUpdateTilePixelSize();
         m_FileAdapter.OnDataChanged();
-        m_TBLPlayList.GetController().ItmSelect({ .Item = 4 });
+        m_LVPlayList.GetController().ItmSelect({ .Item = 4 });
         OnListSwitch();
         PlBeginLoadMetadata();
     }

@@ -22,7 +22,7 @@ private:
 
     std::vector<Item> m_vFlat{};
 
-    eck::CTrivialBuffer<int> m_vSearchResult{};// 搜索结果，存储平面列表索引
+    eck::CTrivialBuffer<int> m_vSearch{};// 搜索结果，存储平面列表索引
     eck::CTrivialBuffer<int> m_vRandomMapping{};
 
     int m_idxCurrFlat{ -1 };
@@ -30,6 +30,7 @@ private:
 
     BOOLEAN m_bSort{};
     BOOLEAN m_bLazyInit{};
+    BOOLEAN m_bSearching{};
     PlType m_eType{};
 public:
     static RefPtr<CPlayList> New() noexcept { return RefPtr<CPlayList>::Make(); }
@@ -62,13 +63,10 @@ public:
     EckInlineNdCe int FlGetCount() const noexcept { return (int)m_vFlat.size(); }
 
     void FlDoSearch(std::wstring_view svKeyWord) noexcept;
-    EckInlineNdCe int FlGetSearchResultCount() const noexcept
-    {
-        return (int)m_vSearchResult.Size();
-    }
-    EckInlineNdCe BOOL FlIsSearching() const noexcept { return !m_vSearchResult.IsEmpty(); }
-    EckInlineNdCe int FlAtSearch(int idx) noexcept { return m_vSearchResult[idx]; }
-    EckInlineCe void FlExitSearch() noexcept { m_vSearchResult.Clear(); }
+    EckInlineNdCe int FlGetSearchResultCount() const noexcept { return (int)m_vSearch.Size(); }
+    EckInlineNdCe BOOL FlIsSearching() const noexcept { return m_bSearching; }
+    EckInlineNdCe int FlAtSearch(int idx) noexcept { return m_vSearch[idx]; }
+    void FlExitSearch() noexcept;
     EckInlineNdCe int FlSearchIndexToRealIndex(int idx) noexcept
     {
         return FlIsSearching() ? FlAtSearch(idx) : idx;

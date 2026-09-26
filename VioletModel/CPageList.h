@@ -59,6 +59,7 @@ public:
     EckInlineNdCe auto& operator[](size_t idx) noexcept { return m_vItem[idx]; }
     void InvalidateImage() noexcept;
     void SetList(RefPtr<CPlayList> pList) noexcept;
+    void InvalidateTextLayout() noexcept;
 };
 
 class CPageList : public CVeBase
@@ -76,7 +77,7 @@ public:
     constexpr static int DefaultCoverIndex{};
 private:
     Dui::CEdit m_EDSearch{};
-    Dui::CListView m_TBLPlayList{};
+    Dui::CListView m_LVPlayList{};
     eck::CLinearLayoutV m_LytPlayList{};
     CPlayListFileAdapter m_FileAdapter{};
 
@@ -85,7 +86,7 @@ private:
     eck::CLayoutDummy m_TopBarDummySpace{};
     Dui::CEdit m_EDSearchItem{};
     eck::CLinearLayoutH m_LytTopBar{};
-    Dui::CListView m_GLList{};
+    Dui::CListView m_LVList{};
     eck::CLinearLayoutV m_LytList{};
     CPlayListItemAdapter m_ItemAdapter{};
 
@@ -103,9 +104,8 @@ private:
 
     const RefPtr<CPlayList>& PlCurrent() const noexcept;
 
-    // 使用搜索编辑框内容搜索列表
-    // 返回项目数
-    int PlSearchEditContent(CPlayList* pList) noexcept;
+    // 使用搜索编辑框内容搜索列表，返回项目数
+    int PlSearchEditContent(const RefPtr<CPlayList>& pList) noexcept;
 
     // 上传默认封面到图像列表的第0个磁贴
     HRESULT IlUploadDefaultCover(eck::CD2DImageList* pImageList) noexcept;

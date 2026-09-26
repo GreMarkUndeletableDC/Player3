@@ -89,7 +89,7 @@ void CPlayListItemAdapter::LcaGet(const LvIndex& idx, int idxCol,
     {
         if (idxCol != 0)
             break;
-        const auto idxImage = m_vItem[idx.Item].idxImage;
+        const auto idxImage = m_vItem[m_pList->FlSearchIndexToRealIndex(idx.Item)].idxImage;
         Data = idxImage < 0 ? CPageList::DefaultCoverIndex : idxImage;
     }
     break;
@@ -156,4 +156,11 @@ void CPlayListItemAdapter::SetList(RefPtr<CPlayList> pList) noexcept
     m_vItem.clear();
     if (m_pList)
         m_vItem.resize(m_pList->FlGetCount());
+}
+
+void CPlayListItemAdapter::InvalidateTextLayout() noexcept
+{
+    for (auto& e : m_vItem)
+        for (auto& pTl : e.pTextLayout)
+            pTl.Clear();
 }
