@@ -34,7 +34,8 @@ LRESULT CVeVolumeBar::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             x, 0, cx - x - InnerPadding, cy, this, nullptr, ELEID_VOLBAR_TRACK);
         m_TrackBar.SetRange(0, 200);
         m_TrackBar.SetTrackPosition(100);
-        m_TrackBar.SetTrackSize(TrackBarHeight);
+        m_TrackBar.SetTrackSize(TrackBarTrackHeight);
+        m_TrackBar.SetThumbSize(TrackBarThumbSize);
         m_TrackBar.SetThumbTrack(TRUE);
     }
     return 0;

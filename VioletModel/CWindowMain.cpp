@@ -140,6 +140,7 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     m_TBProgress.SetRange(0, 100);
     m_TBProgress.SetTrackPosition(50);
     m_TBProgress.SetTrackSize(ProgressBarTrackHeight);
+    m_TBProgress.SetThumbSize(ProgressBarThumbSize);
     m_TBProgress.SetThinTrack(TRUE);
     // 按钮 上一曲
     m_BTPrev.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
@@ -260,7 +261,7 @@ void CWindowMain::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     {
         m_pImageManager->CoverUpdate(App->Player().GetCover().Get());
         m_PagePlaying.UpdateBlurredCover();
-        m_CompPlayPageAn.SetOverlayBitmap(m_pImageManager->CoverGetD2D());
+        m_PlayPageAnimator.SetOverlayBitmap(m_pImageManager->CoverGetD2D());
 
         m_msProgTimer = 0;
         SmtcUpdateTimeLineRange();
@@ -326,12 +327,12 @@ LRESULT CWindowMain::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         PageClearAnimation();
         const auto cxClient = GetClientWidthLogical();
         const auto cyClient = GetClientHeightLogical();
-        m_NormalPageContainer.SetRect({ 0,0,cxClient,cyClient });
-        m_TitleBar.SetRect({ 0,0,cxClient,TitleBarElementHeight });
-        m_TabPanel.SetRect({ 0,0,TabPanelWidth,cyClient - PlayPanelHeight });
+        m_NormalPageContainer.SetRect({ 0, 0, cxClient, cyClient });
+        m_TitleBar.SetRect({ 0, 0, cxClient, TitleBarElementHeight });
+        m_TabPanel.SetRect({ 0, 0, TabPanelWidth, cyClient - PlayPanelHeight });
 
         const auto yPlayPanel = cyClient - PlayPanelHeight;
-        m_PlayPanel.SetRect({ 0,cyClient - PlayPanelHeight,cxClient,cyClient });
+        m_PlayPanel.SetRect({ 0, cyClient - PlayPanelHeight, cxClient, cyClient });
 
         m_LAPageTitle.SetRect({
             TabPanelWidth + TabToPagePadding,
@@ -339,12 +340,17 @@ LRESULT CWindowMain::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             TabPanelWidth + TabToPagePadding + PageTitleWidth,
             PageTitleTopPosition + PageTitleHeight });
 
-        m_PagePlaying.SetRect({ 0,0,cxClient,cyClient });
-        m_rcPPLarge = { 0.f,0.f,(float)cxClient,(float)cyClient };
-        m_rcPPMini.left = MiniCoverLeftPosition;
-        m_rcPPMini.top = float(cyClient - PlayPanelHeight + MiniCoverTopPosition);
-        m_rcPPMini.right = m_rcPPMini.left + (float)MiniCoverSize;
-        m_rcPPMini.bottom = m_rcPPMini.top + (float)MiniCoverSize;
+        m_PagePlaying.SetRect({ 0, 0, cxClient, cyClient });
+
+        D2D1_RECT_F rcMini;
+        rcMini.left = MiniCoverLeftPosition;
+        rcMini.top = float(cyClient - PlayPanelHeight + MiniCoverTopPosition);
+        rcMini.right = rcMini.left + (float)MiniCoverSize;
+        rcMini.bottom = rcMini.top + (float)MiniCoverSize;
+        m_PlayPageAnimator.PpaSetRect(
+            rcMini,
+            { 0.f, 0.f, cxClient, cyClient });
+
         for (auto& e : m_vPage)
             e->SetRect({
                 TabPanelWidth + TabToPagePadding,
@@ -393,7 +399,6 @@ LRESULT CWindowMain::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             m_WndTbGhost.InvalidateDwmThumbnail();
             m_WndTbGhost.InvalidateThumbnailCache();
             m_WndTbGhost.SetIconicThumbnail();
-            Redraw();
         }
     }
     break;
@@ -444,7 +449,7 @@ LRESULT CWindowMain::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) no
     return 0;
     case ELEN_PLAYPAGE_LBTN_UP:
     {
-        if (m_bPPAnActive)
+        if (m_PlayPageAnimator.PpaIsActive())
         {
             PpaPrepare();
             KctWake();
@@ -489,7 +494,7 @@ LRESULT CWindowMain::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) no
 
 void CWindowMain::TlTick(int iMs) noexcept
 {
-    if (m_bPPAnActive)
+    if (m_PlayPageAnimator.PpaIsActive())
         PpaTick(iMs);
     if (m_pAnPage)
     {
@@ -523,7 +528,7 @@ void CWindowMain::TlTick(int iMs) noexcept
 //                WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TOPMOST,
 //                300, 400, 500, 300, Handle, nullptr);
 //        }
-//        m_WndLrc.Redraw();
+//        m_WndLrc.RdInvalidate();
 //    }
 //    else
 //        if (m_WndLrc.IsValid())
@@ -547,17 +552,8 @@ void CWindowMain::UpdateButtonImageSize() noexcept
 
 void CWindowMain::PpaPrepare() noexcept
 {
-    ECKBOOLNOT(m_bPPAnReverse);
-    const auto kBegin = m_bPPAnReverse ? 0.f : 1.f;
-    const auto kEnd = m_bPPAnReverse ? 1.f : 0.f;
-    m_PlayPageAn.Start(kBegin, kEnd, m_bPPAnActive);
-    EckCounter(4, i)
-    {
-        m_PPCornerAn[i].Start(kBegin, kEnd, m_bPPCornerAnActive[i]);
-        m_bPPCornerAnActive[i] = TRUE;
-    }
-    m_bPPAnActive = TRUE;
-    if (!m_bPPAnReverse)
+    m_PlayPageAnimator.PpaStart();
+    if (!m_PlayPageAnimator.PpaIsReverse())
     {
         m_NormalPageContainer.SetVisible(TRUE);
         m_PlayPanel.GetCoverElement().SetVisible(TRUE);
@@ -569,104 +565,33 @@ void CWindowMain::PpaPrepare() noexcept
 
 void CWindowMain::PpaEnd() noexcept
 {
-    m_bPPAnActive = FALSE;
-    ZeroMemory(m_bPPCornerAnActive, sizeof(m_bPPCornerAnActive));
     m_PagePlaying.SetCompositor(nullptr);
     m_NormalPageContainer.SetCompositor(nullptr);
     m_NormalPageContainer.SetStyle(m_NormalPageContainer.GetStyle() &
         ~Dui::DES_BASE_BEGIN_END_PAINT);
-    if (m_bPPAnReverse)
+    if (m_PlayPageAnimator.PpaIsReverse())
     {
         m_NormalPageContainer.SetVisible(FALSE);
         m_PlayPanel.SetVisible(FALSE);
     }
     else
         m_PagePlaying.SetVisible(FALSE);
+    m_PlayPageAnimator.PpaEnd();
 }
 
 void CWindowMain::PpaTick(int ms) noexcept
 {
-    Redraw(FALSE);
+    const auto bStillRunning = m_PlayPageAnimator.PpaTick((float)ms);
 
-    constexpr float MinimumDistance = 0.4f;
-    constexpr float MaximumDuration = 700.f;
-    constexpr float OverlayOpacityDuration = 150.f;
-
-    constexpr float Duration[]
-    {
-        MaximumDuration,
-        MaximumDuration * 5 / 6,
-        MaximumDuration * 5 / 6,
-        MaximumDuration * 4 / 6,
-    };
-    constexpr float DurationR[]
-    {
-        MaximumDuration * 4 / 6,
-        MaximumDuration * 8 / 9,
-        MaximumDuration * 5 / 6,
-        MaximumDuration,
-    };
-    if (!(m_bPPAnActive = m_PlayPageAn.Tick((float)ms, MaximumDuration)))
-    {
-        Redraw(FALSE);
-        PpaEnd();
-        return;
-    }
-    // 页面动画更新
-    const auto kOverlay = std::clamp(
-        m_PlayPageAn.Time / OverlayOpacityDuration, 0.f, 1.f);
-    m_CompPlayPageAn.SetOpacity(m_bPPAnReverse ? (1.f - kOverlay) : kOverlay);
-
-    const auto kScale = 1.f - m_PlayPageAn.K * 0.2f;
+    const auto kScale = 1.f - m_PlayPageAnimator.PpaCurrentValue() * 0.2f;
     const auto xRef = GetClientWidthLogical() / 2.f;
     const auto yRef = GetClientHeightLogical() / 2.f;
     m_CompNormalPageAn.SetMatrix(
         D2D1::Matrix3x2F::Scale(kScale, kScale, { xRef, yRef }));
-    m_CompNormalPageAn.SetOpacity(1.f - m_PlayPageAn.K);
+    m_CompNormalPageAn.SetOpacity(1.f - m_PlayPageAnimator.PpaCurrentValue());
 
-    D2D1_POINT_2F pt[4];
-    const D2D1_POINT_2F ptMini[]
-    {
-        { m_rcPPMini.left,  m_rcPPMini.top    },
-        { m_rcPPMini.right, m_rcPPMini.top    },
-        { m_rcPPMini.left,  m_rcPPMini.bottom },
-        { m_rcPPMini.right, m_rcPPMini.bottom },
-    };
-    const D2D1_POINT_2F ptLarge[]
-    {
-        { m_rcPPLarge.left,  m_rcPPLarge.top    },
-        { m_rcPPLarge.right, m_rcPPLarge.top    },
-        { m_rcPPLarge.left,  m_rcPPLarge.bottom },
-        { m_rcPPLarge.right, m_rcPPLarge.bottom },
-    };
-    const auto pDur = m_bPPAnReverse ? DurationR : Duration;
-    BOOL bStillRunning{};
-    EckCounter(4, i)
-    {
-        m_bPPCornerAnActive[i] = m_PPCornerAn[i].Tick((float)ms, pDur[i]);
-        eck::CalculatePointFromLineScale(
-            ptMini[i].x, ptMini[i].y,
-            ptLarge[i].x, ptLarge[i].y,
-            m_PPCornerAn[i].K,
-            pt[i].x, pt[i].y);
-        if (m_bPPAnReverse)
-        {
-            if (fabs(ptLarge[i].x - pt[i].x) > MinimumDistance ||
-                fabs(ptLarge[i].y - pt[i].y) > MinimumDistance)
-                bStillRunning = TRUE;
-        }
-        else
-        {
-            if (fabs(ptMini[i].x - pt[i].x) > MinimumDistance ||
-                fabs(ptMini[i].y - pt[i].y) > MinimumDistance)
-                bStillRunning = TRUE;
-        }
-    }
-
-    eck::CalculateDistortMatrix(m_rcPPLarge, pt, *m_CompPlayPageAn.AtMatrixD2D());
-    eck::CalculateInverseDistortMatrix(m_rcPPLarge, pt, *m_CompPlayPageAn.AtMatrixD2DR());
     if (!m_PagePlaying.GetCompositor())
-        m_PagePlaying.SetCompositor(&m_CompPlayPageAn);
+        m_PagePlaying.SetCompositor(&m_PlayPageAnimator);
     if (!m_NormalPageContainer.GetCompositor())
     {
         m_NormalPageContainer.SetCompositor(&m_CompNormalPageAn);
@@ -677,7 +602,7 @@ void CWindowMain::PpaTick(int ms) noexcept
     m_NormalPageContainer.CompUpdateCompositedRect();
     if (!bStillRunning)
         PpaEnd();
-    Redraw(FALSE);
+    RdInvalidate(FALSE);
 }
 
 void CWindowMain::LayoutPlayPanel() noexcept

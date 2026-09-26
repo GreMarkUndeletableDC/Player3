@@ -6,7 +6,7 @@
 #include "CPagePlaying.h"
 #include "CTabPanel.h"
 #include "CPlayPanel.h"
-#include "CCompositorPlayPage.h"
+#include "CPlayPageAnimator.h"
 #include "CWindowGhost.h"
 #include "CVeVolumeBar.h"
 #include "CWindowLyric.h"
@@ -35,8 +35,9 @@ public:
         PageTitleHeight = 34.f,
         TabToPagePadding = 14.f,
         ProgressBarWidth = 350.f,
-        ProgressBarHeight = 20.f,
+        ProgressBarHeight = 26.f,
         ProgressBarTrackHeight = 8.f,
+        ProgressBarThumbSize = 10.f,
         CircleButtonSize = 34.f,
         PlayCircleButtonSize = 44.f,
         CircleButtonPadding = 24.f,
@@ -84,14 +85,7 @@ private:
     BOOLEAN m_bPageAnUpToDown{};
     Page m_eCurrPage{};
 
-    BOOLEAN m_bPPAnReverse{};// TRUE = 小到大，FALSE = 大到小
-    BOOLEAN m_bPPAnActive{};
-    BOOLEAN m_bPPCornerAnActive[4]{};
-    eck::EasingCurve<eck::Easing::FOutExpo> m_PlayPageAn;
-    eck::EasingCurve<eck::Easing::FOutExpo> m_PPCornerAn[4]{};
-    D2D1_RECT_F m_rcPPMini{};
-    D2D1_RECT_F m_rcPPLarge{};
-    CCompositorPlayPage m_CompPlayPageAn{};
+    CPlayPageAnimator m_PlayPageAnimator{};
 
     Dui::CCompositor2DAffineTransform m_CompNormalPageAn{};
 
@@ -159,6 +153,6 @@ public:
     LRESULT OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) noexcept override;
 
     void TlTick(int iMs) noexcept override;
-    BOOL TlIsValid() noexcept override { return m_bPPAnActive; }
+    BOOL TlIsValid() noexcept override { return m_PlayPageAnimator.PpaIsActive(); }
     int TlGetCurrentInterval() const noexcept override { return 0; }
 };

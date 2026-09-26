@@ -5,7 +5,8 @@ class CVeVolumeBar final : public CVeBase, public eck::ITimeLine
 {
 public:
     constexpr static float
-        TrackBarHeight = 8.f,
+        TrackBarTrackHeight = 6.f,
+        TrackBarThumbSize = 10.f,
         LabelWidth = 30.f,
         InnerPadding = 8.f,
         AnimationDistance = 10.f

@@ -227,6 +227,6 @@ void CWindowLyric::TlTick(int iMs) noexcept
     if (m_bAnFade)
     {
         m_bAnFade = m_AnFade.Tick((float)iMs, 200);
-        Redraw(FALSE);
+        RdInvalidate(FALSE);
     }
 }

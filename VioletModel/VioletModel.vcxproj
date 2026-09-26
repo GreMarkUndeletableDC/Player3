@@ -200,7 +200,7 @@
     <ClInclude Include="CApplication.h" />
     <ClInclude Include="CImageManager.h" />
     <ClInclude Include="CBass.h" />
-    <ClInclude Include="CCompositorPlayPage.h" />
+    <ClInclude Include="CPlayPageAnimator.h" />
     <ClInclude Include="CLyricRendererBase.h" />
     <ClInclude Include="CLyricRendererD2D.h" />
     <ClInclude Include="PlayListFile.h" />
@@ -230,10 +230,12 @@
   <ItemGroup>
     <ClCompile Include="CApplication.cpp" />
     <ClCompile Include="CPageList_Adapter.cpp" />
+    <ClCompile Include="CPlayPageAnimator.cpp" />
     <ClCompile Include="CVeBase.cpp" />
     <ClCompile Include="CImageManager.cpp" />
     <ClCompile Include="CBass.cpp" />
     <ClCompile Include="CLyricRendererD2D.cpp" />
+    <ClCompile Include="CWindowMain_PlayPage.cpp" />
     <ClCompile Include="PlayListFile.cpp" />
     <ClCompile Include="CPlayListManager.cpp" />
     <ClCompile Include="CVeDesktopLyric.cpp" />

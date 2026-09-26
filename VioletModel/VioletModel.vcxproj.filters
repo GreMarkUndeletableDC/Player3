@@ -87,7 +87,7 @@
     <ClInclude Include="CVeMiniCover.h">
       <Filter>UI\元素</Filter>
     </ClInclude>
-    <ClInclude Include="CCompositorPlayPage.h">
+    <ClInclude Include="CPlayPageAnimator.h">
       <Filter>UI\其他</Filter>
     </ClInclude>
     <ClInclude Include="CPlayList.h">
@@ -217,6 +217,12 @@
     </ClCompile>
     <ClCompile Include="CPageList_Adapter.cpp">
       <Filter>UI\容器</Filter>
+    </ClCompile>
+    <ClCompile Include="CWindowMain_PlayPage.cpp">
+      <Filter>窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayPageAnimator.cpp">
+      <Filter>UI\其他</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
