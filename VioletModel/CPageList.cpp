@@ -214,7 +214,7 @@ const RefPtr<CPlayList>& CPageList::PlCurrent() const noexcept
     return App->ListManager().At(idx).pList;
 }
 
-int CPageList::PlSearchEditContent(const RefPtr<CPlayList>& pList) noexcept
+void CPageList::PlSearchEditContent(const RefPtr<CPlayList>& pList) noexcept
 {
     GETTEXTLENGTHEX gtl{};
     gtl.codepage = eck::CP_UTF16LE;
@@ -233,14 +233,12 @@ int CPageList::PlSearchEditContent(const RefPtr<CPlayList>& pList) noexcept
 
         pList->FlDoSearch(rsFilter.ToStringView());
         m_ItemAdapter.InvalidateTextLayout();
-        return pList->FlGetSearchResultCount();
     }
     else
     {
         m_bSearchItemEditEmpty = TRUE;
         pList->FlExitSearch();
         m_ItemAdapter.InvalidateTextLayout();
-        return pList->FlGetCount();
     }
 }
 

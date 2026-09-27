@@ -104,8 +104,8 @@ private:
 
     const RefPtr<CPlayList>& PlCurrent() const noexcept;
 
-    // 使用搜索编辑框内容搜索列表，返回项目数
-    int PlSearchEditContent(const RefPtr<CPlayList>& pList) noexcept;
+    // 使用搜索编辑框内容搜索列表
+    void PlSearchEditContent(const RefPtr<CPlayList>& pList) noexcept;
 
     // 上传默认封面到图像列表的第0个磁贴
     HRESULT IlUploadDefaultCover(eck::CD2DImageList* pImageList) noexcept;

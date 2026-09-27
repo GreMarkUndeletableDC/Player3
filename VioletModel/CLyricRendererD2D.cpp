@@ -30,7 +30,7 @@ HRESULT CLyricRendererD2D::LrInitialize(Dui::CElement* pEle) noexcept
     const auto hr = __super::LrInitialize(pEle);
     if (FAILED(hr))
         return hr;
-    pEle->GetDC()->QueryInterface(&m_pDC);
+    pEle->GetDC()->QueryInterface(m_pDC.AtClear());
     return S_OK;
 }
 

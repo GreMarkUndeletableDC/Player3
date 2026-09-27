@@ -18,8 +18,11 @@
 #pragma comment(lib, "RuntimeObject.lib")
 #include <map>
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
-    _In_ PWSTR pszCmdLine, _In_ int nCmdShow)
+int APIENTRY wWinMain(
+    _In_ HINSTANCE hInstance,
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_ PWSTR pszCmdLine,
+    _In_ int nCmdShow)
 {
     _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
 
@@ -66,8 +69,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     pWnd->SetUserDpi(iDpi);
     pWnd->SetPresentMode(Dui::PresentMode::DCompositionSurface);
     //pWnd->SetDrawDirtyRect(1);
-    pWnd->Create(L"示例Win32程序", WS_POPUP | WS_VISIBLE | WS_CAPTION |
-        WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, 0,
+    constexpr DWORD Style = WS_POPUP | WS_VISIBLE | WS_CAPTION |
+        WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU;
+    pWnd->Create(L"示例Win32程序", Style, 0,
         pt.x, pt.y, Size.cx, Size.cy, nullptr, 0);
     pWnd->Show(SW_SHOW);
 

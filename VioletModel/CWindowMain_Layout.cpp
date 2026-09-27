@@ -4,6 +4,21 @@
 
 constexpr static float LabelFontHeight = 18.f;
 
+static void SetPlayPanelButtonSimpleStyle(Dui::CButton& Button) noexcept
+{
+    auto& ssNormal = Button.TmSimpleStyle(Dui::CButton::SsNormal);
+    ssNormal.bBackArgb = ssNormal.bBorderArgb = FALSE;
+    ssNormal.CrBack = ssNormal.CrBorder = Dui::IdTmInvalid;
+    ssNormal.rRound = FLT_MAX;
+    ssNormal.cxBorder = 0.f;
+    auto& ssHot = Button.TmSimpleStyle(Dui::CButton::SsHot);
+    ssHot.rRound = FLT_MAX;
+    ssHot.cxBorder = 0.f;
+    auto& ssPressed = Button.TmSimpleStyle(Dui::CButton::SsPressed);
+    ssPressed.rRound = FLT_MAX;
+    ssPressed.cxBorder = 0.f;
+}
+
 void CWindowMain::InitializeUi() noexcept
 {
     GetUiHookEventChain().Connect(
@@ -93,15 +108,19 @@ void CWindowMain::InitializeUi() noexcept
     // 按钮 上一曲
     m_BTPrev.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, CircleButtonSize, CircleButtonSize, nullptr, this);
+    SetPlayPanelButtonSimpleStyle(m_BTPrev);
     // 按钮 播放/暂停
     m_BTPlay.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, PlayCircleButtonSize, PlayCircleButtonSize, nullptr, this);
+    SetPlayPanelButtonSimpleStyle(m_BTPlay);
     // 按钮 下一曲
     m_BTNext.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, CircleButtonSize, CircleButtonSize, nullptr, this);
+    SetPlayPanelButtonSimpleStyle(m_BTNext);
     // 按钮 播放模式
     m_BTAutoNext.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, CircleButtonSize, CircleButtonSize, nullptr, this);
+    SetPlayPanelButtonSimpleStyle(m_BTAutoNext);
     m_BTAutoNext.GetEventChain().Connect(
         [](UINT uMsg, WPARAM, LPARAM, eck::Slot&) -> LRESULT
         {
@@ -116,9 +135,11 @@ void CWindowMain::InitializeUi() noexcept
     // 按钮 歌词
     m_BTLrc.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, CircleButtonSize, CircleButtonSize, nullptr, this);
+    SetPlayPanelButtonSimpleStyle(m_BTLrc);
     // 按钮 音量
     m_BTVol.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
         0, 0, CircleButtonSize, CircleButtonSize, nullptr, this);
+    SetPlayPanelButtonSimpleStyle(m_BTVol);
     // 标题栏
     m_TitleBar.Create({}, Dui::DES_VISIBLE, 0,
         0, 0, 0, 0, nullptr, this);
