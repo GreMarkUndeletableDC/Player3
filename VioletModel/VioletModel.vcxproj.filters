@@ -218,7 +218,7 @@
     <ClCompile Include="CPageList_Adapter.cpp">
       <Filter>UI\容器</Filter>
     </ClCompile>
-    <ClCompile Include="CWindowMain_PlayPage.cpp">
+    <ClCompile Include="CWindowMain_Layout.cpp">
       <Filter>窗口</Filter>
     </ClCompile>
     <ClCompile Include="CPlayPageAnimator.cpp">

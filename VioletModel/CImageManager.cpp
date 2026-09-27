@@ -226,6 +226,50 @@ HRESULT CImageManager::InternalCoverUpdate(IWICBitmapSource* pBitmap) noexcept
         CoverWidth * sizeof(UINT));
 }
 
+HRESULT CImageManager::CreateInvertWicBitmap(
+    IWICBitmapSource* pSrc,
+    Eck_Out_buffer_ ComPtr<IWICBitmapSource>& pDst) noexcept
+{
+    HRESULT hr;
+    UINT cx{}, cy{};
+    pSrc->GetSize(&cx, &cy);
+
+    eck::CTrivialBuffer<ARGB> Buffer(cx * cy);
+    hr = pSrc->CopyPixels(
+        nullptr,
+        cx * sizeof(ARGB),
+        cx * cy * sizeof(ARGB),
+        (BYTE*)Buffer.Data());
+    if (FAILED(hr))
+        return hr;
+
+    for (auto& px : Buffer)
+    {
+        auto [a, r, g, b] = eck::DecomposeArgb(eck::UnpremultiplyArgb(px));
+        if (a)
+        {
+            r = 255 - r;
+            g = 255 - g;
+            b = 255 - b;
+            px = eck::PremultiplyArgb(a, r, g, b);
+        }
+    }
+
+    ComPtr<IWICBitmap> pBitmap;
+    hr = eck::g_pWicFactory->CreateBitmapFromMemory(
+        cx, cy,
+        eck::DefaultWicPixelFormat,
+        cx * sizeof(UINT),
+        cx * cy * sizeof(UINT),
+        (BYTE*)Buffer.Data(),
+        &pBitmap);
+    if (FAILED(hr))
+        return hr;
+
+    pDst = std::move(pBitmap);
+    return S_OK;
+}
+
 HRESULT CImageManager::CoverUpdate(IWICBitmapSource* pBitmap) noexcept
 {
     if (pBitmap)

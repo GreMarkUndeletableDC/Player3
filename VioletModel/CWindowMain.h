@@ -94,6 +94,8 @@ private:
     CWindowGhost m_WndTbGhost{};
 
     RefPtr<CImageManager> m_pImageManager{ RefPtr<CImageManager>::Make() };
+    RefPtr<eck::CUxDwmWindowTheme> m_pUxWndTheme{ RefPtr<eck::CUxDwmWindowTheme>::Make() };
+    ComPtr<ID2D1Bitmap1> m_pUxWndThemeAtlas{};
 
 #if VIOLET_WINRT
     WinMedia::SystemMediaTransportControls m_Smtc{ nullptr };
@@ -105,7 +107,9 @@ private:
 
     int m_msProgTimer{};
 private:
+    void InitializeUi() noexcept;
     BOOL OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept;
+    void OnSize() noexcept;
 
     void PageShow(Page ePage, BOOL bAnimate) noexcept;
     void PageClearAnimation() noexcept;
@@ -114,9 +118,8 @@ private:
 
     void UpdateButtonImageSize() noexcept;
 
-    void PpaPrepare() noexcept;
+    void PpaStart() noexcept;
     void PpaEnd() noexcept;
-    void PpaTick(int ms) noexcept;
 
     void LayoutPlayPanel() noexcept;
 
@@ -153,6 +156,6 @@ public:
     LRESULT OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) noexcept override;
 
     void TlTick(int iMs) noexcept override;
-    BOOL TlIsValid() noexcept override { return m_PlayPageAnimator.PpaIsActive(); }
+    BOOL TlIsValid() noexcept override;
     int TlGetCurrentInterval() const noexcept override { return 0; }
 };

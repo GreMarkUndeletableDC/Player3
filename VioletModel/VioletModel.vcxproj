@@ -235,7 +235,7 @@
     <ClCompile Include="CImageManager.cpp" />
     <ClCompile Include="CBass.cpp" />
     <ClCompile Include="CLyricRendererD2D.cpp" />
-    <ClCompile Include="CWindowMain_PlayPage.cpp" />
+    <ClCompile Include="CWindowMain_Layout.cpp" />
     <ClCompile Include="PlayListFile.cpp" />
     <ClCompile Include="CPlayListManager.cpp" />
     <ClCompile Include="CVeDesktopLyric.cpp" />
