@@ -306,7 +306,7 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         if (m_vItem.empty())
             break;
-        const auto& pt = EagPoint(lParam);
+        const auto& pt = LpPoint(lParam);
         int idx = ItmHitTest(pt);
         if (idx != m_idxHot)
         {
@@ -363,7 +363,7 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         SetFocus();
         if (m_vItem.empty())
             break;
-        const auto& pt = EagPoint(lParam);
+        const auto& pt = LpPoint(lParam);
         int idx = ItmHitTest(pt);
         if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
         {

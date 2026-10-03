@@ -60,6 +60,9 @@ public:
     void InvalidateImage() noexcept;
     void SetList(RefPtr<CPlayList> pList) noexcept;
     void InvalidateTextLayout() noexcept;
+
+    void Insert(int idx, int cItem) noexcept;
+    void Erase(int idx, int cItem) noexcept;
 };
 
 class CPageList : public CVeBase

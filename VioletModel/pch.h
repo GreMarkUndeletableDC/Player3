@@ -67,7 +67,7 @@ namespace Json = eck::Json;
 
 using namespace std::literals;
 
-using Dui::EagPoint;
+using Dui::LpPoint;
 
 using LvIndex = eck::UiBasic::Lc::Index;
 using LvProperty = eck::UiBasic::Lc::Property;

@@ -164,3 +164,15 @@ void CPlayListItemAdapter::InvalidateTextLayout() noexcept
         for (auto& pTl : e.pTextLayout)
             pTl.Clear();
 }
+
+void CPlayListItemAdapter::Insert(int idx, int cItem) noexcept
+{
+    if (idx < 0)
+        idx = (int)m_vItem.size();
+    m_vItem.insert(m_vItem.begin() + idx, cItem, {});
+}
+
+void CPlayListItemAdapter::Erase(int idx, int cItem) noexcept
+{
+    m_vItem.erase(m_vItem.begin() + idx, m_vItem.begin() + idx + cItem);
+}

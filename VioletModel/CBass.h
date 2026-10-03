@@ -84,7 +84,8 @@ public:
 
     EckInline BOOL SetPosition(double fTime) const noexcept
     {
-        return BASS_ChannelSetPosition(m_hStream, BASS_ChannelSeconds2Bytes(m_hStream, fTime), BASS_POS_BYTE);
+        return BASS_ChannelSetPosition(m_hStream,
+            BASS_ChannelSeconds2Bytes(m_hStream, fTime), BASS_POS_BYTE);
     }
 
     EckInline BOOL SetAttribute(DWORD dwAttr, float f) const noexcept

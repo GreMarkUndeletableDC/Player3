@@ -72,10 +72,10 @@ BOOL CPlayPageAnimator::PpaTick(float ms) noexcept
     D2D1_POINT_2F pt[4];
     const D2D1_POINT_2F ptMini[]
     {
-        { m_rcMini.left,  m_rcMini.top    },
-        { m_rcMini.right, m_rcMini.top    },
-        { m_rcMini.left,  m_rcMini.bottom },
-        { m_rcMini.right, m_rcMini.bottom },
+        { m_rcMini.left,   m_rcMini.top     },
+        { m_rcMini.right,  m_rcMini.top     },
+        { m_rcMini.left,   m_rcMini.bottom  },
+        { m_rcMini.right,  m_rcMini.bottom  },
     };
     const D2D1_POINT_2F ptLarge[]
     {

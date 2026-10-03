@@ -342,6 +342,7 @@ HRESULT CPageList::OnMenuAddFile(CPlayList* pList, int idxInsert) noexcept
         return hr;
     ComPtr<IShellItem> psi;
     PWSTR pszFile;
+    m_ItemAdapter.Insert(idxInsert, (int)cItems);
     EckCounter(cItems, i)
     {
         psia->GetItemAt(i, psi.AtClear());
@@ -501,7 +502,7 @@ void CPageList::InitializeUi() noexcept
             {
             case WM_LBUTTONDBLCLK:
             {
-                const auto pt = EagPoint(lParam);
+                const auto pt = LpPoint(lParam);
                 Dui::CListView::TController::HT_INFO ht{ pt.x, pt.y };
                 const auto idx = m_LVList.GetController().HitTest(ht);
                 if (idx.Item < 0)

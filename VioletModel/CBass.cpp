@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "CBass.h"
 
-static const std::pair<int, std::wstring_view> BassErrorMap[]
+constexpr static std::pair<int, std::wstring_view> BassErrorMap[]
 {
     { -1, L"BASS_ERROR_UNKNOWN"sv      },
     {  0, L"BASS_OK"sv                 },

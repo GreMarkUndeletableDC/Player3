@@ -3,10 +3,6 @@
 
 class CVeMiniCover final : public CVeBase, public eck::ITimeLine
 {
-public:
-    constexpr static float
-        PlayPageArrowSize = 30.f
-        ;
 private:
     eck::EasingCurve<eck::Easing::FOutCubic> m_ec{};
 
@@ -16,7 +12,7 @@ private:
     BOOLEAN m_bLBtnDown{};
     BOOLEAN m_bAnActive{};
 
-    void OnColorSchemeChanged(BOOL bForceUpdateCover) noexcept;
+    void OnPaint(const Dui::PAINTINFO& ps) noexcept;
 public:
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 
