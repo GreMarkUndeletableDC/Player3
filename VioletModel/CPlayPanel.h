@@ -20,9 +20,14 @@ private:
     Dui::CLabel m_LAArtist{};
     Dui::CLabel m_LATime{};
 
+    BOOLEAN m_bEnableBlur{ TRUE };
+
     void OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept;
 public:
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 
     EckInlineNdCe auto& GetCoverElement() noexcept { return m_Cover; }
+
+    EckInlineCe void SetEnableBlur(BOOLEAN b) noexcept { m_bEnableBlur = b; }
+    EckInlineNdCe BOOLEAN GetEnableBlur() const noexcept { return m_bEnableBlur; }
 };

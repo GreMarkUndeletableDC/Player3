@@ -23,15 +23,15 @@ void CVeMiniCover::OnPaint(const Dui::PAINTINFO& ps) noexcept
         Cover.Draw(GetDC(), rcView);
 
         // -- 模糊
-
-        GetDC()->Flush();
-        GetWindow().CcReserveBitmapLogical(cx, cy);
-        auto rcInTarget{ GetRectInClientD2D() };
-        eck::OffsetRect(rcInTarget, ps.ox, ps.oy);
-        GetWindow().BlurDrawDC(
-            rcInTarget,
-            { rcInTarget.left, rcInTarget.top },
-            k / 2.f);
+        if (m_bEnableBlur)
+        {
+            GetDC()->Flush();
+            GetWindow().CcReserveBitmapLogical(cx, cy);
+            Dui::CFilterBlur::Extra Extra{ sizeof(Extra) };
+            Extra.fDeviation = k / 1.5f;
+            GetFilterBlur()->FilterDC(
+                GetRectInClientD2D(), ps.ox, ps.oy, &Extra);
+        }
 
         // TODO: 遮罩
 

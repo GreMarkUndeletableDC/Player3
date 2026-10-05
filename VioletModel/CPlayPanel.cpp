@@ -36,6 +36,9 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         Dui::PAINTINFO ps;
         BeginPaint(ps, wParam, lParam);
+
+        if (m_bEnableBlur)
+            GetFilterBlur()->FilterElement(this, ps.rcClip, ps.ox, ps.oy);
         // TODO:颜色管理
         //GetDC()->FillRectangle(ps.rcClipInEle, GetWindow().CcSetBrushColor(
         //    App->GetColor(GPal::PlayPanelBk)));
@@ -76,7 +79,7 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         pTfTitle->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
         float x = MiniCoverLeftPosition;
-        m_Cover.Create({}, Dui::DES_VISIBLE | Dui::DES_NO_CLIP | Dui::DES_NOTIFY_WND, 0,
+        m_Cover.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
             x, MiniCoverTopPosition, MiniCoverSize, MiniCoverSize, this, pWnd);
         m_Cover.SetId(ELEID_MINICOVER);
         x += (MiniCoverSize + PlayPanelTextPadding);

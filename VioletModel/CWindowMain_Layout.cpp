@@ -30,7 +30,10 @@ void CWindowMain::InitializeUi() noexcept
             {
                 const auto p = dynamic_cast<CVeBase*>(pEle);
                 if (p)
+                {
                     p->SetImageManager(m_pImageManager);
+                    p->SetFilterBlur(m_pFilterBlur);
+                }
             }
             break;
             case Dui::UIHE_CREATE:
@@ -81,7 +84,9 @@ void CWindowMain::InitializeUi() noexcept
         0, 0, 0, 0, pNormalParent, this);
     m_PageOptions.SetTextFormat(pTfLeft.Get());
     // 底部播放控制栏
-    m_PlayPanel.Create({}, Dui::DES_VISIBLE/* | Dui::DES_BLUR_BACK*/, 0,
+    m_PlayPanel.SetEnableBlur(TRUE);
+    m_PlayPanel.Create({}, Dui::DES_VISIBLE |
+        (m_PlayPanel.GetEnableBlur() ? Dui::DES_CONTENT_EXPAND : 0), 0,
         0, 0, 0, 0, pNormalParent, this);
     m_PlayPanel.SetTextFormat(pTfLeft.Get());
     // 页 播放

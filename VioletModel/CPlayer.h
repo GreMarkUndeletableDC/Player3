@@ -68,7 +68,7 @@ private:
 
     DWORD m_dwLastHrOrBassErr{};
 
-    AutoNextMode m_eAutoNext{};
+    AutoNextMode m_eAutoNext{ AutoNextMode::ListLoop };
 
     BOOLEAN m_bActive{};
     BOOLEAN m_bPaused{};// 是否暂停

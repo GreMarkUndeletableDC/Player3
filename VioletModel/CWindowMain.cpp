@@ -65,8 +65,7 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
 
     SmtcInitialize();
 
-    BlurInitialize();
-    BlurSetUseLayer(TRUE);
+    m_pFilterBlur->Attach(this);
 
     InitializeUi();
 

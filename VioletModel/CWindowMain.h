@@ -94,6 +94,8 @@ private:
     CWindowGhost m_WndTbGhost{};
 
     RefPtr<CImageManager> m_pImageManager{ RefPtr<CImageManager>::Make() };
+    RefPtr<Dui::CFilterBlur> m_pFilterBlur{ RefPtr<Dui::CFilterBlur>::Make() };
+
     RefPtr<eck::CUxDwmWindowTheme> m_pUxWndTheme{ RefPtr<eck::CUxDwmWindowTheme>::Make() };
     ComPtr<ID2D1Bitmap1> m_pUxWndThemeAtlas{};
 
