@@ -38,7 +38,10 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         BeginPaint(ps, wParam, lParam);
 
         if (m_bEnableBlur)
-            GetFilterBlur()->FilterElement(this, ps.rcClip, ps.ox, ps.oy);
+        {
+            GetDC()->Flush();
+            GetFilterBlur()->FilterDC(ps.rcClip, ps.ox, ps.oy);
+        }
         // TODO:颜色管理
         //GetDC()->FillRectangle(ps.rcClipInEle, GetWindow().CcSetBrushColor(
         //    App->GetColor(GPal::PlayPanelBk)));

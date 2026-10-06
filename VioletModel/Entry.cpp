@@ -67,7 +67,7 @@ int APIENTRY wWinMain(
     const auto pt = eck::CalculateCenterWindowPosition(nullptr, Size.cx, Size.cy, FALSE);
     pWnd->SetUserDpi(iDpi);
     pWnd->SetPresentMode(Dui::PresentMode::DCompositionSurface);
-    //pWnd->SetDrawDirtyRect(1);
+    //pWnd->DbgSetDrawDirtyRect(1);
     constexpr DWORD Style = WS_POPUP | WS_VISIBLE | WS_CAPTION |
         WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU;
     pWnd->Create(L"示例Win32程序", Style, 0,

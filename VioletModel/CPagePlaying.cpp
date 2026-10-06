@@ -11,12 +11,14 @@ void CPagePlaying::UpdateBlurredCover() noexcept
 
     // -- 准备环境
 
+    const auto crOverlay = GetTheme()->GetColorD2D(IdCrPalyPageMask);
+
     ComPtr<ID2D1Image> pOldTarget;
     GetDC()->GetTarget(&pOldTarget);
     GetDC()->SetTarget(m_pBitmapBlurredCover.Get());
     GetDC()->SetTransform(D2D1::Matrix3x2F::Identity());
     GetDC()->BeginDraw();
-    GetDC()->Clear(D2D1::ColorF(D2D1::ColorF::White));// TODO:主题色
+    GetDC()->Clear(crOverlay);
     float xDpi, yDpi;
     GetDC()->GetDpi(&xDpi, &yDpi);
     GetDC()->SetDpi(96.f, 96.f);
@@ -86,7 +88,7 @@ void CPagePlaying::UpdateBlurredCover() noexcept
     // -- 半透明遮罩
 
     GetDC()->FillRectangle(GetViewRectD2D(),
-        GetWindow().CcSetBrushColor(GetTheme()->GetColorD2D(IdCrPalyPageMask)));
+        GetWindow().CcSetBrushColor(crOverlay));
 
     GetDC()->EndDraw();
     GetDC()->SetTarget(pOldTarget.Get());
@@ -105,13 +107,17 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     break;
     case PlayEvent::Play:
     {
-        // 无需重画，UpdateBlurredCover调用后重画
+        GetWindow().RdLockUpdate();
         const auto& mi = App->Player().GetMusicSimpleData();
         m_LATitle.SetText(mi.rsTitle.Data());
+        m_LATitle.Invalidate();
         m_LAAlbum.SetText(mi.rsAlbum.Data());
+        m_LAAlbum.Invalidate();
         m_LAArtist.SetText(mi.slArtist.FrontData());
+        m_LAArtist.Invalidate();
 
         m_Lyric.LrcInitialize(App->Player().GetLyric());
+        GetWindow().RdUnlockUpdate();
     }
     break;
     case PlayEvent::Stop:
@@ -126,8 +132,8 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
 void CPagePlaying::SetEmptyText() noexcept
 {
     m_LATitle.SetText(L"Violet Model"sv);
-    m_LAArtist.SetText(L"AuroraStudio"sv);
-    m_LAAlbum.SetText(L"VC++/Win32"sv);
+    m_LAArtist.SetText(L"VC++"sv);
+    m_LAAlbum.SetText(L"Win32"sv);
 }
 
 void CPagePlaying::OnColorSchemeChanged() noexcept
@@ -285,10 +291,8 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     }
     return 0;
     case WM_DESTROY:
-    {
         m_pBitmapBlurredCover.Clear();
-    }
-    break;
+        break;
     }
     return __super::OnEvent(uMsg, wParam, lParam);
 }
