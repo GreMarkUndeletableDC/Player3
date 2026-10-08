@@ -82,9 +82,6 @@ private:
     CVeBase* m_pAnPage{};
     eck::EasingCurve<eck::Easing::FOutCubic> m_ecPage{};
 
-    BOOLEAN m_bPageAnUpToDown{};
-    Page m_eCurrPage{};
-
     CPlayPageAnimator m_PlayPageAnimator{};
 
     Dui::CCompositor2DAffineTransform m_CompNormalPageAn{};
@@ -99,6 +96,10 @@ private:
     RefPtr<eck::CUxDwmWindowTheme> m_pUxWndTheme{ RefPtr<eck::CUxDwmWindowTheme>::Make() };
     ComPtr<ID2D1Bitmap1> m_pUxWndThemeAtlas{};
 
+    int m_msProgTimer{};
+    BOOLEAN m_bPageAnUpToDown{};
+    Page m_eCurrPage{};
+
 #if VIOLET_WINRT
     WinMedia::SystemMediaTransportControls m_Smtc{ nullptr };
     WinMedia::SystemMediaTransportControlsTimelineProperties m_SmtcTimeline{};
@@ -106,8 +107,6 @@ private:
     ULONGLONG m_ullSmtcTimeLineLastUpdate{};    // 上次更新时间线的时间戳，5s一更新
     winrt::event_token m_SmtcEvtTokenButtonPressed{};// 反初始化时使用
 #endif
-
-    int m_msProgTimer{};
 private:
     void InitializeUi() noexcept;
     BOOL OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept;

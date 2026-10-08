@@ -38,11 +38,11 @@ void CVeMiniCover::OnPaint(const Dui::PAINTINFO& ps) noexcept
         // -- 箭头
 
         rcView = GetRectInClientD2D();
-        rcView.left += (cx - (float)PlayPageArrowSize) / 2;
-        rcView.right = rcView.left + (float)PlayPageArrowSize;
-        rcView.top += (cy - (float)PlayPageArrowSize) / 2 +
+        rcView.left += (cx - PlayPageArrowSize) / 2;
+        rcView.right = rcView.left + PlayPageArrowSize;
+        rcView.top += (cy - PlayPageArrowSize) / 2 +
             (AnCoverEndValue - k) * 4.f/*箭头的行程因子*/;
-        rcView.bottom = rcView.top + (float)PlayPageArrowSize;
+        rcView.bottom = rcView.top + PlayPageArrowSize;
 
         const auto Icon = GetImageManager()->AtlasGetD2D(AppImage::PlayPageUp);
         Icon.Draw(GetDC(), rcView, k / AnCoverEndValue);

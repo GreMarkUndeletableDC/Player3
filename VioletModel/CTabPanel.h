@@ -5,7 +5,7 @@ class CTabPanel final : public CVeBase, public Dui::CListView::IAdapter
 {
 public:
     constexpr static float
-        WindowLogoSize = 18.f,
+        WindowLogoSize = 22.f,
         WindowLogoTabPadding = 20.f
         ;
 private:

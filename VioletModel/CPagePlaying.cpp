@@ -148,12 +148,13 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         Dui::PAINTINFO ps;
         BeginPaint(ps, wParam, lParam);
-        GetDC()->DrawBitmap(
-            m_pBitmapBlurredCover.Get(),
-            ps.rcClipInEle,
-            1.f,
-            D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
-            ps.rcClipInEle);
+        if (m_pBitmapBlurredCover)
+            GetDC()->DrawBitmap(
+                m_pBitmapBlurredCover.Get(),
+                ps.rcClipInEle,
+                1.f,
+                D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
+                ps.rcClipInEle);
         EndPaint(ps);
     }
     return 0;
@@ -162,6 +163,8 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         const auto cx = GetWidth();
         const auto cy = GetHeight();
+        if (cx <= 0.f || cy <= 0.f)
+            return 0;
         if (m_pBitmapBlurredCover)
         {
             const auto Size = m_pBitmapBlurredCover->GetSize();
@@ -171,7 +174,7 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         }
         GetWindow().RdCreateBitmapLogical(
             cx, cy,
-            m_pBitmapBlurredCover.Self());
+            m_pBitmapBlurredCover.SelfClear());
     SkipReCreate:
         UpdateBlurredCover();
 
@@ -219,7 +222,9 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         const auto cx = GetWidth();
         const auto cy = GetHeight();
-        GetWindow().RdCreateBitmapLogical(cx, cy, m_pBitmapBlurredCover.SelfClear());
+        GetWindow().RdCreateBitmapLogical(
+            cx, cy,
+            m_pBitmapBlurredCover.SelfClear());
         UpdateBlurredCover();
     }
     break;

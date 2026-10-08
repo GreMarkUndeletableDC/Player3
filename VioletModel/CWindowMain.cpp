@@ -45,8 +45,10 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     if (!spUxAtlas.empty())
     {
         ComPtr<IWICBitmapSource> pWicBitmap;
-        eck::CStreamView Stream{ spUxAtlas };
-        eck::WicLoadSource(pWicBitmap.Self(), &Stream);
+        ComPtr<IWICStream> pStream;
+        eck::g_pWicFactory->CreateStream(&pStream);
+        pStream->InitializeFromMemory((UCHAR*)spUxAtlas.data(), (DWORD)spUxAtlas.size());
+        eck::WicLoadSource(pWicBitmap.Self(), pStream.Get());
         RdGetDC()->CreateBitmapFromWicBitmap(
             pWicBitmap.Get(), nullptr, m_pUxWndThemeAtlas.AtClear());
     }
@@ -101,7 +103,7 @@ void CWindowMain::PageShow(Page ePage, BOOL bAnimate) noexcept
     {
         if (bAlreadyVisible)
             return;// 已经显示，不需要动画
-        m_ecPage.Start(0, (float)PageSwitchAnimationDelta, !!m_pAnPage);
+        m_ecPage.Start(0, PageSwitchAnimationDelta, !!m_pAnPage);
         m_bPageAnUpToDown = (idxShow < idxShowLast);
         m_pAnPage = m_vPage[idxShow];
         KctWake();
@@ -222,7 +224,12 @@ LRESULT CWindowMain::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         const auto cyFrame = eck::DaGetSystemMetrics(SM_CYFRAME, GetWindowDpi());
         const auto cxPadded = eck::DaGetSystemMetrics(SM_CXPADDEDBORDER, GetWindowDpi());
         return eck::MsgOnNcCalculateSize(wParam, lParam,
-            { cxFrame + cxPadded,cxFrame + cxPadded,0,cyFrame + cxPadded });
+            {
+                cxFrame + cxPadded,
+                cxFrame + cxPadded,
+                0,
+                cyFrame + cxPadded
+            });
     }
     break;
 

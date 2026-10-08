@@ -412,7 +412,7 @@ void CPageList::InitializeUi() noexcept
     {
         ComPtr<IDWriteTextFormat> pTextFormat;
         App->FontFactory().NewFont(pTextFormat.Self(), eck::Alignment::Center,
-            eck::Alignment::Center, (float)NormalFontSize, 400);
+            eck::Alignment::Center, NormalFontSize, 400);
         pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
         m_BTAddFile.Create(L"添加文件", Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
@@ -461,7 +461,7 @@ void CPageList::InitializeUi() noexcept
             });
 
         App->FontFactory().NewFont(pTextFormat.SelfClear(), eck::Alignment::Near,
-            eck::Alignment::Center, (float)NormalFontSize, 400, TRUE);
+            eck::Alignment::Center, NormalFontSize, 400, TRUE);
         pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
         m_LVList.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,

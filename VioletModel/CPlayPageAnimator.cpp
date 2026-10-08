@@ -39,7 +39,7 @@ void CPlayPageAnimator::PpaStart() noexcept
 void CPlayPageAnimator::PpaEnd() noexcept
 {
     m_bAnActive = FALSE;
-    ZeroMemory(m_bCornerAnActive, sizeof(m_bCornerAnActive));
+    RtlZeroMemory(m_bCornerAnActive, sizeof(m_bCornerAnActive));
 }
 
 BOOL CPlayPageAnimator::PpaTick(float ms) noexcept

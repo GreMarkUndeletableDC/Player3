@@ -66,6 +66,7 @@ LRESULT CTabPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             0, 0, GetWidth(), GetWidth(), this);
         m_LAIcon.SetOnlyBitmap(TRUE);
         m_LAIcon.SetBackgroundMode(eck::ImageMode::CenterUniform);
+        m_LAIcon.SetBackgroundBitmap(GetImageManager()->AtlasGetD2D(AppImage::WindowLogo));
 
         m_TAB.Create({}, Dui::DES_VISIBLE, 0,
             0, 0, 0, 0, this);

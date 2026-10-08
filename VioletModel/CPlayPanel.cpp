@@ -13,8 +13,8 @@ void CPlayPanel::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
         const auto lfCurrTime = Player.GetCurrentTime();
         const auto lfTotalTime = Player.GetTotalTime();
         m_LATime.SetText(eck::Format(L"%02d:%02d/%02d:%02d",
-            int(lfCurrTime / 60), int(lfCurrTime) % 60,
-            int(lfTotalTime / 60), int(lfTotalTime) % 60).Data());
+            int(lfCurrTime / 60.), int(lfCurrTime) % 60,
+            int(lfTotalTime / 60.), int(lfTotalTime) % 60).Data());
         m_LATime.Invalidate();
     }
     break;
@@ -78,7 +78,7 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
         ComPtr<IDWriteTextFormat> pTfTitle;
         App->FontFactory().NewFont(pTfTitle.Self(), eck::Alignment::Near,
-            eck::Alignment::Center, (float)NormalFontSize, 700);
+            eck::Alignment::Center, NormalFontSize, 700);
         pTfTitle->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
         float x = MiniCoverLeftPosition;

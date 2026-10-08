@@ -48,13 +48,13 @@ void CWindowMain::InitializeUi() noexcept
 
     ComPtr<IDWriteTextFormat> pTfPageTitle, pTfLeft, pTfCenter;
     App->FontFactory().NewFont(pTfPageTitle.Self(), eck::Alignment::Near,
-        eck::Alignment::Center, (float)PageTitleFontHeight, 600);
+        eck::Alignment::Center, PageTitleFontHeight, 600);
     pTfPageTitle->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
     App->FontFactory().NewFont(pTfLeft.Self(), eck::Alignment::Near,
-        eck::Alignment::Center, (float)NormalFontSize);
+        eck::Alignment::Center, NormalFontSize);
     pTfLeft->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
     App->FontFactory().NewFont(pTfCenter.Self(), eck::Alignment::Center,
-        eck::Alignment::Center, (float)NormalFontSize);
+        eck::Alignment::Center, NormalFontSize);
     pTfCenter->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
     m_NormalPageContainer.Create({}, Dui::DES_VISIBLE, 0,
@@ -95,11 +95,11 @@ void CWindowMain::InitializeUi() noexcept
         0, 0, 0, 0, nullptr, this);
     m_PagePlaying.SetTextFormat(pTfLeft.Get());
     App->FontFactory().NewFont(pTfPP.SelfClear(), eck::Alignment::Near,
-        eck::Alignment::Center, (float)LabelFontHeight, 600);
+        eck::Alignment::Center, LabelFontHeight, 600);
     pTfPP->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
     m_PagePlaying.SetLabelTextFormatTitle(pTfPP.Get());
     App->FontFactory().NewFont(pTfPP.SelfClear(), eck::Alignment::Near,
-        eck::Alignment::Center, (float)LabelFontHeight);
+        eck::Alignment::Center, LabelFontHeight);
     pTfPP->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
     m_PagePlaying.SetLabelTextFormat(pTfPP.Get());
     // 进度条
@@ -182,9 +182,9 @@ void CWindowMain::OnSize() noexcept
 
     D2D1_RECT_F rcMini;
     rcMini.left = MiniCoverLeftPosition;
-    rcMini.top = float(cyClient - PlayPanelHeight + MiniCoverTopPosition);
-    rcMini.right = rcMini.left + (float)MiniCoverSize;
-    rcMini.bottom = rcMini.top + (float)MiniCoverSize;
+    rcMini.top = cyClient - PlayPanelHeight + MiniCoverTopPosition;
+    rcMini.right = rcMini.left + MiniCoverSize;
+    rcMini.bottom = rcMini.top + MiniCoverSize;
     m_PlayPageAnimator.PpaSetRect(
         rcMini,
         { 0.f, 0.f, cxClient, cyClient });

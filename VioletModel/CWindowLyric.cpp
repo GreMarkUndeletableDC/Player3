@@ -63,7 +63,7 @@ LRESULT CWindowLyric::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcep
             cxLyt, CxyLrcBtn);
         m_Lrc.SetRect({
             CxyLrcPadding,
-            float(m_Layout.LoGetPosition().y + m_Layout.LoGetSize().cy + CxyLrcPadding),
+            m_Layout.LoGetPosition().y + m_Layout.LoGetSize().cy + CxyLrcPadding,
             GetClientWidthLogical() - CxyLrcPadding,
             GetClientHeightLogical() - CxyLrcPadding });
         return lResult;
