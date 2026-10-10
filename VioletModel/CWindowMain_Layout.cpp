@@ -84,7 +84,7 @@ void CWindowMain::InitializeUi() noexcept
         0, 0, 0, 0, pNormalParent, this);
     m_PageOptions.SetTextFormat(pTfLeft.Get());
     // 底部播放控制栏
-    m_PlayPanel.SetEnableBlur(TRUE);
+    m_PlayPanel.SetEnableBlur(FALSE);
     m_PlayPanel.Create({}, Dui::DES_VISIBLE |
         (m_PlayPanel.GetEnableBlur() ? Dui::DES_CONTENT_EXPAND : 0), 0,
         0, 0, 0, 0, pNormalParent, this);

@@ -26,5 +26,6 @@ public:
 
     void PpaStart() noexcept;
     void PpaEnd() noexcept;
+    // 如果动画需要继续运行，则返回TRUE
     BOOL PpaTick(float ms) noexcept;
 };

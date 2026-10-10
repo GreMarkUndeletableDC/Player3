@@ -36,7 +36,8 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
     BOOL bNeedUpdate{};
     EckCounter(vItem.Size(), i)
     {
-        auto& e = pList->FlAtAbsolutely(vItem[i]);
+        const auto idx = vItem[i];
+        auto& e = pList->FlAtAbsolutely(idx);
         vMetadata[i].mi.uMask = Tag::MIM_NONE;
         if (!e.s.bUpdated)
         {
@@ -45,10 +46,10 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
             e.s.bUpdated = TRUE;
             bNeedUpdate = TRUE;
         }
-        if (m_ItemAdapter[i].idxImage < 1)
+        if (m_ItemAdapter[idx].idxImage < 1)
         {
             vMetadata[i].mi.uMask |= Tag::MIM_COVER;
-            m_ItemAdapter[i].idxImage = 0;
+            m_ItemAdapter[idx].idxImage = 0;
             bNeedUpdate = TRUE;
         }
     }
@@ -160,7 +161,10 @@ eck::CoroTask<void> CPageList::PlLoadMetadata(
             for (auto& pTl : Ui.pTextLayout)
                 pTl.Clear();// TODO: 选择性无效化
         }
-        m_LVList.GetController().InvalidateItem({ .Item = vItem[i] });
+        if (pList->FlIsSearching())
+            m_LVList.Invalidate();
+        else
+            m_LVList.GetController().InvalidateItem({ .Item = vItem[i] });
     }
     GetWindow().RdUnlockUpdate();
 }
@@ -175,31 +179,19 @@ void CPageList::PlBeginLoadMetadata(int idxList) noexcept
     auto pList = App->ListManager().At(idxList).pList;
     eck::CTrivialBuffer<int> vItem{};
 
-    //m_LVList.GetController().ForEachItem(
-    //    [&](const Dui::CListView::TController::FOR_ITEM& e)
-    //    {
-    //        auto& Meta = pList->FlAt(e.idx.Item);
-    //        if (!Meta.s.bUpdated || m_ItemAdapter[e.idx.Item].idxImage < 0)
-    //            if (pList->FlIsSearching())
-    //                vItem.PushBack(pList->FlAtSearch(e.idx.Item));
-    //            else
-    //                vItem.PushBack(e.idx.Item);
-    //    },
-    //    [](const Dui::CListView::TController::FOR_GROUP& e) {},
-    //    m_LVList.GetViewRect(),
-    //    FALSE);
-
-    const auto cItem = pList->FlIsSearching() ?
-        pList->FlGetSearchResultCount() : pList->FlGetCount();
-    EckCounter(cItem, i)
-    {
-        auto& Meta = pList->FlAt(i);
-        if (!Meta.s.bUpdated || m_ItemAdapter[i].idxImage < 0)
-            if (pList->FlIsSearching())
-                vItem.PushBack(pList->FlAtSearch(i));
-            else
-                vItem.PushBack(i);
-    }
+    m_LVList.GetController().ForEachItem(
+        [&](const Dui::CListView::TController::FOR_ITEM& e) noexcept
+        {
+            auto& Meta = pList->FlAt(e.idx.Item);
+            if (!Meta.s.bUpdated || m_ItemAdapter[e.idx.Item].idxImage < 0)
+                if (pList->FlIsSearching())
+                    vItem.PushBack(pList->FlAtSearch(e.idx.Item));
+                else
+                    vItem.PushBack(e.idx.Item);
+        },
+        [](const Dui::CListView::TController::FOR_GROUP& e) noexcept {},
+        m_LVList.GetViewRect(),
+        FALSE);
 
     if (!vItem.IsEmpty())
         PlLoadMetadata(
@@ -466,6 +458,7 @@ void CPageList::InitializeUi() noexcept
 
         m_LVList.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
             0, 0, 0, 0, this);
+        m_LVList.SetBubbleScrollEvent(TRUE);
         m_LVList.SetTextFormat(pTextFormat.Get());
         m_LVList.SetAdapter(&m_ItemAdapter);
 
@@ -551,19 +544,13 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         else if (wParam == (WPARAM)&m_LVList)
             switch (((Dui::ELENMHDR*)lParam)->uNotify)
             {
-                //case Dui::LTE_SCROLLED:
-                //{
-                //    const auto p = (Dui::NMLTSCROLLED*)lParam;
-                //    if (eck::PtcCurrent() != App->UiThreadContext())
-                //        App->UiThreadContext()->Callback.EnQueueCallback(
-                //            [this, idx0 = p->idxBegin, idx1 = p->idxEnd]
-                //            {
-                //                PlBeginLoadMetadata(idx0, idx1);
-                //            });
-                //    else
-                //        PlBeginLoadMetadata(p->idxBegin, p->idxEnd);
-                //}
-                return 0;
+            case Dui::ENC_SCROLL:
+            {
+                const auto p = (Dui::EVT_SCROLL*)lParam;
+                if (!p->bAnimating || p->bEndAnimation)
+                    PlBeginLoadMetadata();
+            }
+            return 0;
             }
         else if (wParam == (WPARAM)&m_BTAddFile)
             switch (((Dui::ELENMHDR*)lParam)->uNotify)
@@ -616,7 +603,7 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
     case WM_SIZE:
         m_Lyt.Arrange(GetWidth(), GetHeight());
-        PlBeginLoadMetadata(-1);
+        PlBeginLoadMetadata();
         break;
 
     case WM_SETFONT:

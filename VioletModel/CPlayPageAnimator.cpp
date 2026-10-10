@@ -12,12 +12,11 @@ void CPlayPageAnimator::PostRender(Dui::COMP_RENDER_INFO& cri) noexcept
         AtMatrixD2D());
     if (m_BitmapOverlay.Get())
     {
-        cri.pDC->DrawBitmap(
-            m_BitmapOverlay.Get(),
+        m_BitmapOverlay.Draw(
+            cri.pDC,
             cri.rcDst,
             GetOpacity(),
             GetInterpolationMode(),
-            m_BitmapOverlay.GetSourceRect(),
             AtMatrixD2D());
     }
 }
@@ -94,18 +93,20 @@ BOOL CPlayPageAnimator::PpaTick(float ms) noexcept
             ptLarge[i].x, ptLarge[i].y,
             m_CornerCurve[i].K,
             pt[i].x, pt[i].y);
-        if (m_bAnReverse)
-        {
-            if (fabs(ptLarge[i].x - pt[i].x) > MinimumDistance ||
-                fabs(ptLarge[i].y - pt[i].y) > MinimumDistance)
-                bStillRunning = TRUE;
-        }
-        else
-        {
-            if (fabs(ptMini[i].x - pt[i].x) > MinimumDistance ||
-                fabs(ptMini[i].y - pt[i].y) > MinimumDistance)
-                bStillRunning = TRUE;
-        }
+
+        if (m_bCornerAnActive[i])
+            if (m_bAnReverse)
+            {
+                if (fabs(ptLarge[i].x - pt[i].x) > MinimumDistance ||
+                    fabs(ptLarge[i].y - pt[i].y) > MinimumDistance)
+                    bStillRunning = TRUE;
+            }
+            else
+            {
+                if (fabs(ptMini[i].x - pt[i].x) > MinimumDistance ||
+                    fabs(ptMini[i].y - pt[i].y) > MinimumDistance)
+                    bStillRunning = TRUE;
+            }
     }
 
     eck::CalculateDistortMatrix(m_rcLarge, pt, *AtMatrixD2D());

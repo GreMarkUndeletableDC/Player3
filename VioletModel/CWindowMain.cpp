@@ -73,8 +73,6 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
 
     OnColorSchemeChanged();
     PageShow(Page::List, FALSE);
-    // TODO: 选中
-    //m_TabPanel.GetTabList().GetController().(1);
     return TRUE;
 }
 
