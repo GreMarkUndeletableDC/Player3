@@ -28,8 +28,8 @@ enum
 enum
 {
     ELEN_PLACEHOLDER = Dui::ENC_PRIVATE_BEGIN,
-    ELEN_PAGE_CHANGE,       // [CTabPanel]边栏被单击时(NMLTITEMINDEX*)
-    ELEN_DTLRC_GET_TIME,    // [CVeDesktopLyric]取当前播放器时间(NM_DTL_GET_TIME*)
+
+    ELEN_PAGE_CHANGE,       // EVT_SELECT_CHANGE
     ELEN_PLAYPAGE_LBTN_UP,  // [CPagePlaying]左键放开
 };
 

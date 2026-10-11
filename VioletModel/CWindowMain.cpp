@@ -6,14 +6,6 @@ const static UINT MessageTaskbarButtonCreated{ RegisterWindowMessageW(L"TaskbarB
 
 constexpr static float PageSwitchAnimationDelta = 60.f;
 
-constexpr static std::wstring_view PageName[]
-{
-    L"主页"sv,
-    L"列表"sv,
-    L"效果"sv,
-    L"设置"sv,
-};
-
 constexpr static UINT_PTR IDT_COMM_TICK = 101;
 constexpr static UINT TE_COMM_TICK = 200;
 constexpr static UINT TE_PROG = TE_COMM_TICK * 2;
@@ -70,6 +62,7 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     m_pFilterBlur->Attach(this);
 
     InitializeUi();
+    Dui::CColorCollection::UpdateAllAccentColor(TmGetAccentColor());
 
     OnColorSchemeChanged();
     PageShow(Page::List, FALSE);
@@ -89,7 +82,7 @@ void CWindowMain::PageShow(Page ePage, BOOL bAnimate) noexcept
     const auto bAlreadyVisible =
         (m_vPage[idxShow]->GetStyle() & Dui::DES_VISIBLE);
 
-    m_LAPageTitle.SetText(PageName[idxShow]);
+    m_LAPageTitle.SetText(CTabPanel::PageName[idxShow]);
     m_LAPageTitle.Invalidate();
     m_vPage[idxShow]->SetVisible(TRUE);
     for (int i = 0; i < idxShow; ++i)
@@ -285,8 +278,8 @@ LRESULT CWindowMain::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) no
     {
     case ELEN_PAGE_CHANGE:
     {
-        //const auto* const p = (Dui::NMLTITEMINDEX*)lParam;
-        //PageShow((Page)p->idx, TRUE);
+        const auto* const p = (CTabPanel::EVT_SELECT_CHANGE*)pnm;
+        PageShow((Page)p->idx, TRUE);
     }
     return 0;
 

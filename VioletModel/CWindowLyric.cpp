@@ -181,16 +181,16 @@ LRESULT CWindowLyric::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcep
 
 LRESULT CWindowLyric::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) noexcept
 {
-    if (pEle == &m_Lrc)
-        switch (pnm->uNotify)
-        {
-        case ELEN_DTLRC_GET_TIME:
-        {
-            const auto p = (NM_DTL_GET_TIME*)pnm;
-            p->fTime = (float)App->Player().GetBass().GetPosition();
-        }
-        return 0;
-        }
+    //if (pEle == &m_Lrc)
+    //    switch (pnm->uNotify)
+    //    {
+    //    case ELEN_DTLRC_GET_TIME:
+    //    {
+    //        const auto p = (NM_DTL_GET_TIME*)pnm;
+    //        p->fTime = (float)App->Player().GetBass().GetPosition();
+    //    }
+    //    return 0;
+    //    }
     if (pEle == &m_BTPrev)
         App->Player().Previous();
     else if (pEle == &m_BTPlay)
