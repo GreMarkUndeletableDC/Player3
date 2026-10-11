@@ -36,13 +36,18 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     const auto spUxAtlas = m_pUxWndTheme->GetAtlasImageData();
     if (!spUxAtlas.empty())
     {
+        HRESULT hr;
         ComPtr<IWICBitmapSource> pWicBitmap;
         ComPtr<IWICStream> pStream;
-        eck::g_pWicFactory->CreateStream(&pStream);
-        pStream->InitializeFromMemory((UCHAR*)spUxAtlas.data(), (DWORD)spUxAtlas.size());
-        eck::WicLoadSource(pWicBitmap.Self(), pStream.Get());
-        RdGetDC()->CreateBitmapFromWicBitmap(
-            pWicBitmap.Get(), nullptr, m_pUxWndThemeAtlas.AtClear());
+        hr = eck::g_pWicFactory->CreateStream(&pStream);
+        if (SUCCEEDED(hr))
+            hr = pStream->InitializeFromMemory(
+                (UCHAR*)spUxAtlas.data(), (DWORD)spUxAtlas.size());
+        if (SUCCEEDED(hr))
+            hr = eck::WicLoadSource(pWicBitmap.Self(), pStream.Get());
+        if (SUCCEEDED(hr))
+            RdGetDC()->CreateBitmapFromWicBitmap(
+                pWicBitmap.Get(), nullptr, m_pUxWndThemeAtlas.AtClear());
     }
 
     CBass::Initialize();
