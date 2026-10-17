@@ -25,12 +25,12 @@ EckInlineNdCe AppImage AutoNextModeToAppImage(AutoNextMode eMode) noexcept
 
 BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
 {
-    m_pImageManager->PrepareRealization(RdGetDC());
-    m_pImageManager->AtlasInitialize();
+    m_pImageManager->Initialize(RdGetDC(), eck::PtcCurrent()->bAppDarkMode);
+    m_pImageManager->AtlasLoad();
     m_pImageManager->AtlasRealize();
-    m_pImageManager->CoverInitialize();
+    m_pImageManager->CoverLoad();
     m_pImageManager->CoverRealize();
-    m_pImageManager->SingleInitialize();
+    m_pImageManager->SingleLoad();
 
     m_pUxWndTheme->LoadDefaultTheme();
     const auto spUxAtlas = m_pUxWndTheme->GetAtlasImageData();
@@ -251,6 +251,7 @@ LRESULT CWindowMain::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         if (eck::MsgOnSettingChangeMainWindow(Handle, wParam, lParam, TRUE))
         {
+            m_pImageManager->OnColorSchemeChanged(eck::PtcCurrent()->bAppDarkMode);
             OnColorSchemeChanged();
             TblUpdateToolBarIcon();
             m_WndTbGhost.InvalidateDwmThumbnail();
@@ -261,9 +262,6 @@ LRESULT CWindowMain::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     break;
     case WM_DPICHANGED:
         SetUserDpi(LOWORD(wParam));
-        break;
-    case WM_DWMCOLORIZATIONCOLORCHANGED:
-        //StUpdateColorizationColor();
         break;
     case WM_SETTEXT:
     {
@@ -409,7 +407,7 @@ BOOL CWindowMain::TlIsValid() noexcept
 //            m_WndLrc.SetPresentMode(Dui::PresentMode::UpdateLayeredWindow);
 //            m_WndLrc.SetTransparent(TRUE);
 //            m_WndLrc.SetUserDpi(GetUserDpi());
-//            m_WndLrc.Create(L"VioletModel - Lyrics", WS_POPUP | WS_VISIBLE,
+//            m_WndLrc.Create(L"Player3 - Lyrics", WS_POPUP | WS_VISIBLE,
 //                WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TOPMOST,
 //                300, 400, 500, 300, Handle, nullptr);
 //        }

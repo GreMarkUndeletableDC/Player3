@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "CVeBase.h"
 
-class CVioletTheme : public Dui::CTheme
+class CPlayerTheme : public Dui::CTheme
 {
     Dui::TmResult Draw(
         Dui::CElement* pEle,
@@ -12,7 +12,7 @@ class CVioletTheme : public Dui::CTheme
 };
 
 
-Dui::TmResult CVioletTheme::Draw(
+Dui::TmResult CPlayerTheme::Draw(
     Dui::CElement* pEle,
     const Dui::SimpleStyle* pStyle,
     UINT idPart,
@@ -25,13 +25,32 @@ Dui::TmResult CVioletTheme::Draw(
 
 RcPtr<Dui::CTheme> CVeBase::TmMakeDefaultTheme(BOOL bDark) noexcept
 {
-    auto p = Dui::TmMakeTheme<CVioletTheme>(bDark);
+    auto p = Dui::TmMakeTheme<CPlayerTheme>(bDark);
+    p->SetColorCollection(TmDefaultColorCollection(bDark).Get());
     return p;
 }
 
 RcPtr<Dui::CColorCollection> CVeBase::TmMakeDefaultColorCollection(BOOL bDark) noexcept
 {
-    auto p = (bDark ? Dui::TmsColorCollectionDark() : Dui::TmsColorCollectionLight());
+    auto p = (bDark ? Dui::TmsMakeColorCollectionDark() : Dui::TmsMakeColorCollectionLight());
+    if (bDark)
+    {
+        p->Set(IdCrVolumeBarBackground, CrdVolumeBarBackground);
+        p->Set(IdCrVolumeBarBorder, CrdVolumeBarBorder);
+        p->Set(IdCrPalyPageMask, CrdPalyPageMask);
+        p->Set(IdCrTabPanelBackground, CrdTabPanelBackground);
+        p->Set(IdCrPlayPanelBackground, CrdPlayPanelBackground);
+        p->Set(IdCrMiniCoverMask, CrdMiniCoverMask);
+    }
+    else
+    {
+        p->Set(IdCrVolumeBarBackground, CrlVolumeBarBackground);
+        p->Set(IdCrVolumeBarBorder, CrlVolumeBarBorder);
+        p->Set(IdCrPalyPageMask, CrlPalyPageMask);
+        p->Set(IdCrTabPanelBackground, CrlTabPanelBackground);
+        p->Set(IdCrPlayPanelBackground, CrlPlayPanelBackground);
+        p->Set(IdCrMiniCoverMask, CrlMiniCoverMask);
+    }
     return p;
 }
 
@@ -65,6 +84,9 @@ LRESULT CVeBase::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     switch (uMsg)
     {
+    case WM_STYLECHANGED:
+        Dui::TmAutoSwitchTheme(this, wParam);
+        break;
     case WM_CREATE:
         SetTheme(TmDefaultTheme(TmIsDarkMode()).Get());
         break;

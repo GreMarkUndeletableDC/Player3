@@ -22,6 +22,8 @@ private:
     void LcaColumnWidthChanged(int idxCol, float cxNew) noexcept override;
 public:
     EckInlineNdCe auto& operator[](size_t idx) noexcept { return m_vList[idx]; }
+    EckInlineNdCe auto begin() noexcept { return m_vList.begin(); }
+    EckInlineNdCe auto end() noexcept { return m_vList.end(); }
     void OnDataChanged() noexcept;
 };
 
@@ -119,6 +121,8 @@ private:
     HRESULT OnMenuAddFile(CPlayList* pList, int idxInsert = -1) noexcept;
 
     void OnListSwitch() noexcept;
+
+    void OnColorSchemeChanged() noexcept;
 
     void InitializeUi() noexcept;
 public:

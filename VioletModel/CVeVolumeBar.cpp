@@ -10,16 +10,20 @@ LRESULT CVeVolumeBar::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         Dui::PAINTINFO ps;
         BeginPaint(ps, wParam, lParam);
-        GetDC()->FillRectangle(ps.rcClip,
-            GetWindow().CcSetBrushColor(GetTheme()->GetColorD2D(IdCrVolumeBarBack)));
-        GetDC()->DrawRectangle(GetRectInClientD2D(),
-            GetWindow().CcSetBrushColor(GetTheme()->GetColorD2D(IdCrVolumeBarBack)));
+        GetDC()->FillRectangle(ps.rcClip, GetWindow().CcSetBrushColor(
+            GetTheme()->GetColorD2D(IdCrVolumeBarBackground)));
+        auto rc{ GetRectInClientD2D() };
+        eck::InflateRect(rc, -0.5f, -0.5f);
+        GetDC()->DrawRectangle(rc, GetWindow().CcSetBrushColor(
+            GetTheme()->GetColorD2D(IdCrVolumeBarBorder)));
         EndPaint(ps);
     }
     return 0;
+
     case WM_SETFONT:
         m_LAVol.SetTextFormat(GetTextFormat().Get());
         break;
+
     case WM_CREATE:
     {
         __super::OnEvent(uMsg, wParam, lParam);

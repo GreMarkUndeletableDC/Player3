@@ -45,14 +45,59 @@ constexpr std::wstring_view SingleImageFile[]
 static_assert(ARRAYSIZE(SingleImageFile) == CImageManager::SingleImageCount);
 
 
-
-HRESULT CImageManager::PrepareRealization(ID2D1DeviceContext* pDC) noexcept
+static HRESULT CreateInvertWicBitmap(
+    _In_ IWICBitmapSource* pSrc,
+    Eck_Out_buffer_ ComPtr<IWICBitmap>& pDst) noexcept
 {
-    m_pDC = pDC;
+    pDst.Clear();
+    HRESULT hr;
+    UINT cx{}, cy{};
+    pSrc->GetSize(&cx, &cy);
+
+    eck::CTrivialBuffer<ARGB> Buffer(cx * cy);
+    hr = pSrc->CopyPixels(
+        nullptr,
+        cx * sizeof(ARGB),
+        cx * cy * sizeof(ARGB),
+        (BYTE*)Buffer.Data());
+    if (FAILED(hr))
+        return hr;
+
+    for (auto& px : Buffer)
+    {
+        auto [a, r, g, b] = eck::DecomposeArgb(eck::UnpremultiplyArgb(px));
+        if (a)
+        {
+            r = 255 - r;
+            g = 255 - g;
+            b = 255 - b;
+            px = eck::PremultiplyArgb(a, r, g, b);
+        }
+    }
+
+    hr = eck::g_pWicFactory->CreateBitmapFromMemory(
+        cx, cy,
+        eck::DefaultWicPixelFormat,
+        cx * sizeof(UINT),
+        cx * cy * sizeof(UINT),
+        (BYTE*)Buffer.Data(),
+        &pDst);
+    if (FAILED(hr))
+        return hr;
     return S_OK;
 }
 
-HRESULT CImageManager::AtlasInitialize() noexcept
+
+HRESULT CImageManager::Initialize(
+    _In_ ID2D1DeviceContext* pDC,
+    BOOL bDarkMode) noexcept
+{
+    m_pDC = pDC;
+    m_bDarkMode = bDarkMode;
+    return S_OK;
+}
+
+HRESULT CImageManager::AtlasLoad() noexcept
 {
     HRESULT hr;
     auto rsPath{ eck::GetRunningPath() };
@@ -62,8 +107,15 @@ HRESULT CImageManager::AtlasInitialize() noexcept
     hr = eck::WicLoadSource(m_pAtlasWic.SelfClear(), rsPath.Data());
     if (FAILED(hr))
         return hr;
+    if (m_bDarkMode)
+    {
+        ComPtr<IWICBitmap> pInvert;
+        hr = CreateInvertWicBitmap(m_pAtlasWic.Get(), pInvert);
+        if (SUCCEEDED(hr))
+            m_pAtlasWic = std::move(pInvert);
+    }
 
-    rsPath.PopBack(3);// png
+    rsPath.PopBack(3);// "png"
     rsPath.PushBack(LR"(json)"sv);
 
     NTSTATUS nts;
@@ -136,7 +188,7 @@ Dui::CBitmap CImageManager::AtlasGetD2D(AppImage eImg) const noexcept
     return Bitmap;
 }
 
-HRESULT CImageManager::CoverInitialize() noexcept
+HRESULT CImageManager::CoverLoad() noexcept
 {
     HRESULT hr;
 
@@ -146,6 +198,13 @@ HRESULT CImageManager::CoverInitialize() noexcept
     hr = eck::WicLoadSource(pDefaultCover.SelfClear(), rsPath.Data());
     if (FAILED(hr))
         return hr;
+    if (m_bDarkMode)
+    {
+        ComPtr<IWICBitmap> pInvert;
+        hr = CreateInvertWicBitmap(pDefaultCover.Get(), pInvert);
+        if (SUCCEEDED(hr))
+            pDefaultCover = std::move(pInvert);
+    }
 
     ComPtr<IWICBitmapScaler> pScaler;
     hr = eck::WicScaleBitmap(
@@ -180,7 +239,7 @@ Dui::CBitmap CImageManager::CoverGetD2D() noexcept
     return Bitmap;
 }
 
-HRESULT CImageManager::InternalCoverUpdate(IWICBitmapSource* pBitmap) noexcept
+HRESULT CImageManager::InternalCoverUpdate(_In_ IWICBitmapSource* pBitmap) noexcept
 {
     HRESULT hr;
 
@@ -226,51 +285,7 @@ HRESULT CImageManager::InternalCoverUpdate(IWICBitmapSource* pBitmap) noexcept
         CoverWidth * sizeof(UINT));
 }
 
-HRESULT CImageManager::CreateInvertWicBitmap(
-    IWICBitmapSource* pSrc,
-    Eck_Out_buffer_ ComPtr<IWICBitmapSource>& pDst) noexcept
-{
-    HRESULT hr;
-    UINT cx{}, cy{};
-    pSrc->GetSize(&cx, &cy);
-
-    eck::CTrivialBuffer<ARGB> Buffer(cx * cy);
-    hr = pSrc->CopyPixels(
-        nullptr,
-        cx * sizeof(ARGB),
-        cx * cy * sizeof(ARGB),
-        (BYTE*)Buffer.Data());
-    if (FAILED(hr))
-        return hr;
-
-    for (auto& px : Buffer)
-    {
-        auto [a, r, g, b] = eck::DecomposeArgb(eck::UnpremultiplyArgb(px));
-        if (a)
-        {
-            r = 255 - r;
-            g = 255 - g;
-            b = 255 - b;
-            px = eck::PremultiplyArgb(a, r, g, b);
-        }
-    }
-
-    ComPtr<IWICBitmap> pBitmap;
-    hr = eck::g_pWicFactory->CreateBitmapFromMemory(
-        cx, cy,
-        eck::DefaultWicPixelFormat,
-        cx * sizeof(UINT),
-        cx * cy * sizeof(UINT),
-        (BYTE*)Buffer.Data(),
-        &pBitmap);
-    if (FAILED(hr))
-        return hr;
-
-    pDst = std::move(pBitmap);
-    return S_OK;
-}
-
-HRESULT CImageManager::CoverUpdate(IWICBitmapSource* pBitmap) noexcept
+HRESULT CImageManager::CoverUpdate(_In_ IWICBitmapSource* pBitmap) noexcept
 {
     if (pBitmap)
     {
@@ -281,7 +296,7 @@ HRESULT CImageManager::CoverUpdate(IWICBitmapSource* pBitmap) noexcept
     return InternalCoverUpdate(m_pDefaultCoverWic.Get());
 }
 
-HRESULT CImageManager::SingleInitialize() noexcept
+HRESULT CImageManager::SingleLoad() noexcept
 {
     return E_NOTIMPL;
 }
@@ -289,4 +304,15 @@ HRESULT CImageManager::SingleInitialize() noexcept
 Dui::CBitmap CImageManager::SingleGetImage(AppImage eImg) noexcept
 {
     return {};
+}
+
+void CImageManager::OnColorSchemeChanged(BOOL bDark) noexcept
+{
+    m_bDarkMode = bDark;
+    AtlasLoad();
+    AtlasRealize();
+    CoverLoad();
+    if (m_bDefaultCover)
+        CoverUpdate(nullptr);
+    SingleLoad();
 }

@@ -170,7 +170,7 @@ LRESULT CWindowLyric::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcep
             eck::Alignment::Near, eck::Alignment::Near, 20, 500);
         pTfLrc->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
         m_Lrc.SetTextFormatTranslation(pTfLrc.Get());
-        m_Lrc.LrcSetEmptyText(L"VioletModel - VC++/Win32"sv);
+        m_Lrc.LrcSetEmptyText(L"Player3 - VC++/Win32"sv);
 
         return lResult;
     }

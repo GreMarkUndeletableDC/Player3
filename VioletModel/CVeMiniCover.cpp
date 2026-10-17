@@ -33,7 +33,12 @@ void CVeMiniCover::OnPaint(const Dui::PAINTINFO& ps) noexcept
                 GetRectInClientD2D(), ps.ox, ps.oy, &Extra);
         }
 
-        // TODO: 遮罩
+        // -- 遮罩
+
+        auto crMask{ GetTheme()->GetColorD2D(IdCrMiniCoverMask) };
+        crMask.a *= (k / AnCoverEndValue);
+        GetDC()->FillRectangle(GetRectInClientD2D(),
+            GetWindow().CcSetBrushColor(crMask));
 
         // -- 箭头
 

@@ -38,8 +38,11 @@ void CWindowMain::InitializeUi() noexcept
             break;
             case Dui::UIHE_CREATE:
             {
+                auto uStyle = pEle->GetStyle();
+                uStyle |= Dui::DES_DBG_FRAME;
                 if (eck::PtcCurrent()->bAppDarkMode)
-                    pEle->SetStyle(pEle->GetStyle() | Dui::DES_DARK_MODE | Dui::DES_DBG_FRAME);
+                    uStyle |= Dui::DES_DARK_MODE;
+                pEle->SetStyle(uStyle);
             }
             break;
             }

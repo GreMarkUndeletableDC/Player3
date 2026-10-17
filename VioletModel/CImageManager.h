@@ -59,8 +59,8 @@ enum class AppImage : BYTE
 //  3. 封面：单幅位图，播放时上传到GPU
 // 
 // 初始化步骤如下：
-//  1. 调用XxxInitialize，载入WIC图像和必要元数据
-//  2. 主窗口载入后调用PrepareRealization，传入D2D设备上下文
+//  1. 调用XxxLoad，载入WIC图像和必要元数据
+//  2. 主窗口载入后调用Initialize，传入D2D设备上下文
 //  3. 调用XxxRealize，实现为D2D位图
 // 
 // 独立图像在被取用时进行懒加载，不提供Realize接口
@@ -109,16 +109,20 @@ private:
     ComPtr<IWICBitmapSource> m_pDefaultCoverWic{};// 大小为CoverWidth * CoverHeight
     BOOL m_bDefaultCover{ TRUE };// 当前是否使用默认封面
 
+    // --
+
+    BOOL m_bDarkMode{};
+
+    // --
+
     // 输入尺寸完全匹配的图像
-    HRESULT InternalCoverUpdate(IWICBitmapSource* pBitmap) noexcept;
-
-    HRESULT CreateInvertWicBitmap(
-        IWICBitmapSource* pSrc,
-        Eck_Out_buffer_ ComPtr<IWICBitmapSource>& pDst) noexcept;
+    HRESULT InternalCoverUpdate(_In_ IWICBitmapSource* pBitmap) noexcept;
 public:
-    HRESULT PrepareRealization(ID2D1DeviceContext* pDC) noexcept;
+    HRESULT Initialize(
+        _In_ ID2D1DeviceContext* pDC,
+        BOOL bDarkMode) noexcept;
 
-    HRESULT AtlasInitialize() noexcept;
+    HRESULT AtlasLoad() noexcept;
     HRESULT AtlasRealize() noexcept;
     EckInlineNdCe auto& AtlasGetOriginalWicBitmap() const noexcept { return m_pAtlasWic; }
     HRESULT AtlasCropWicBitmap(
@@ -126,14 +130,16 @@ public:
         Eck_Out_buffer_ ComPtr<IWICBitmapSource>& pBitmap) const noexcept;
     Dui::CBitmap AtlasGetD2D(AppImage eImg) const noexcept;
 
-    HRESULT CoverInitialize() noexcept;
+    HRESULT CoverLoad() noexcept;
     HRESULT CoverRealize() noexcept;
     // 返回当前封面图像，如果没有，返回默认封面
     Dui::CBitmap CoverGetD2D() noexcept;
-    HRESULT CoverUpdate(IWICBitmapSource* pBitmap) noexcept;
+    HRESULT CoverUpdate(_In_ IWICBitmapSource* pBitmap) noexcept;
     EckInlineNdCe BOOL CoverIsDefault() const noexcept { return m_bDefaultCover; }
     EckInlineNdCe auto& CoverGetDefaultWicBitmap() const noexcept { return m_pDefaultCoverWic; }
 
-    HRESULT SingleInitialize() noexcept;
+    HRESULT SingleLoad() noexcept;
     Dui::CBitmap SingleGetImage(AppImage eImg) noexcept;
+
+    void OnColorSchemeChanged(BOOL bDark) noexcept;
 };

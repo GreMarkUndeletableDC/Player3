@@ -42,9 +42,9 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             GetDC()->Flush();
             GetFilterBlur()->FilterDC(ps.rcClip, ps.ox, ps.oy);
         }
-        // TODO:颜色管理
-        //GetDC()->FillRectangle(ps.rcClipInEle, GetWindow().CcSetBrushColor(
-        //    App->GetColor(GPal::PlayPanelBk)));
+        GetDC()->FillRectangle(ps.rcClip, GetWindow().CcSetBrushColor(
+            GetTheme()->GetColorD2D(IdCrPlayPanelBackground)));
+
         EndPaint(ps);
     }
     return 0;
@@ -55,18 +55,6 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         m_LATime.SetTextFormat(GetTextFormat().Get());
     }
     break;
-
-    //case Dui::EWM_COLORSCHEMECHANGED:
-    //{
-    //    // FIXME
-    //    //D2D1_COLOR_F cr;
-    //    //GetTheme()->GetSysColor(Dui::SysColor::Text, cr);
-    //    //m_LATitle.SetColor(cr);
-    //    //m_LATitle.UpdateFadeColor();
-    //    //m_LAArtist.SetColor(cr);
-    //    //m_LAArtist.UpdateFadeColor();
-    //}
-    //break;
 
     case WM_CREATE:
     {
@@ -88,13 +76,13 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         x += (MiniCoverSize + PlayPanelTextPadding);
 
         float y = TitleTopPosition;
-        m_LATitle.Create(L"Violet", Dui::DES_VISIBLE, 0,
+        m_LATitle.Create(L"Player3", Dui::DES_VISIBLE, 0,
             x, y, TitleArtistMaximumWidth, PlayPanelTextHeight, this, pWnd);
         m_LATitle.SetFade(TRUE);
         m_LATitle.SetTextFormat(pTfTitle.Get());
         y += (PlayPanelTextHeight + TitleArtistPadding);
 
-        m_LAArtist.Create(L"Player", Dui::DES_VISIBLE, 0,
+        m_LAArtist.Create(L"VC++/Win32", Dui::DES_VISIBLE, 0,
             x, y, TitleArtistMaximumWidth, PlayPanelTextHeight, this, pWnd);
         m_LAArtist.SetFade(TRUE);
         x += (TitleArtistMaximumWidth + PlayPanelTextPadding);

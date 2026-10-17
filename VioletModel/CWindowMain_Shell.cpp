@@ -214,7 +214,7 @@ HRESULT CWindowMain::TblOnTaskbarButtonCreated() noexcept
 
 HRESULT CWindowMain::SmtcInitialize() noexcept
 {
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
     HRESULT hr;
     //////////TMPTMPTMP//////////
     // HACK 更合理的创建快捷方式逻辑（要求管理员权限）
@@ -223,7 +223,7 @@ HRESULT CWindowMain::SmtcInitialize() noexcept
     if (SUCCEEDED(hr))
     {
         eck::CStringW rsLink{ pszProgramPath };
-        rsLink.PushBack(EckArgString(L"\\VioletModel.lnk"));
+        rsLink.PushBack(EckArgString(L"\\Player3.lnk"));
         if (!PathFileExistsW(rsLink.Data()))
             eck::CreateShortcut(rsLink.Data(),
                 NtCurrentPeb()->ProcessParameters->ImagePathName.Buffer);
@@ -282,10 +282,10 @@ HRESULT CWindowMain::SmtcInitialize() noexcept
     return S_OK;
 #else
     return E_NOTIMPL;
-#endif// VIOLET_WINRT
+#endif// PLAYER_OPT_WINRT
 }
 
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
 eck::CoroTask<> CWindowMain::SmtcpCoroUpdateDisplay() noexcept
 {
     const auto mi = App->Player().GetMusicSimpleData();// 复制一份
@@ -339,11 +339,11 @@ eck::CoroTask<> CWindowMain::SmtcpCoroUpdateDisplay() noexcept
     }
     u.Update();
 }
-#endif// VIOLET_WINRT
+#endif// PLAYER_OPT_WINRT
 
 HRESULT CWindowMain::SmtcUpdateDisplay() noexcept
 {
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
     if (m_TskSmtcUpdateDisplay.hCoroutine &&
         !m_TskSmtcUpdateDisplay.IsCompleted())
     {
@@ -354,12 +354,12 @@ HRESULT CWindowMain::SmtcUpdateDisplay() noexcept
     return S_OK;
 #else
     return E_NOTIMPL;
-#endif// VIOLET_WINRT
+#endif// PLAYER_OPT_WINRT
 }
 
 HRESULT CWindowMain::SmtcOnCommonTick() noexcept
 {
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
     const auto ullTick = NtGetTickCount64();
     if (ullTick - m_ullSmtcTimeLineLastUpdate >= 5000)
     {
@@ -370,12 +370,12 @@ HRESULT CWindowMain::SmtcOnCommonTick() noexcept
         return S_FALSE;
 #else
     return E_NOTIMPL;
-#endif// VIOLET_WINRT
+#endif// PLAYER_OPT_WINRT
 }
 
 HRESULT CWindowMain::SmtcUpdateTimeLineRange() noexcept
 {
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
     using winrt::Windows::Foundation::TimeSpan;
     m_SmtcTimeline.StartTime(TimeSpan{});
     m_SmtcTimeline.MinSeekTime(TimeSpan{});
@@ -389,12 +389,12 @@ HRESULT CWindowMain::SmtcUpdateTimeLineRange() noexcept
     return S_OK;
 #else
     return E_NOTIMPL;
-#endif// VIOLET_WINRT
+#endif// PLAYER_OPT_WINRT
 }
 
 HRESULT CWindowMain::SmtcUpdateTimeLinePosition() noexcept
 {
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
     using winrt::Windows::Foundation::TimeSpan;
     const auto lfSeconds = App->Player().GetCurrentTime();
     const TimeSpan Pos{ std::chrono::milliseconds{ LONGLONG(lfSeconds * 1000.) } };
@@ -403,12 +403,12 @@ HRESULT CWindowMain::SmtcUpdateTimeLinePosition() noexcept
     return S_OK;
 #else
     return E_NOTIMPL;
-#endif// VIOLET_WINRT
+#endif// PLAYER_OPT_WINRT
 }
 
 HRESULT CWindowMain::SmtcUpdateState() noexcept
 {
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
     const auto& Player = App->Player();
     if (!Player.IsActive())
     {
@@ -422,13 +422,13 @@ HRESULT CWindowMain::SmtcUpdateState() noexcept
     return S_OK;
 #else
     return E_NOTIMPL;
-#endif// VIOLET_WINRT
+#endif// PLAYER_OPT_WINRT
 }
 
 void CWindowMain::SmtcUninitialize() noexcept
 {
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
     // 若不取消将导致内存泄漏
     m_Smtc.ButtonPressed(m_SmtcEvtTokenButtonPressed);
-#endif// VIOLET_WINRT
+#endif// PLAYER_OPT_WINRT
 }

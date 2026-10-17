@@ -83,12 +83,12 @@ void CPagePlaying::UpdateBlurredCover() noexcept
 
     GetDC()->DrawImage(pFxBlur.Get(), { 0.f, 0.f });
 
-    GetDC()->SetDpi(xDpi, yDpi);
-
     // -- 半透明遮罩
 
-    GetDC()->FillRectangle(GetViewRectD2D(),
+    GetDC()->FillRectangle({ 0.f, 0.f, cxEle, cyEle },
         GetWindow().CcSetBrushColor(crOverlay));
+
+    GetDC()->SetDpi(xDpi, yDpi);
 
     GetDC()->EndDraw();
     GetDC()->SetTarget(pOldTarget.Get());
@@ -131,13 +131,9 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
 
 void CPagePlaying::SetEmptyText() noexcept
 {
-    m_LATitle.SetText(L"Violet Model"sv);
+    m_LATitle.SetText(L"Player3"sv);
     m_LAArtist.SetText(L"VC++"sv);
     m_LAAlbum.SetText(L"Win32"sv);
-}
-
-void CPagePlaying::OnColorSchemeChanged() noexcept
-{
 }
 
 LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
@@ -218,6 +214,7 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         m_BTBack.SetRect(rcBackBtn);
     }
     break;
+
     case WM_DPICHANGED:
     {
         const auto cx = GetWidth();
@@ -228,6 +225,12 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         UpdateBlurredCover();
     }
     break;
+
+    case WM_STYLECHANGED:
+        if (Dui::TmAutoSwitchTheme(this, wParam))
+            UpdateBlurredCover();
+        return 0;
+
     case WM_SETFONT:
     {
         const auto pTf = GetTextFormat().Get();
@@ -236,13 +239,7 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         m_LAArtist.SetTextFormat(pTf);
     }
     break;
-    //case Dui::EWM_COLORSCHEMECHANGED:
-    //{
-    //    OnColorSchemeChanged();
-    //    UpdateBlurredCover();
-    //    Invalidate();
-    //}
-    //break;
+
     // FIXME
     //case WM_LBUTTONUP:
     //{
@@ -280,8 +277,6 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         m_BTBack.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
             100, 100, 70, 20, this);
         m_BTBack.SetId(ELEID_PLAYPAGE_BACK);
-
-        OnColorSchemeChanged();
 
         ComPtr<IDWriteTextFormat> pTfLrc;
         auto& FontFactory = App->FontFactory();;

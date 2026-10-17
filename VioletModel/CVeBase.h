@@ -4,9 +4,27 @@
 class CVeBase : public Dui::CElement
 {
 public:
-    const static inline UINT IdCrVolumeBarBack = Dui::TmNextResourceId();
+    const static inline UINT IdCrVolumeBarBackground = Dui::TmNextResourceId();
     const static inline UINT IdCrVolumeBarBorder = Dui::TmNextResourceId();
     const static inline UINT IdCrPalyPageMask = Dui::TmNextResourceId();
+    const static inline UINT IdCrTabPanelBackground = Dui::TmNextResourceId();
+    const static inline UINT IdCrPlayPanelBackground = Dui::TmNextResourceId();
+    const static inline UINT IdCrMiniCoverMask = Dui::TmNextResourceId();
+
+    constexpr static ARGB
+        CrlVolumeBarBackground = 0xA0'FFFFFF,
+        CrlVolumeBarBorder = Dui::CrlBorder,
+        CrlPalyPageMask = 0x20'FFFFFF,
+        CrlTabPanelBackground = 0xA0'FFFFFF,
+        CrlPlayPanelBackground = 0xA0'FFFFFF,
+        CrlMiniCoverMask = 0x40'FFFFFF;
+    constexpr static ARGB
+        CrdVolumeBarBackground = 0x50'000000,
+        CrdVolumeBarBorder = Dui::CrdBorder,
+        CrdPalyPageMask = 0x30'000000,
+        CrdTabPanelBackground = 0x50'000000,
+        CrdPlayPanelBackground = 0x50'000000,
+        CrdMiniCoverMask = 0x30'000000;
 private:
     RefPtr<CImageManager> m_pImageManager{};
     RefPtr<Dui::CFilterBlur> m_pFilterBlur{};

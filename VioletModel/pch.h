@@ -1,8 +1,8 @@
 ﻿#pragma once
 #define _CRTDBG_MAP_ALLOC       1
 
-#ifndef VIOLET_WINRT
-#define VIOLET_WINRT            0
+#ifndef PLAYER_OPT_WINRT
+#define PLAYER_OPT_WINRT        0
 #endif
 
 #include "eck\PchInclude.h"
@@ -33,7 +33,7 @@
 #include "eck\RefPtr.h"
 #include "eck\Json.h"
 
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
 //#include "eck\WinRtDCompInterop.h"
 //#include "eck\BackdropEffectChain.h"
 //

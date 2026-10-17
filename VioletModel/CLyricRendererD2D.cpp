@@ -36,7 +36,6 @@ HRESULT CLyricRendererD2D::LrInitialize(Dui::CElement* pEle) noexcept
 
 void CLyricRendererD2D::LrBeginDraw() noexcept
 {
-    // 可以优化为不使用图层，但是太麻烦了不做了
     if (GetFlags() & LRCF_TOP_BOTTOM_FADE)
     {
         D2D1_LAYER_PARAMETERS1 LyParam{ D2D1::LayerParameters1() };
@@ -63,13 +62,8 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
     EckAssert(Opt.idx >= 0 && Opt.idx < (int)m_vItem.size());
     const auto& Item = m_vItem[Opt.idx];
 
-    const auto cxyLineMargin = GetHostElement()->GetTheme()->
-        GetMetric(CVeLyric::IdMeItemMargin, CVeLyric::DefaultItemMargin);
-    const auto fMaxScale = GetHostElement()->GetTheme()->
-        GetMetric(CVeLyric::IdMeMaximumScale, CVeLyric::DefaultMaximumScale);
-
     D2D1_POINT_2F ptScale{};
-    ptScale.y = Opt.cy / 2.f - cxyLineMargin;
+    ptScale.y = Opt.cy / 2.f - Opt.cxyItemMargin;
     switch (Opt.eAlign)
     {
     case eck::Alignment::Center:
@@ -128,7 +122,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
         m_pDC->CreateFilledGeometryRealization(
             pPathGeometry.Get(),
             D2D1::ComputeFlatteningTolerance(
-                D2D1::Matrix3x2F::Identity(), xDpi, yDpi, fMaxScale),
+                D2D1::Matrix3x2F::Identity(), xDpi, yDpi, Opt.kMaxScale),
             Item.pGeometry.AtClear());
     }
 
@@ -139,7 +133,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
         pEle->ElementToClient(rc);
         if ((Opt.uFlags & LRIF_AN_BACK) && (Opt.ss == CVeLyric::SsHot))
         {
-            const auto dxy = -cxyLineMargin * Opt.kAnSelBkg;
+            const auto dxy = -Opt.cxyItemMargin * Opt.kAnSelBkg;
             eck::InflateRect(rc, dxy, dxy);
             Dui::SimpleStyle ssNull{ pEle->TmSimpleStyle(Opt.ss) };
             ssNull.bBackArgb = ssNull.bBorderArgb = FALSE;
@@ -169,17 +163,16 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
     D2D1_MATRIX_3X2_F Mat0;
     m_pDC->GetTransform(&Mat0);
     D2D1_MATRIX_3X2_F Mat{ Mat0 };
-    const auto cyExtra = (Opt.cy - cxyLineMargin * 2.f) *
-        (fMaxScale - 1.f) / 2.f;
-    Mat.dx += (pEle->GetOffsetInClient().x + cxyLineMargin);
-    Mat.dy += (pEle->GetOffsetInClient().y + cxyLineMargin + Opt.y + cyExtra);
+    const auto cyExtra = (Opt.cy - Opt.cxyItemMargin * 2.f) * (Opt.kMaxScale - 1.f) / 2.f;
+    Mat.dx += (pEle->GetOffsetInClient().x + Opt.cxyItemMargin);
+    Mat.dy += (pEle->GetOffsetInClient().y + Opt.cxyItemMargin + Opt.y + cyExtra);
 
     D2D1_COLOR_F crText;
     if (Opt.uFlags & LRIF_PREV_AN)
     {
-        const auto k = fMaxScale + 1.f - Opt.fScale;
+        const auto k = Opt.kMaxScale + 1.f - Opt.fScale;
         m_pDC->SetTransform(D2D1::Matrix3x2F::Scale(k, k, ptScale) * Mat);
-        const auto m = (Opt.fScale - 1.f) / (fMaxScale - 1.f);
+        const auto m = (Opt.fScale - 1.f) / (Opt.kMaxScale - 1.f);
 
         auto argb = Dui::TmSsLerpColor(
             pEle->GetTheme().Get(), FALSE,
@@ -193,7 +186,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
     {
         const auto k = Opt.fScale;
         m_pDC->SetTransform(D2D1::Matrix3x2F::Scale(k, k, ptScale) * Mat);
-        const auto m = (Opt.fScale - 1.f) / (fMaxScale - 1.f);
+        const auto m = (Opt.fScale - 1.f) / (Opt.kMaxScale - 1.f);
         auto argb = Dui::TmSsLerpColor(
             pEle->GetTheme().Get(), FALSE,
             CVeLyric::IdCrText, CVeLyric::IdCrTextActive,
@@ -214,7 +207,6 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
         crText = pEle->GetTheme()->GetColorD2D(
             (Opt.uFlags & LRIF_CURR_AN) ? CVeLyric::IdCrTextActive : CVeLyric::IdCrText);
     }
-    crText = D2D1::ColorF{ D2D1::ColorF::Black };
     pEle->GetWindow().CcSetBrushColor(crText);
     m_pDC->DrawGeometryRealization(Item.pGeometry.Get(), pEle->GetWindow().CcGetBrush());
     m_pDC->SetTransform(Mat0);

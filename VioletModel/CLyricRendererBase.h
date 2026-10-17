@@ -44,6 +44,9 @@ struct LRD_DRAW
     float kAnSelBkg;        // 0 ~ 1，指定LRIF_AN_BACK时有效
     float kScrollExpand;    // 0 ~ 1，指定LRIF_SCROLL_EXPAND时有效
 
+    float kMaxScale;
+    float cxyItemMargin;
+
     IDWriteTextLayout* pTlMain{};
     IDWriteTextLayout* pTlTranslation{};
 

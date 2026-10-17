@@ -27,8 +27,6 @@ private:
     void OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept;
 
     void SetEmptyText() noexcept;
-
-    void OnColorSchemeChanged() noexcept;
 public:
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 

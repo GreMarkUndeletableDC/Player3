@@ -1,8 +1,7 @@
-﻿#pragma once
-#include "CVeBase.h"
+﻿                         #pragma once
 #include "CLyricRendererBase.h"
 
-class CVeLyric final : public CVeBase, public eck::ITimeLine
+class CVeLyric final : public Dui::CElement, public eck::ITimeLine
 {
     // Mi = Mouse Idle
     // Itm = Item
@@ -11,16 +10,11 @@ public:
     const static inline UINT IdCrText = Dui::TmNextResourceId();
     const static inline UINT IdCrTextActive = Dui::TmNextResourceId();
 
-    // 当前项目的最大缩放比例
-    const static inline UINT IdMeMaximumScale = Dui::TmNextResourceId();
-    // 项目文本与边框间距
-    const static inline UINT IdMeItemMargin = Dui::TmNextResourceId();
-    // 正文与翻译间距
-    const static inline UINT IdMeMainToTranslationDistance = Dui::TmNextResourceId();
-
-    constexpr static float DefaultMaximumScale{ 1.1f };
-    constexpr static float DefaultItemMargin{ 14.f };
-    constexpr static float DefaultMainToTranslationDistance{ 6.f };
+    constexpr static ARGB
+        CrlText = 0xEE'111111,
+        CrlTextActive = 0xFF'000000,
+        CrdText = 0xEE'D0D0D0,
+        CrdTextActive = 0xFF'FFFFFF;
 
     enum : BYTE
     {
@@ -30,6 +24,12 @@ public:
 
         SsMaximum,
     };
+
+    static RcPtr<Dui::CTheme> TmMakeDefaultTheme(BOOL bDark) noexcept;
+    static RcPtr<Dui::CColorCollection> TmMakeDefaultColorCollection(BOOL bDark) noexcept;
+
+    static const RcPtr<Dui::CTheme>& TmDefaultTheme(BOOL bDark) noexcept;
+    static const RcPtr<Dui::CColorCollection>& TmDefaultColorCollection(BOOL bDark) noexcept;
 private:
     struct ITEM
     {
@@ -91,6 +91,9 @@ private:
     float m_yMinMaxDelayPos{};
     float m_msItemAnDelay{ 200.f }; // 当前行发生更改时歌词行之间开始动画的延迟
     float m_cyLinePadding{ 10.f };  // 项目间距
+    float m_kMaxScale{ 1.1f };
+    float m_cxyItemMargin{ 14.f };
+    float m_dMainToTranslation{ 6.f };
 
     int m_msLastInterval{};
 

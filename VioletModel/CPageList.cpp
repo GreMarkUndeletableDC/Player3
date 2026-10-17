@@ -366,6 +366,12 @@ void CPageList::OnListSwitch() noexcept
     m_LVList.Invalidate();
 }
 
+void CPageList::OnColorSchemeChanged() noexcept
+{
+    m_BTAddFile.SetIcon(GetImageManager()->AtlasGetD2D(AppImage::Plus));
+    m_BTLocate.SetIcon(GetImageManager()->AtlasGetD2D(AppImage::Locate));
+}
+
 void CPageList::InitializeUi() noexcept
 {
     {
@@ -410,7 +416,6 @@ void CPageList::InitializeUi() noexcept
         m_BTAddFile.Create(L"添加文件", Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
             0, 0, ButtonPadding, EditHeight, this);
         m_BTAddFile.SetTextFormat(pTextFormat.Get());
-        m_BTAddFile.SetIcon(GetImageManager()->AtlasGetD2D(AppImage::Plus));
         m_LytTopBar.LobAddObject(
             {
                 .pObject = &m_BTAddFile,
@@ -420,7 +425,6 @@ void CPageList::InitializeUi() noexcept
         m_BTLocate.Create(L"定位当前", Dui::DES_VISIBLE | Dui::DES_NOTIFY_PARENT, 0,
             0, 0, ButtonPadding, EditHeight, this);
         m_BTLocate.SetTextFormat(pTextFormat.Get());
-        m_BTLocate.SetIcon(GetImageManager()->AtlasGetD2D(AppImage::Locate));
         m_LytTopBar.LobAddObject(
             {
                 .pObject = &m_BTLocate,
@@ -508,6 +512,8 @@ void CPageList::InitializeUi() noexcept
             }
             return 0;
         });
+
+    OnColorSchemeChanged();
 }
 
 LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
@@ -606,6 +612,18 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         PlBeginLoadMetadata();
         break;
 
+    case WM_STYLECHANGED:
+        if (Dui::TmAutoSwitchTheme(this, wParam))
+        {
+            OnColorSchemeChanged();
+            for (auto& e : m_FileAdapter)
+            {
+                if (e.pImageList)
+                    IlUploadDefaultCover(e.pImageList.Get());
+            }
+        }
+        return 0;
+
     case WM_SETFONT:
     {
         m_LVPlayList.SetTextFormat(GetTextFormat().Get());
@@ -614,15 +632,6 @@ LRESULT CPageList::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     }
     return 0;
 
-    //case Dui::EWM_COLORSCHEMECHANGED:
-    //{
-    //    for (auto& e : m_FileAdapter.GetListInfo())
-    //    {
-    //        if (e.pImageList)
-    //            IlUploadDefaultCover(e.pImageList.Get());
-    //    }
-    //}
-    //break;
     case WM_CREATE:
     {
         __super::OnEvent(uMsg, wParam, lParam);

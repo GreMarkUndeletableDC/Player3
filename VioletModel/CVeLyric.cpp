@@ -22,20 +22,19 @@ void CVeLyric::ScrAnimationCallback(const Dui::IScrollController::SCC_CALLBACK_D
     if (IsEmpty())
         return;
 
-    const auto fMaxScale = GetTheme()->GetMetric(IdMeMaximumScale, DefaultMaximumScale);
     const auto& sv = m_SB.GetScrollView();
     if (m_bEnlarging)
     {
         m_fAnValue = eck::Easing::OutCubic(
             sv.GetCurrentTime(),
             1.f,
-            fMaxScale - 1.f,
+            m_kMaxScale - 1.f,
             sv.GetDuration());
         if (sv.GetCurrentTime() >= sv.GetDuration())
         {
             m_bEnlarging = FALSE;
             m_idxPrevAnItem = -1;
-            m_fAnValue = fMaxScale;
+            m_fAnValue = m_kMaxScale;
         }
     }
 
@@ -51,14 +50,14 @@ void CVeLyric::ScrAnimationCallback(const Dui::IScrollController::SCC_CALLBACK_D
         m_kScrollExpand = eck::Easing::Linear(
             m_msScrollExpand,
             1.f,
-            fMaxScale - 1.f,
+            m_kMaxScale - 1.f,
             DurationScrollExpand);
 
         if (m_msScrollExpand >= DurationScrollExpand ||
             m_msScrollExpand <= 0.f)
         {
             m_bScrollExpand = FALSE;
-            m_kScrollExpand = m_bSeEnlarging ? fMaxScale : 1.f;
+            m_kScrollExpand = m_bSeEnlarging ? m_kMaxScale : 1.f;
             m_msScrollExpand = m_bSeEnlarging ? DurationScrollExpand : 0.f;
         }
     }
@@ -67,6 +66,43 @@ void CVeLyric::ScrAnimationCallback(const Dui::IScrollController::SCC_CALLBACK_D
 
     ItmReCalculateTop();
     Invalidate();
+}
+
+RcPtr<Dui::CTheme> CVeLyric::TmMakeDefaultTheme(BOOL bDark) noexcept
+{
+    auto p = Dui::CListView::TmMakeDefaultTheme(bDark);
+    p->SetColorCollection(TmMakeDefaultColorCollection(bDark).Get());
+    return p;
+}
+
+RcPtr<Dui::CColorCollection> CVeLyric::TmMakeDefaultColorCollection(BOOL bDark) noexcept
+{
+    auto p = bDark ? Dui::TmsMakeColorCollectionDark() : Dui::TmsMakeColorCollectionLight();
+    if (bDark)
+    {
+        p->Set(IdCrText, CrdText);
+        p->Set(IdCrTextActive, CrdTextActive);
+    }
+    else
+    {
+        p->Set(IdCrText, CrlText);
+        p->Set(IdCrTextActive, CrlTextActive);
+    }
+    return p;
+}
+
+const RcPtr<Dui::CTheme>& CVeLyric::TmDefaultTheme(BOOL bDark) noexcept
+{
+    static auto p1{ TmMakeDefaultTheme(TRUE) };
+    static auto p2{ TmMakeDefaultTheme(FALSE) };
+    return bDark ? p1 : p2;
+}
+
+const RcPtr<Dui::CColorCollection>& CVeLyric::TmDefaultColorCollection(BOOL bDark) noexcept
+{
+    static auto p1{ TmMakeDefaultColorCollection(TRUE) };
+    static auto p2{ TmMakeDefaultColorCollection(FALSE) };
+    return bDark ? p1 : p2;
 }
 
 void CVeLyric::ItmReCalculateTop() noexcept
@@ -117,6 +153,8 @@ float CVeLyric::ItmPaint(int idx) noexcept
         .fScale = m_fAnValue,
         .kAnSelBkg = e.ecBack.K,
         .kScrollExpand = m_kScrollExpand,
+        .kMaxScale = m_kMaxScale,
+        .cxyItemMargin = m_cxyItemMargin,
         .pTlMain = e.pTlMain.Get(),
         .pTlTranslation = e.pTlTranslation.Get(),
     };
@@ -315,7 +353,7 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             if (idx >= 0)
                 b = m_vItem[idx].OnKillHot();
             if (m_idxHot >= 0)
-                b = b || m_vItem[m_idxHot].OnSetHot();
+                b |= m_vItem[m_idxHot].OnSetHot();
             if (b)
             {
                 m_bAnSelBkg = TRUE;
@@ -535,6 +573,11 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     }
     break;
 
+    case WM_STYLECHANGED:
+        if (GetStyle() ^ wParam)
+            SetTheme(TmDefaultTheme(TmIsDarkMode()).Get());
+        return 0;
+
     case WM_SETFONT:
         // TODO: 无效化缓存
         break;
@@ -545,7 +588,7 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
         GetWindow().KctRegisterTimeLine(this);
 
-        SetTheme(Dui::CListView::TmDefaultTheme(FALSE).Get());
+        SetTheme(TmDefaultTheme(TmIsDarkMode()).Get());
 
         m_pRenderer = std::make_unique<CLyricRendererD2D>();
         m_pRenderer->LrInitialize(this);
@@ -734,11 +777,7 @@ void CVeLyric::ItmLayout() noexcept
 
     float y = yInit;
 
-    const auto fMaxScale = GetTheme()->GetMetric(IdMeMaximumScale, DefaultMaximumScale);
-    const auto cxyItemMargin = GetTheme()->GetMetric(IdMeItemMargin, DefaultItemMargin);
-    const auto dPadding = GetTheme()->GetMetric(
-        IdMeMainToTranslationDistance, DefaultMainToTranslationDistance);
-    const float cxMax = (cx - cxyItemMargin * 2.f) / fMaxScale;
+    const float cxMax = (cx - m_cxyItemMargin * 2.f) / m_kMaxScale;
 
     m_vItem.resize(cLrc);
 
@@ -783,16 +822,16 @@ void CVeLyric::ItmLayout() noexcept
                 e.pTlTranslation->GetMetrics(&tm);
                 e.cxTranslation = tm.width;
                 e.cx = std::max(e.cx, tm.width);
-                e.cy += (tm.height + dPadding);
+                e.cy += (tm.height + m_dMainToTranslation);
             }
         }
 
         // --
 
-        e.cx *= fMaxScale;
-        e.cy *= fMaxScale;
-        e.cx += (cxyItemMargin * 2.f);
-        e.cy += (cxyItemMargin * 2.f);
+        e.cx *= m_kMaxScale;
+        e.cy *= m_kMaxScale;
+        e.cx += (m_cxyItemMargin * 2.f);
+        e.cy += (m_cxyItemMargin * 2.f);
 
         switch (m_eAlignH)
         {
@@ -821,7 +860,7 @@ void CVeLyric::ScrManualScrolling() noexcept
     MiBeginDetect();
     m_bEnlarging = FALSE;
     m_idxPrevAnItem = -1;
-    m_fAnValue = GetTheme()->GetMetric(IdMeMaximumScale, DefaultMaximumScale);
+    m_fAnValue = m_kMaxScale;
 }
 
 void CVeLyric::ScrDoItemScroll(float fPos) noexcept

@@ -70,7 +70,7 @@ int APIENTRY wWinMain(
     //pWnd->DbgSetDrawDirtyRect(1);
     constexpr DWORD Style = WS_POPUP | WS_VISIBLE | WS_CAPTION |
         WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU;
-    pWnd->Create(L"示例Win32程序", Style, 0,
+    pWnd->Create(L"Player3", Style, 0,
         pt.x, pt.y, Size.cx, Size.cy, nullptr, 0);
     pWnd->Show(SW_SHOW);
 

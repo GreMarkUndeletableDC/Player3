@@ -18,7 +18,7 @@ CxyLrcPadding = 8
 // 所有的ID，包括窗口定时器、WM_COMMAND、控件ID等
 enum
 {
-    VIOLET_ID_BEGIN = 0x514B,
+    PLAYER_ID_BEGIN = 0x514B,
 
     ELEID_PLAYPAGE_BACK,
     ELEID_MINICOVER,

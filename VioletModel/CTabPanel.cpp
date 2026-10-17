@@ -62,9 +62,8 @@ LRESULT CTabPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         Dui::PAINTINFO ps;
         BeginPaint(ps, wParam, lParam);
-        // TODO: 颜色管理
-        //m_pBrush->SetColor(App->GetColor(GPal::TabPanelBk));
-        GetDC()->FillRectangle(ps.rcClipInEle, GetWindow().CcSetBrushColor({}));
+        GetDC()->FillRectangle(ps.rcClipInEle, GetWindow().CcSetBrushColor(
+            GetTheme()->GetColorD2D(IdCrTabPanelBackground)));
         EndPaint(ps);
     }
     return 0;

@@ -100,7 +100,7 @@ private:
     BOOLEAN m_bPageAnUpToDown{};
     Page m_eCurrPage{};
 
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
     WinMedia::SystemMediaTransportControls m_Smtc{ nullptr };
     WinMedia::SystemMediaTransportControlsTimelineProperties m_SmtcTimeline{};
     eck::CoroTask<> m_TskSmtcUpdateDisplay{};   // winrt无法在UI线程等待任务，因此将其在此协程中运行
@@ -139,7 +139,7 @@ private:
         ComPtr<IWICBitmapSource>& pSource) noexcept;
 
     HRESULT SmtcInitialize() noexcept;
-#if VIOLET_WINRT
+#if PLAYER_OPT_WINRT
     eck::CoroTask<> SmtcpCoroUpdateDisplay() noexcept;
 #endif
     HRESULT SmtcUpdateDisplay() noexcept;
