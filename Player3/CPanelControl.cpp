@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
-#include "CPlayPanel.h"
+#include "CPanelControl.h"
 #include "CApplication.h"
 
 
-void CPlayPanel::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
+void CPanelControl::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
 {
     switch (e.eEvent)
     {
@@ -28,7 +28,7 @@ void CPlayPanel::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     }
 }
 
-LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT CPanelControl::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     switch (uMsg)
     {
@@ -60,7 +60,7 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         __super::OnEvent(uMsg, wParam, lParam);
 
-        App->Player().GetEventChain().Connect(this, &CPlayPanel::OnPlayEvent);
+        App->Player().GetEventChain().Connect(this, &CPanelControl::OnPlayEvent);
 
         const auto pWnd = &GetWindow();
 

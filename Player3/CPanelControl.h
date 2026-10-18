@@ -2,7 +2,7 @@
 #include "CVeMiniCover.h"
 #include "CPlayer.h"
 
-class CPlayPanel final : public CVeBase
+class CPanelControl final : public CVeBase
 {
 public:
     constexpr static float

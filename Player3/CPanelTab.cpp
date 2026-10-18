@@ -14,12 +14,12 @@ EckInlineNdCe AppImage IndexToImage(int idx) noexcept
     return AppImage::Home;
 }
 
-CTabPanel::LvIndex CTabPanel::LcaGetCount() const noexcept
+CPanelTab::LvIndex CPanelTab::LcaGetCount() const noexcept
 {
     return { .Item = 4 };
 }
 
-void CTabPanel::LcaGet(const LvIndex& idx, int idxCol,
+void CPanelTab::LcaGet(const LvIndex& idx, int idxCol,
     LvProperty eProp, std::any& Data) const noexcept
 {
     switch (eProp)
@@ -30,7 +30,7 @@ void CTabPanel::LcaGet(const LvIndex& idx, int idxCol,
     }
 }
 
-void CTabPanel::LcaSet(const LvIndex& idx, int idxCol,
+void CPanelTab::LcaSet(const LvIndex& idx, int idxCol,
     LvProperty eProp, std::any& Data, BOOL bMove) noexcept
 {
     switch (eProp)
@@ -49,12 +49,12 @@ void CTabPanel::LcaSet(const LvIndex& idx, int idxCol,
     }
 }
 
-void CTabPanel::OnColorSchemeChanged() noexcept
+void CPanelTab::OnColorSchemeChanged() noexcept
 {
     m_LAIcon.SetBitmap(GetImageManager()->AtlasGetD2D(AppImage::WindowLogo));
 }
 
-LRESULT CTabPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT CPanelTab::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     switch (uMsg)
     {

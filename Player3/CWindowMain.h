@@ -3,9 +3,9 @@
 #include "CPageList.h"
 #include "CPageEffect.h"
 #include "CPageOptions.h"
-#include "CPagePlaying.h"
-#include "CTabPanel.h"
-#include "CPlayPanel.h"
+#include "CPagePlay.h"
+#include "CPanelTab.h"
+#include "CPanelControl.h"
 #include "CPlayPageAnimator.h"
 #include "CWindowGhost.h"
 #include "CVeVolumeBar.h"
@@ -53,8 +53,8 @@ private:
     Dui::CTitleBar m_TitleBar{};
     Dui::CLabel m_LAPageTitle{};
 
-    CTabPanel m_TabPanel{};
-    CPlayPanel m_PlayPanel{};
+    CPanelTab m_TabPanel{};
+    CPanelControl m_PlayPanel{};
 
     CPageMain m_PageMain{};
     CPageList m_PageList{};
@@ -62,7 +62,7 @@ private:
     CPageOptions m_PageOptions{};
     Dui::CElement m_NormalPageContainer{};// 所有下层页面的父级，动画时用
 
-    CPagePlaying m_PagePlaying{};
+    CPagePlay m_PagePlaying{};
 
     Dui::CTrackBar m_TBProgress{};
 

@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
-#include "CPagePlaying.h"
+#include "CPagePlay.h"
 #include "CApplication.h"
 
-void CPagePlaying::UpdateBlurredCover() noexcept
+void CPagePlay::UpdateBlurredCover() noexcept
 {
     const auto cxEle = LogicalToPixel(GetWidth());
     const auto cyEle = LogicalToPixel(GetHeight());
@@ -96,7 +96,7 @@ void CPagePlaying::UpdateBlurredCover() noexcept
     m_Cover.SetBitmap(GetImageManager()->CoverGetD2D());
 }
 
-void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
+void CPagePlay::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
 {
     switch (e.eEvent)
     {
@@ -129,14 +129,14 @@ void CPagePlaying::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     }
 }
 
-void CPagePlaying::SetEmptyText() noexcept
+void CPagePlay::SetEmptyText() noexcept
 {
     m_LATitle.SetText(L"Player3"sv);
     m_LAArtist.SetText(L"VC++"sv);
     m_LAAlbum.SetText(L"Win32"sv);
 }
 
-LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT CPagePlay::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     switch (uMsg)
     {
@@ -254,7 +254,7 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         __super::OnEvent(uMsg, wParam, lParam);
 
-        App->Player().GetEventChain().Connect(this, &CPagePlaying::OnPlayEvent);
+        App->Player().GetEventChain().Connect(this, &CPagePlay::OnPlayEvent);
 
         m_Cover.Create({}, Dui::DES_VISIBLE | Dui::DES_NO_CLIP, 0,
             50, 50, 200, 200, this);

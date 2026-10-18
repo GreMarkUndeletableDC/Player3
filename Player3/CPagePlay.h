@@ -3,7 +3,7 @@
 #include "CVeLyric.h"
 #include "CPlayer.h"
 
-class CPagePlaying final : public CVeBase
+class CPagePlay final : public CVeBase
 {
 public:
     constexpr static float

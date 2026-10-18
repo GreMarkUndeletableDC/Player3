@@ -93,7 +93,7 @@ void CWindowMain::PageShow(Page ePage, BOOL bAnimate) noexcept
     const auto bAlreadyVisible =
         (m_vPage[idxShow]->GetStyle() & Dui::DES_VISIBLE);
 
-    m_LAPageTitle.SetText(CTabPanel::PageName[idxShow]);
+    m_LAPageTitle.SetText(CPanelTab::PageName[idxShow]);
     m_LAPageTitle.Invalidate();
     m_vPage[idxShow]->SetVisible(TRUE);
     for (int i = 0; i < idxShow; ++i)
@@ -287,7 +287,7 @@ LRESULT CWindowMain::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) no
     {
     case ELEN_PAGE_CHANGE:
     {
-        const auto* const p = (CTabPanel::EVT_SELECT_CHANGE*)pnm;
+        const auto* const p = (CPanelTab::EVT_SELECT_CHANGE*)pnm;
         PageShow((Page)p->idx, TRUE);
     }
     return 0;

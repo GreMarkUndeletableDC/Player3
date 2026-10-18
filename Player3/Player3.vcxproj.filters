@@ -69,13 +69,13 @@
     <ClInclude Include="CPageOptions.h">
       <Filter>UI\容器</Filter>
     </ClInclude>
-    <ClInclude Include="CPagePlaying.h">
+    <ClInclude Include="CPagePlay.h">
       <Filter>UI\容器</Filter>
     </ClInclude>
-    <ClInclude Include="CPlayPanel.h">
+    <ClInclude Include="CPanelControl.h">
       <Filter>UI\容器</Filter>
     </ClInclude>
-    <ClInclude Include="CTabPanel.h">
+    <ClInclude Include="CPanelTab.h">
       <Filter>UI\容器</Filter>
     </ClInclude>
     <ClInclude Include="CVeCover.h">
@@ -155,13 +155,13 @@
     <ClCompile Include="CPageOptions.cpp">
       <Filter>UI\容器</Filter>
     </ClCompile>
-    <ClCompile Include="CPagePlaying.cpp">
+    <ClCompile Include="CPagePlay.cpp">
       <Filter>UI\容器</Filter>
     </ClCompile>
-    <ClCompile Include="CPlayPanel.cpp">
+    <ClCompile Include="CPanelControl.cpp">
       <Filter>UI\容器</Filter>
     </ClCompile>
-    <ClCompile Include="CTabPanel.cpp">
+    <ClCompile Include="CPanelTab.cpp">
       <Filter>UI\容器</Filter>
     </ClCompile>
     <ClCompile Include="CVeCover.cpp">

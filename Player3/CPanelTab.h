@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "CVeBase.h"
 
-class CTabPanel final : public CVeBase, public Dui::CListView::IAdapter
+class CPanelTab final : public CVeBase, public Dui::CListView::IAdapter
 {
 public:
     struct EVT_SELECT_CHANGE : Dui::ELENMHDR

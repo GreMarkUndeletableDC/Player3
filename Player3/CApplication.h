@@ -30,7 +30,7 @@ enum
     ELEN_PLACEHOLDER = Dui::ENC_PRIVATE_BEGIN,
 
     ELEN_PAGE_CHANGE,       // EVT_SELECT_CHANGE
-    ELEN_PLAYPAGE_LBTN_UP,  // [CPagePlaying]左键放开
+    ELEN_PLAYPAGE_LBTN_UP,  // [CPagePlay]左键放开
 };
 
 class CWindowMain;
