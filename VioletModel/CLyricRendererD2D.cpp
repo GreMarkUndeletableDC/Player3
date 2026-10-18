@@ -137,7 +137,7 @@ void CLyricRendererD2D::LrDrawItem(const LRD_DRAW& Opt) noexcept
             eck::InflateRect(rc, dxy, dxy);
             Dui::SimpleStyle ssNull{ pEle->TmSimpleStyle(Opt.ss) };
             ssNull.bBackArgb = ssNull.bBorderArgb = FALSE;
-            ssNull.CrBack = ssNull.CrBorder = Dui::IdTmInvalid;
+            ssNull.Back = ssNull.Border = Dui::IdTmInvalid;
 
             const auto ss = Dui::TmSsLerp(
                 pEle->GetTheme().Get(),

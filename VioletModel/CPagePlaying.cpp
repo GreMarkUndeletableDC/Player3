@@ -264,15 +264,12 @@ LRESULT CPagePlaying::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 
         m_LATitle.Create({}, Dui::DES_VISIBLE, 0,
             0, 0, 0, 0, this);
-        m_LATitle.SetFade(TRUE);
 
         m_LAAlbum.Create({}, Dui::DES_VISIBLE, 0,
             0, 0, 0, 0, this);
-        m_LAAlbum.SetFade(TRUE);
 
         m_LAArtist.Create({}, Dui::DES_VISIBLE, 0,
             0, 0, 0, 0, this);
-        m_LAArtist.SetFade(TRUE);
 
         m_BTBack.Create({}, Dui::DES_VISIBLE | Dui::DES_NOTIFY_WND, 0,
             100, 100, 70, 20, this);

@@ -1,4 +1,4 @@
-﻿                         #pragma once
+﻿#pragma once
 #include "CLyricRendererBase.h"
 
 class CVeLyric final : public Dui::CElement, public eck::ITimeLine
@@ -44,17 +44,17 @@ private:
         float cxMain{};
         float cxTranslation{};
 
-        float yNoDelay{};   // 没有延迟的情况下歌词行的Y坐标
+        float yNoDelay{};            // 没有延迟的情况下歌词行的Y坐标
 
         eck::EasingCurve<eck::Easing::FOutExpo> ecBack{};
-        float yAnDelayDst{};// 目标位置
-        float yAnDelaySrc{};// 起始位置
-        float msAnDelay{};  // 0~DurationDelay，延迟动画曲线用
-        float msDelay{};    // 0~DurationMaxItemDelay，已延迟时间，达到最大值时开始进行移动动画
-        BITBOOL bSel : 1{};             // 选中
-        BITBOOL bCacheValid : 1{};      // 前三个字段是否有效
-        BITBOOL bAnBack : 1{};        // 正在运行项目热点背景动画
-        BITBOOL bAnSelBkgEnlarge : 1{}; // 正在扩大，即鼠标已移入
+        float yAnDelayDst{};         // 目标位置
+        float yAnDelaySrc{};         // 起始位置
+        float msAnDelay{};           // 0~DurationDelay，延迟动画曲线用
+        float msDelay{};             // 0~DurationMaxItemDelay，已延迟时间，达到最大值时开始进行移动动画
+        BITBOOL bSelected : 1{};     // 选中
+        BITBOOL bCacheValid : 1{};   // 文本布局是否有效
+        BITBOOL bAnBack : 1{};       // 正在运行项目热点背景动画
+        BITBOOL bAnBackEnlarge : 1{};// 正在扩大，即鼠标已移入
 
         // 如果有必要调用KctWake则返回TRUE
 
@@ -89,23 +89,23 @@ private:
     int m_cCurrDelay{};
 
     float m_yMinMaxDelayPos{};
-    float m_msItemAnDelay{ 200.f }; // 当前行发生更改时歌词行之间开始动画的延迟
-    float m_cyLinePadding{ 10.f };  // 项目间距
-    float m_kMaxScale{ 1.1f };
-    float m_cxyItemMargin{ 14.f };
-    float m_dMainToTranslation{ 6.f };
+    float m_msItemAnDelay{ 200.f };     // 当前行发生更改时歌词行之间开始动画的延迟
+    float m_cyLinePadding{ 10.f };      // 项目间距
+    float m_kMaxScale{ 1.1f };          // 高亮行的缩放比例
+    float m_cxyItemMargin{ 14.f };      // 项目边距
+    float m_dMainToTranslation{ 6.f };  // 歌词到翻译的行距
 
     int m_msLastInterval{};
 
     eck::Alignment m_eAlignH{ eck::Alignment::Near };// 水平对齐
 
-    BOOLEAN m_bAnSelBkg{};          // 正在运行项目热点背景动画
-    BOOLEAN m_bEnlarging{};         // 正在放大当前歌词行
-    BOOLEAN m_bScrollExpand{};      // 由于用户滚动操作，所有歌词行都正在放大或缩小
-    BOOLEAN m_bSeEnlarging{};       // 指示ScrollExpand的操作是否为放大
-    BOOLEAN m_bEnableItemAnDelay{}; // 启用项目动画延迟
-    BOOLEAN m_bItemAnDelay{};       // 当前正在运行项目动画延迟
-    BOOLEAN m_bDelayScrollUp{};     // 指示项目是否向上运动
+    BOOLEAN m_bAnItemBack{};            // 正在运行项目点燃背景动画
+    BOOLEAN m_bEnlarging{};             // 正在放大当前歌词行
+    BOOLEAN m_bScrollExpand{};          // 由于用户滚动操作，所有歌词行都正在放大或缩小
+    BOOLEAN m_bSeEnlarging{};           // ScrollExpand的操作是否为放大
+    BOOLEAN m_bEnableItemAnDelay{};     // 启用项目错落动画
+    BOOLEAN m_bItemAnDelay{};           // 当前正在运行错落动画
+    BOOLEAN m_bDelayScrollUp{};         // 项目是否向上运动
 
     // 忽略前景颜色，因为他们由IdCrText*指定
     Dui::SimpleStyle m_Style[SsMaximum]
@@ -157,7 +157,7 @@ private:
 public:
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 
-    // 调用方启动定时器检查当前时间对应的歌词行，每次检查后将结果传递到此方法
+    // 调用方启动时钟周期性地检查当前时间对应的歌词行，每次检查后将结果传递到此方法
     HRESULT LrcSetCurrentLine(int idxCurr) noexcept;
     HRESULT LrcInitialize(RefPtr<Lyric::CLyric> pLyric) noexcept;
     void LrcClear() noexcept;
@@ -167,12 +167,10 @@ public:
     int ItmHitTest(Kw::Vec2 pt) noexcept;
 
     void TlTick(int iMs) noexcept override;
-    BOOL TlIsValid() noexcept override { return m_bAnSelBkg || m_bItemAnDelay; }
+    BOOL TlIsValid() noexcept override { return m_bAnItemBack || m_bItemAnDelay; }
     int TlGetCurrentInterval() const noexcept override { return m_msLastInterval; }
 
     EckInlineNdCe BOOL IsEmpty() const noexcept { return m_vItem.empty(); }
-
-    EckInlineNdCe auto& GetScrollBar() noexcept { return m_SB; }
 
     EckInlineNdCe auto& TmSimpleStyle(UINT ss) const noexcept { return m_Style[ss]; }
     EckInlineNdCe auto& TmSimpleStyle(UINT ss) noexcept { return m_Style[ss]; }

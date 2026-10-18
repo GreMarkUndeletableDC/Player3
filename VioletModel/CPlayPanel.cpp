@@ -78,13 +78,11 @@ LRESULT CPlayPanel::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         float y = TitleTopPosition;
         m_LATitle.Create(L"Player3", Dui::DES_VISIBLE, 0,
             x, y, TitleArtistMaximumWidth, PlayPanelTextHeight, this, pWnd);
-        m_LATitle.SetFade(TRUE);
         m_LATitle.SetTextFormat(pTfTitle.Get());
         y += (PlayPanelTextHeight + TitleArtistPadding);
 
         m_LAArtist.Create(L"VC++/Win32", Dui::DES_VISIBLE, 0,
             x, y, TitleArtistMaximumWidth, PlayPanelTextHeight, this, pWnd);
-        m_LAArtist.SetFade(TRUE);
         x += (TitleArtistMaximumWidth + PlayPanelTextPadding);
 
         m_LATime.Create(L"00:00/00:00", /*Dui::DES_VISIBLE*/0, 0,

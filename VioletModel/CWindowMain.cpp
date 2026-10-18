@@ -10,6 +10,9 @@ constexpr static UINT_PTR IDT_COMM_TICK = 101;
 constexpr static UINT TE_COMM_TICK = 200;
 constexpr static UINT TE_PROG = TE_COMM_TICK * 2;
 
+constexpr static ARGB CrlPlayPauseButton{ 0x60'D0D0D0 };
+constexpr static ARGB CrdPlayPauseButton{ 0x10'FFFFFF };
+
 EckInlineNdCe AppImage AutoNextModeToAppImage(AutoNextMode eMode) noexcept
 {
     switch (eMode)
@@ -31,6 +34,9 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     m_pImageManager->CoverLoad();
     m_pImageManager->CoverRealize();
     m_pImageManager->SingleLoad();
+
+    // 设置默认封面
+    m_PlayPageAnimator.SetOverlayBitmap(m_pImageManager->CoverGetD2D());
 
     m_pUxWndTheme->LoadDefaultTheme();
     const auto spUxAtlas = m_pUxWndTheme->GetAtlasImageData();
@@ -461,4 +467,10 @@ void CWindowMain::OnColorSchemeChanged() noexcept
         AutoNextModeToAppImage(App->Player().GetAutoNextMode())));
     m_BTLrc.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Lyric));
     m_BTVol.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Speaker));
+    {
+        auto& ss = m_BTPlay.TmSimpleStyle(Dui::CButton::SsNormal);
+        ss.bBackArgb = TRUE;
+        ss.Back = eck::PtcCurrent()->bAppDarkMode ?
+            CrdPlayPauseButton : CrlPlayPauseButton;
+    }
 }

@@ -77,7 +77,9 @@ RcPtr<Dui::CTheme> CVeLyric::TmMakeDefaultTheme(BOOL bDark) noexcept
 
 RcPtr<Dui::CColorCollection> CVeLyric::TmMakeDefaultColorCollection(BOOL bDark) noexcept
 {
-    auto p = bDark ? Dui::TmsMakeColorCollectionDark() : Dui::TmsMakeColorCollectionLight();
+    auto p = bDark ?
+        Dui::TmsMakeColorCollectionDark() :
+        Dui::TmsMakeColorCollectionLight();
     if (bDark)
     {
         p->Set(IdCrText, CrdText);
@@ -168,7 +170,7 @@ float CVeLyric::ItmPaint(int idx) noexcept
     else if (idx == m_idxCurrAnItem)
         Opt.uFlags |= LRIF_CURR_AN;
 
-    if (e.bSel)
+    if (e.bSelected)
         Opt.ss = SsSelected;
     else
         if (idx == m_idxHot || e.bAnBack)
@@ -328,13 +330,16 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         Dui::PAINTINFO ps;
         BeginPaint(ps, wParam, lParam);
-        m_pRenderer->LrBeginDraw();
-        for (int i = m_idxTop; i < (int)m_vItem.size(); ++i)
+        if (m_idxTop >= 0 && !m_vItem.empty())
         {
-            if (ItmPaint(i) > GetHeight())
-                break;
+            m_pRenderer->LrBeginDraw();
+            for (int i = m_idxTop; i < (int)m_vItem.size(); ++i)
+            {
+                if (ItmPaint(i) > GetHeight())
+                    break;
+            }
+            m_pRenderer->LrEndDraw();
         }
-        m_pRenderer->LrEndDraw();
         DbgDrawFrame();
         EndPaint(ps);
     }
@@ -356,7 +361,7 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
                 b |= m_vItem[m_idxHot].OnSetHot();
             if (b)
             {
-                m_bAnSelBkg = TRUE;
+                m_bAnItemBack = TRUE;
                 GetWindow().KctWake();
             }
         }
@@ -375,7 +380,7 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             {
                 if (m_vItem[idx].OnKillHot())
                 {
-                    m_bAnSelBkg = TRUE;
+                    m_bAnItemBack = TRUE;
                     GetWindow().KctWake();
                 }
             }
@@ -417,25 +422,25 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             int i = 0;
             for (; i < idx0; ++i)
             {
-                if (m_vItem[i].bSel)
+                if (m_vItem[i].bSelected)
                 {
-                    m_vItem[i].bSel = FALSE;
+                    m_vItem[i].bSelected = FALSE;
                     ItmInvalidate(i);
                 }
             }
             for (; i <= idx1; ++i)
             {
-                if (!m_vItem[i].bSel)
+                if (!m_vItem[i].bSelected)
                 {
-                    m_vItem[i].bSel = TRUE;
+                    m_vItem[i].bSelected = TRUE;
                     ItmInvalidate(i);
                 }
             }
             for (; i < (int)m_vItem.size(); ++i)
             {
-                if (m_vItem[i].bSel)
+                if (m_vItem[i].bSelected)
                 {
-                    m_vItem[i].bSel = FALSE;
+                    m_vItem[i].bSelected = FALSE;
                     ItmInvalidate(i);
                 }
             }
@@ -447,18 +452,18 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
                 m_idxMark = idx;
             EckCounter((int)m_vItem.size(), i)
             {
-                if (m_vItem[i].bSel)
+                if (m_vItem[i].bSelected)
                 {
-                    m_vItem[i].bSel = FALSE;
+                    m_vItem[i].bSelected = FALSE;
                     ItmInvalidate(i);
                 }
             }
         }
 
         if (idx >= 0)
-            if (!m_vItem[idx].bSel)
+            if (!m_vItem[idx].bSelected)
             {
-                m_vItem[idx].bSel = TRUE;
+                m_vItem[idx].bSelected = TRUE;
                 ItmInvalidate(idx);
             }
     }
@@ -481,9 +486,9 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         {
             EckCounter((int)m_vItem.size(), i)
             {
-                if (!m_vItem[i].bSel)
+                if (!m_vItem[i].bSelected)
                 {
-                    m_vItem[i].bSel = TRUE;
+                    m_vItem[i].bSelected = TRUE;
                     Invalidate();
                 }
             }
@@ -543,6 +548,7 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         rc.right = rc.left + m_SB.GetWidth();
         rc.bottom = rc.top + GetHeight();
         m_SB.SetRect(rc);
+        m_SB.GetScrollView().SetViewSize(GetHeight());
         if (!IsEmpty())
         {
             if (MiIsManualScroll())
@@ -593,7 +599,7 @@ LRESULT CVeLyric::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         m_pRenderer = std::make_unique<CLyricRendererD2D>();
         m_pRenderer->LrInitialize(this);
 
-        m_SB.Create({}, 0, 0, 0, 0, 0, 0, this);
+        m_SB.Create({}, Dui::DES_VISIBLE, 0, 0, 0, 0, 0, this);
         m_SB.SccSetCallback([](const Dui::IScrollController::SCC_CALLBACK_DATA& Data)
             {
                 ((CVeLyric*)Data.pUser)->ScrAnimationCallback(Data);
@@ -643,10 +649,15 @@ HRESULT CVeLyric::LrcSetCurrentLine(int idxCurr) noexcept
 HRESULT CVeLyric::LrcInitialize(RefPtr<Lyric::CLyric> pLyric) noexcept
 {
     m_pLyric = pLyric;
-    m_idxCurr = -1;
     m_pRenderer->LrSetItemCount(m_pLyric->MgGetLineCount());
-    ItmLayout();
+
     ItmDelayComplete();
+    m_idxTop = -1;
+    m_idxHot = -1;
+    m_idxMark = -1;
+    m_idxCurr = -1;
+
+    ItmLayout();
     if (!IsEmpty())
         ScrFixItemPosition();
     ItmReCalculateTop();
@@ -666,7 +677,6 @@ void CVeLyric::LrcClear() noexcept
     m_idxCurrAnItem = -1;
     m_fAnValue = 1.f;
     m_bEnlarging = FALSE;
-    m_SB.SetVisible(FALSE);
     Invalidate();
 }
 
@@ -686,7 +696,7 @@ void CVeLyric::TlTick(int iMs) noexcept
         {
             e.bAnBack = e.ecBack.Tick((float)iMs, DurationSelectionBack);
             if (e.bAnBack &&
-                (e.bAnSelBkgEnlarge ? e.ecBack.K < 0.01f : e.ecBack.K >= 0.99f))
+                (e.bAnBackEnlarge ? e.ecBack.K < 0.01f : e.ecBack.K >= 0.99f))
                 e.bAnBack = FALSE;
             ItmInvalidate(i);
             if (e.bAnBack)
@@ -733,7 +743,7 @@ void CVeLyric::TlTick(int iMs) noexcept
             else
                 e.msDelay += iMs;
     }
-    m_bAnSelBkg = bAn;
+    m_bAnItemBack = bAn;
     if (m_bItemAnDelay)
         ItmReCalculateTop();
 }
@@ -761,18 +771,19 @@ void CVeLyric::ItmLayout() noexcept
     const float cx = GetWidth(), cy = GetHeight();
     if (cx <= 0.f || cy <= 0.f)
     {
-        m_SB.SetVisible(FALSE);
+        m_SB.SetRange(0, 0);
         return;
     }
     m_vItem.clear();
     if (!m_pLyric || !m_pLyric->MgGetLineCount())
     {
-        m_SB.SetVisible(FALSE);
+        m_SB.SetRange(0, 0);
         return;
     }
 
     const auto cLrc = m_pLyric->MgGetLineCount();
-    const auto yInit = (float)-m_SB.GetTrackPosition();
+    EckDbgPrintFormat("SBPos: %f", m_SB.GetTrackPosition());
+    const auto yInit = 0;//(float)-m_SB.GetTrackPosition();
     DWRITE_TEXT_METRICS tm;
 
     float y = yInit;
@@ -893,7 +904,7 @@ void CVeLyric::ScrFixItemPosition() noexcept
 
 BOOL CVeLyric::ITEM::OnSetHot() noexcept
 {
-    bAnSelBkgEnlarge = TRUE;
+    bAnBackEnlarge = TRUE;
     ecBack.Start(1.f, 0.f, bAnBack);
     if (!bAnBack)
     {
@@ -905,7 +916,7 @@ BOOL CVeLyric::ITEM::OnSetHot() noexcept
 
 BOOL CVeLyric::ITEM::OnKillHot() noexcept
 {
-    bAnSelBkgEnlarge = FALSE;
+    bAnBackEnlarge = FALSE;
     ecBack.Start(0.f, 1.f, bAnBack);
     if (!bAnBack)
     {
