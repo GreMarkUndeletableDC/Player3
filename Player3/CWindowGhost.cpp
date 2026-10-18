@@ -107,24 +107,16 @@ HRESULT CWindowGhost::SetIconicThumbnail(UINT cxMax, UINT cyMax) noexcept
     auto pCover = App->Player().GetCover();
     if (!pCover.Get())
         pCover = m_pAtlas->CoverGetDefaultWicBitmap();
-    UINT cx, cy, cx0, cy0;
-    pCover->GetSize(&cx0, &cy0);
-    if ((float)cxMax / (float)cyMax > (float)cx0 / (float)cy0)// y对齐
-    {
-        cy = cyMax;
-        cx = cx0 * cy / cy0;
-    }
-    else// x对齐
-    {
-        cx = cxMax;
-        cy = cx * cy0 / cx0;
-    }
+    UINT cxCover, cyCover;
+    pCover->GetSize(&cxCover, &cyCover);
+    eck::RCWH rc{ 0, 0, (int)cxCover, (int)cyCover };
+    eck::AdjustRectToFitAnother(rc, { 0, 0, (int)cxMax, (int)cyMax });
 
     ComPtr<IWICBitmapScaler> pScaler;
     hr = eck::WicScaleBitmap(
         pScaler.Self(),
         pCover.Get(),
-        cx, cy,
+        rc.cx, rc.cy,
         WICBitmapInterpolationModeFant);
     if (FAILED(hr))
         return hr;
