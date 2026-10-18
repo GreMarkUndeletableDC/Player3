@@ -141,7 +141,7 @@ private:
     EckInlineNdCe BOOL MiIsManualScroll() const noexcept { return m_tMouseIdle > 0; }
     void MiBeginScrollExpand(BOOL bEnlarge) noexcept;
 
-    void ItmDelayPrepare(float dy) noexcept;
+    void ItmDelayPrepare(int idxCenter, float dy) noexcept;
     void ItmDelayComplete() noexcept;
     EckInlineNdCe int ItmInDelayRange(int idx) const noexcept
     {

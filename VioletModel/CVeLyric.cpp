@@ -247,18 +247,18 @@ void CVeLyric::MiBeginScrollExpand(BOOL bEnlarge) noexcept
         GetWindow().KctWake();
 }
 
-void CVeLyric::ItmDelayPrepare(float dy) noexcept
+void CVeLyric::ItmDelayPrepare(int idxCenter, float dy) noexcept
 {
     float y;
     m_bItemAnDelay = TRUE;// 马上要启动滚动条时间线，无需KctWake
     m_bDelayScrollUp = (dy > 0.f);
     int i;
-    const auto& Curr = m_vItem[m_idxCurr];
+    const auto& Curr = m_vItem[idxCenter];
     // 当前（含）以上
     y = ItmGetCurrentItemTarget() - Curr.cy / 2.f + Curr.cy + m_cyLinePadding;
     m_idxDelayBegin = 0;
     m_cCurrDelay = 0;
-    for (int i = m_idxCurr; i >= 0; --i)
+    for (int i = idxCenter; i >= 0; --i)
     {
         ++m_cCurrDelay;
         auto& e = m_vItem[i];
@@ -269,18 +269,13 @@ void CVeLyric::ItmDelayPrepare(float dy) noexcept
         if (y - m_cyLinePadding <= 0.f)
         {
             m_idxDelayBegin = i;
-            if (m_bDelayScrollUp)
-            {
-                m_yMinMaxDelayPos = e.yAnDelaySrc;
-                m_idxDelaySavedEnd = i;
-            }
             break;
         }
     }
     // 当前以下
     y = Curr.yAnDelayDst + Curr.cy + m_cyLinePadding;
     m_idxDelayEnd = (int)m_vItem.size() - 1;
-    for (i = m_idxCurr + 1; i < (int)m_vItem.size(); ++i)
+    for (i = idxCenter + 1; i < (int)m_vItem.size(); ++i)
     {
         ++m_cCurrDelay;
         auto& e = m_vItem[i];
@@ -291,13 +286,18 @@ void CVeLyric::ItmDelayPrepare(float dy) noexcept
         if (y >= GetHeight())
         {
             m_idxDelayEnd = i;
-            if (!m_bDelayScrollUp)
-            {
-                m_yMinMaxDelayPos = e.yAnDelaySrc;
-                m_idxDelaySavedEnd = i;
-            }
             break;
         }
+    }
+    if (m_bDelayScrollUp)
+    {
+        m_yMinMaxDelayPos = m_vItem[m_idxDelayBegin].yAnDelaySrc;
+        m_idxDelaySavedEnd = m_idxDelayBegin;
+    }
+    else
+    {
+        m_yMinMaxDelayPos = m_vItem[m_idxDelayEnd].yAnDelaySrc;
+        m_idxDelaySavedEnd = m_idxDelayEnd;
     }
 }
 
@@ -640,7 +640,7 @@ HRESULT CVeLyric::LrcSetCurrentLine(int idxCurr) noexcept
         const auto dy = (e.yNoDelay + e.cy / 2.f) - ItmGetCurrentItemTarget();
         m_SB.GetScrollView().InterruptAnimation();
         m_SB.GetScrollView().SmoothScrollDelta(dy);
-        ItmDelayPrepare(dy);
+        ItmDelayPrepare(m_idxCurr, dy);
         GetWindow().KctWake();
     }
     return S_OK;
@@ -656,11 +656,30 @@ HRESULT CVeLyric::LrcInitialize(RefPtr<Lyric::CLyric> pLyric) noexcept
     m_idxHot = -1;
     m_idxMark = -1;
     m_idxCurr = -1;
+    m_idxPrevAnItem = -1;
+    m_idxCurrAnItem = -1;
+    m_idxDelaySavedEnd = -1;
+    m_cCurrDelay = 0;
 
+    m_fAnValue = 1.f;
+    m_bAnItemBack = FALSE;
+    m_bEnlarging = FALSE;
+    m_bScrollExpand = FALSE;
+    m_msScrollExpand = 0.f;
+    m_kScrollExpand = 1.f;
+
+    m_tMouseIdle = 0;
+    KillTimer(IDT_MOUSEIDLE);
+
+    m_SB.GetScrollView().InterruptAnimation();
     ItmLayout();
     if (!IsEmpty())
+    {
         ScrFixItemPosition();
-    ItmReCalculateTop();
+        ItmReCalculateTop();
+        ScrAutoScrolling();
+    }
+
     Invalidate();
     return S_OK;
 }
@@ -761,8 +780,7 @@ void CVeLyric::ScrAutoScrolling() noexcept
     m_SB.GetScrollView().InterruptAnimation();
     m_SB.GetScrollView().SmoothScrollDelta(dy);
     MiBeginScrollExpand(FALSE);
-    if (m_idxCurr >= 0)
-        ItmDelayPrepare(dy);
+    ItmDelayPrepare((m_idxCurr >= 0) ? m_idxCurr : 0, dy);
     GetWindow().KctWake();
 }
 
@@ -782,8 +800,7 @@ void CVeLyric::ItmLayout() noexcept
     }
 
     const auto cLrc = m_pLyric->MgGetLineCount();
-    EckDbgPrintFormat("SBPos: %f", m_SB.GetTrackPosition());
-    const auto yInit = 0;//(float)-m_SB.GetTrackPosition();
+    const auto yInit = (float)-m_SB.GetTrackPosition();
     DWRITE_TEXT_METRICS tm;
 
     float y = yInit;
@@ -799,6 +816,7 @@ void CVeLyric::ItmLayout() noexcept
 
         e.bCacheValid = TRUE;
         e.y = y;
+        e.yNoDelay = y;
         e.cx = 0.f;
         e.cy = 0.f;
         e.cxMain = 0.f;
