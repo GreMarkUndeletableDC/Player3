@@ -285,7 +285,7 @@ HRESULT CImageManager::InternalCoverUpdate(_In_ IWICBitmapSource* pBitmap) noexc
         CoverWidth * sizeof(UINT));
 }
 
-HRESULT CImageManager::CoverUpdate(_In_ IWICBitmapSource* pBitmap) noexcept
+HRESULT CImageManager::CoverUpdate(_In_opt_ IWICBitmapSource* pBitmap) noexcept
 {
     if (pBitmap)
     {

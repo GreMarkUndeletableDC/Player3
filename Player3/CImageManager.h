@@ -134,7 +134,7 @@ public:
     HRESULT CoverRealize() noexcept;
     // 返回当前封面图像，如果没有，返回默认封面
     Dui::CBitmap CoverGetD2D() noexcept;
-    HRESULT CoverUpdate(_In_ IWICBitmapSource* pBitmap) noexcept;
+    HRESULT CoverUpdate(_In_opt_ IWICBitmapSource* pBitmap) noexcept;
     EckInlineNdCe BOOL CoverIsDefault() const noexcept { return m_bDefaultCover; }
     EckInlineNdCe auto& CoverGetDefaultWicBitmap() const noexcept { return m_pDefaultCoverWic; }
 
