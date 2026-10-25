@@ -11,16 +11,11 @@ LRESULT CVeCover::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         Dui::PAINTINFO ps;
         BeginPaint(ps, wParam, lParam);
 
-        auto rc{ GetRectInClientD2D() };
-        auto rcSrc = m_BitmapCover.GetActualSourceRect();
+        const auto rcEle{ GetRectInClientD2D() };
+        auto rcSrc{ m_BitmapCover.GetActualSourceRect() };
         PixelToLogical(rcSrc);
-        eck::AdjustRectToFitAnother(rcSrc, rc);
-        GetDC()->DrawBitmap(
-            m_BitmapCover.Get(),
-            &rc,
-            1.0f,
-            D2D1_INTERPOLATION_MODE_LINEAR,
-            m_BitmapCover.GetSourceRect());
+        eck::AdjustRectToFitAnother(rcSrc, rcEle);
+        m_BitmapCover.Draw(GetDC(), rcEle, m_kOpacity, m_eInterMode);
 
         DbgDrawFrame();
         EndPaint(ps);
