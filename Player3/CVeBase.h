@@ -25,9 +25,6 @@ public:
         CrdTabPanelBackground = 0x50'000000,
         CrdPlayPanelBackground = 0x50'000000,
         CrdMiniCoverMask = 0x30'000000;
-private:
-    RefPtr<CImageManager> m_pImageManager{};
-    RefPtr<Dui::CFilterBlur> m_pFilterBlur{};
 public:
     static RcPtr<Dui::CTheme> TmMakeDefaultTheme(BOOL bDark) noexcept;
     static RcPtr<Dui::CColorCollection> TmMakeDefaultColorCollection(BOOL bDark) noexcept;
@@ -39,9 +36,6 @@ public:
 
     LRESULT OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 
-    EckInline void SetImageManager(RefPtr<CImageManager> p) noexcept { m_pImageManager = std::move(p); }
-    EckInlineNdCe auto& GetImageManager() const noexcept { return m_pImageManager; }
-
-    EckInline void SetFilterBlur(RefPtr<Dui::CFilterBlur> p) noexcept { m_pFilterBlur = std::move(p); }
-    EckInlineNdCe auto& GetFilterBlur() const noexcept { return m_pFilterBlur; }
+    CImageManager& GetImageManager() const noexcept;
+    Dui::CFilterBlur& GetFilterBlur() const noexcept;
 };

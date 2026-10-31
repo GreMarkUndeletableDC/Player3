@@ -25,7 +25,7 @@ void CPanelTab::LcaGet(const LvIndex& idx, int idxCol,
     switch (eProp)
     {
     case LvProperty::Image:
-        Data = GetImageManager()->AtlasGetD2D(IndexToImage(idx.Item));
+        Data = GetImageManager().AtlasGetD2D(IndexToImage(idx.Item));
         break;
     }
 }
@@ -51,7 +51,7 @@ void CPanelTab::LcaSet(const LvIndex& idx, int idxCol,
 
 void CPanelTab::OnColorSchemeChanged() noexcept
 {
-    m_LAIcon.SetBitmap(GetImageManager()->AtlasGetD2D(AppImage::WindowLogo));
+    m_LAIcon.SetBitmap(GetImageManager().AtlasGetD2D(AppImage::WindowLogo));
 }
 
 LRESULT CPanelTab::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
@@ -92,7 +92,7 @@ LRESULT CPanelTab::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
             0, 0, GetWidth(), GetWidth(), this);
         m_LAIcon.SetOnlyBitmap(TRUE);
         m_LAIcon.SetBackgroundMode(eck::ImageMode::CenterUniform);
-        m_LAIcon.SetBackgroundBitmap(GetImageManager()->AtlasGetD2D(AppImage::WindowLogo));
+        m_LAIcon.SetBackgroundBitmap(GetImageManager().AtlasGetD2D(AppImage::WindowLogo));
 
         m_LV.Create({}, Dui::DES_VISIBLE, 0,
             0, 0, 0, 0, this);

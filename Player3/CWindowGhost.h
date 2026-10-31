@@ -1,12 +1,11 @@
 ﻿#pragma once
-#include "CImageManager.h"
+class CWindowMain;
 
 class CWindowGhost final : public eck::CWindow
 {
 private:
-    Dui::CDuiWindow* m_pMainWindow{};
+    CWindowMain* m_pMainWindow{};
     ComPtr<ITaskbarList4> m_pTaskbarList{};
-    RefPtr<CImageManager> m_pAtlas{};
 
     HBITMAP m_hbmLivePreviewCache{};// 实时预览位图缓存
     HBITMAP m_hbmThumbnailCache{};  // 缩略图位图缓存
@@ -17,12 +16,9 @@ public:
 
     LRESULT OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept override;
 
-    void Initialize(
-        Dui::CDuiWindow* pMainWindow,
-        RefPtr<CImageManager> pAtlas) noexcept
+    void Initialize(CWindowMain* pMainWindow) noexcept
     {
         m_pMainWindow = pMainWindow;
-        m_pAtlas = std::move(pAtlas);
     }
 
     void SetTaskbarList(ITaskbarList4* pTaskbarList) noexcept

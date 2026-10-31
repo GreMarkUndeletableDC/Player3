@@ -23,7 +23,7 @@ void CPagePlay::UpdateBlurredCover() noexcept
     GetDC()->GetDpi(&xDpi, &yDpi);
     GetDC()->SetDpi(96.f, 96.f);
 
-    const auto Cover = GetImageManager()->CoverGetD2D();
+    const auto Cover = GetImageManager().CoverGetD2D();
     const auto rcSrc = Cover.GetActualSourceRect();
     const auto cx0 = rcSrc.right - rcSrc.left;
     const auto cy0 = rcSrc.bottom - rcSrc.top;
@@ -93,7 +93,7 @@ void CPagePlay::UpdateBlurredCover() noexcept
     GetDC()->EndDraw();
     GetDC()->SetTarget(pOldTarget.Get());
 
-    m_Cover.SetBitmap(GetImageManager()->CoverGetD2D());
+    m_Cover.SetBitmap(GetImageManager().CoverGetD2D());
 }
 
 void CPagePlay::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept

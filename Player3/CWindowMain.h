@@ -90,8 +90,8 @@ private:
     ComPtr<ITaskbarList4> m_pTaskbarList{};
     CWindowGhost m_WndTbGhost{};
 
-    RefPtr<CImageManager> m_pImageManager{ RefPtr<CImageManager>::Make() };
-    RefPtr<Dui::CFilterBlur> m_pFilterBlur{ RefPtr<Dui::CFilterBlur>::Make() };
+    CImageManager m_ImageMgr{};
+    Dui::CFilterBlur m_FilterBlur{};
 
     RefPtr<eck::CUxDwmWindowTheme> m_pUxWndTheme{ RefPtr<eck::CUxDwmWindowTheme>::Make() };
     ComPtr<ID2D1Bitmap1> m_pUxWndThemeAtlas{};
@@ -159,4 +159,7 @@ public:
     void TlTick(int iMs) noexcept override;
     BOOL TlIsValid() noexcept override;
     int TlGetCurrentInterval() const noexcept override { return 0; }
+
+    EckInlineNdCe auto& GetImageManager() noexcept { return m_ImageMgr; }
+    EckInlineNdCe auto& GetFilterBlur() noexcept { return m_FilterBlur; }
 };

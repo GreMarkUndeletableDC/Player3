@@ -241,7 +241,7 @@ HRESULT CPageList::IlUploadDefaultCover(eck::CD2DImageList* pImageList) noexcept
 
     hr = eck::WicScaleBitmap(
         pScaler.Self(),
-        GetImageManager()->CoverGetDefaultWicBitmap().Get(),
+        GetImageManager().CoverGetDefaultWicBitmap().Get(),
         m_cxIlPixel, m_cyIlPixel,
         WICBitmapInterpolationModeFant);
     if (FAILED(hr))
@@ -368,8 +368,8 @@ void CPageList::OnListSwitch() noexcept
 
 void CPageList::OnColorSchemeChanged() noexcept
 {
-    m_BTAddFile.SetIcon(GetImageManager()->AtlasGetD2D(AppImage::Plus));
-    m_BTLocate.SetIcon(GetImageManager()->AtlasGetD2D(AppImage::Locate));
+    m_BTAddFile.SetIcon(GetImageManager().AtlasGetD2D(AppImage::Plus));
+    m_BTLocate.SetIcon(GetImageManager().AtlasGetD2D(AppImage::Locate));
 }
 
 void CPageList::InitializeUi() noexcept

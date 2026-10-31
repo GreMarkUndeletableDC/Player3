@@ -26,16 +26,6 @@ void CWindowMain::InitializeUi() noexcept
         {
             switch (puhe->uEvent)
             {
-            case Dui::UIHE_PRECREATE:
-            {
-                const auto p = dynamic_cast<CVeBase*>(pEle);
-                if (p)
-                {
-                    p->SetImageManager(m_pImageManager);
-                    p->SetFilterBlur(m_pFilterBlur);
-                }
-            }
-            break;
             case Dui::UIHE_CREATE:
             {
                 auto uStyle = pEle->GetStyle();

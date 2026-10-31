@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "CVeBase.h"
+#include "CWindowMain.h"
 
 class CPlayerTheme : public Dui::CTheme
 {
@@ -92,4 +92,14 @@ LRESULT CVeBase::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         break;
     }
     return __super::OnEvent(uMsg, wParam, lParam);
+}
+
+CImageManager& CVeBase::GetImageManager() const noexcept
+{
+    return eck::DbgDynamicCast<CWindowMain*>(&GetWindow())->GetImageManager();
+}
+
+Dui::CFilterBlur& CVeBase::GetFilterBlur() const noexcept
+{
+    return eck::DbgDynamicCast<CWindowMain*>(&GetWindow())->GetFilterBlur();
 }

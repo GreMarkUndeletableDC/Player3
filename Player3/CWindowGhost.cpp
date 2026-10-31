@@ -106,7 +106,7 @@ HRESULT CWindowGhost::SetIconicThumbnail(UINT cxMax, UINT cyMax) noexcept
 
     auto pCover = App->Player().GetCover();
     if (!pCover.Get())
-        pCover = m_pAtlas->CoverGetDefaultWicBitmap();
+        pCover = m_pMainWindow->GetImageManager().CoverGetDefaultWicBitmap();
     UINT cxCover, cyCover;
     pCover->GetSize(&cxCover, &cyCover);
     eck::RCWH rc{ 0, 0, (int)cxCover, (int)cyCover };

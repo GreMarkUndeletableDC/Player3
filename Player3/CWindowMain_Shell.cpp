@@ -16,7 +16,7 @@ HRESULT CWindowMain::TblScaleButtonImage(
     HRESULT hr;
 
     ComPtr<IWICBitmapSource> pBitmap;
-    hr = m_pImageManager->AtlasCropWicBitmap(eImage, pBitmap);
+    hr = m_ImageMgr.AtlasCropWicBitmap(eImage, pBitmap);
     if (FAILED(hr))
         return hr;
 
@@ -36,7 +36,7 @@ HRESULT CWindowMain::TblScaleButtonImage(
 
 HRESULT CWindowMain::TblCreateGhostWindow(PCWSTR pszText) noexcept
 {
-    m_WndTbGhost.Initialize(this, m_pImageManager);
+    m_WndTbGhost.Initialize(this);
     m_WndTbGhost.Create(
         pszText,
         WS_OVERLAPPEDWINDOW,

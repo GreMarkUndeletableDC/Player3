@@ -28,15 +28,15 @@ EckInlineNdCe AppImage AutoNextModeToAppImage(AutoNextMode eMode) noexcept
 
 BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
 {
-    m_pImageManager->Initialize(RdGetDC(), eck::PtcCurrent()->bAppDarkMode);
-    m_pImageManager->AtlasLoad();
-    m_pImageManager->AtlasRealize();
-    m_pImageManager->CoverLoad();
-    m_pImageManager->CoverRealize();
-    m_pImageManager->SingleLoad();
+    m_ImageMgr.Initialize(RdGetDC(), eck::PtcCurrent()->bAppDarkMode);
+    m_ImageMgr.AtlasLoad();
+    m_ImageMgr.AtlasRealize();
+    m_ImageMgr.CoverLoad();
+    m_ImageMgr.CoverRealize();
+    m_ImageMgr.SingleLoad();
 
     // 设置默认封面
-    m_PlayPageAnimator.SetOverlayBitmap(m_pImageManager->CoverGetD2D());
+    m_PlayPageAnimator.SetOverlayBitmap(m_ImageMgr.CoverGetD2D());
 
     m_pUxWndTheme->LoadDefaultTheme();
     const auto spUxAtlas = m_pUxWndTheme->GetAtlasImageData();
@@ -70,7 +70,7 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
 
     SmtcInitialize();
 
-    m_pFilterBlur->Attach(this);
+    m_FilterBlur.Attach(this);
 
     InitializeUi();
     Dui::CColorCollection::UpdateAllAccentColor(TmGetAccentColor());
@@ -150,9 +150,9 @@ void CWindowMain::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     break;
     case PlayEvent::Play:
     {
-        m_pImageManager->CoverUpdate(App->Player().GetCover().Get());
+        m_ImageMgr.CoverUpdate(App->Player().GetCover().Get());
         m_PagePlaying.UpdateBlurredCover();
-        m_PlayPageAnimator.SetOverlayBitmap(m_pImageManager->CoverGetD2D());
+        m_PlayPageAnimator.SetOverlayBitmap(m_ImageMgr.CoverGetD2D());
 
         m_msProgTimer = 0;
         SmtcUpdateTimeLineRange();
@@ -172,7 +172,7 @@ void CWindowMain::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     case PlayEvent::Resume:
     {
         SetTimer(Handle, IDT_COMM_TICK, TE_COMM_TICK, nullptr);
-        m_BTPlay.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Pause));
+        m_BTPlay.SetIcon(m_ImageMgr.AtlasGetD2D(AppImage::Pause));
         m_BTPlay.Invalidate();
         TblUpdateState();
         SmtcUpdateState();
@@ -188,7 +188,7 @@ void CWindowMain::OnPlayEvent(const PLAY_EVT_PARAM& e) noexcept
     case PlayEvent::Pause:
     {
         KillTimer(Handle, IDT_COMM_TICK);
-        m_BTPlay.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Triangle));
+        m_BTPlay.SetIcon(m_ImageMgr.AtlasGetD2D(AppImage::Triangle));
         m_BTPlay.Invalidate();
         TblUpdateState();
         SmtcUpdateState();
@@ -201,7 +201,7 @@ LRESULT CWindowMain::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     if (uMsg == MessageTaskbarButtonCreated)
     {
-        if (m_pTaskbarList.Get())
+        if (m_pTaskbarList)
             TblOnTaskbarButtonCreated();
         return 0;
     }
@@ -257,7 +257,7 @@ LRESULT CWindowMain::OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         if (eck::MsgOnSettingChangeMainWindow(Handle, wParam, lParam, TRUE))
         {
-            m_pImageManager->OnColorSchemeChanged(eck::PtcCurrent()->bAppDarkMode);
+            m_ImageMgr.OnColorSchemeChanged(eck::PtcCurrent()->bAppDarkMode);
             OnColorSchemeChanged();
             TblUpdateToolBarIcon();
             m_WndTbGhost.InvalidateDwmThumbnail();
@@ -330,7 +330,7 @@ LRESULT CWindowMain::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) no
         else if (pEle == &m_BTAutoNext)
         {
             const auto r = App->Player().NextAutoNextMode();
-            m_BTAutoNext.SetIcon(m_pImageManager->AtlasGetD2D(AutoNextModeToAppImage(r)));
+            m_BTAutoNext.SetIcon(m_ImageMgr.AtlasGetD2D(AutoNextModeToAppImage(r)));
             m_BTAutoNext.Invalidate();
         }
         else if (pEle == &m_BTVol)
@@ -460,13 +460,13 @@ void CWindowMain::PpaEnd() noexcept
 
 void CWindowMain::OnColorSchemeChanged() noexcept
 {
-    m_BTPrev.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Previous));
-    m_BTPlay.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Triangle));
-    m_BTNext.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Next));
-    m_BTAutoNext.SetIcon(m_pImageManager->AtlasGetD2D(
+    m_BTPrev.SetIcon(m_ImageMgr.AtlasGetD2D(AppImage::Previous));
+    m_BTPlay.SetIcon(m_ImageMgr.AtlasGetD2D(AppImage::Triangle));
+    m_BTNext.SetIcon(m_ImageMgr.AtlasGetD2D(AppImage::Next));
+    m_BTAutoNext.SetIcon(m_ImageMgr.AtlasGetD2D(
         AutoNextModeToAppImage(App->Player().GetAutoNextMode())));
-    m_BTLrc.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Lyric));
-    m_BTVol.SetIcon(m_pImageManager->AtlasGetD2D(AppImage::Speaker));
+    m_BTLrc.SetIcon(m_ImageMgr.AtlasGetD2D(AppImage::Lyric));
+    m_BTVol.SetIcon(m_ImageMgr.AtlasGetD2D(AppImage::Speaker));
     {
         auto& ss = m_BTPlay.TmSimpleStyle(Dui::CButton::SsNormal);
         ss.bBackArgb = TRUE;

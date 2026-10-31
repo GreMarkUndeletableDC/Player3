@@ -7,7 +7,7 @@ constexpr static float PlayPageArrowSize = 30.f;
 
 void CVeMiniCover::OnPaint(const Dui::PAINTINFO& ps) noexcept
 {
-    const auto Cover = GetImageManager()->CoverGetD2D();
+    const auto Cover = GetImageManager().CoverGetD2D();
     if (!Cover)
         return;
     if (m_bAnActive || m_bHover)
@@ -29,7 +29,7 @@ void CVeMiniCover::OnPaint(const Dui::PAINTINFO& ps) noexcept
             GetWindow().CcReserveBitmapLogical(cx, cy);
             Dui::CFilterBlur::Extra Extra{ sizeof(Extra) };
             Extra.fDeviation = k / 1.5f;
-            GetFilterBlur()->FilterDC(
+            GetFilterBlur().FilterDC(
                 GetRectInClientD2D(), ps.ox, ps.oy, &Extra);
         }
 
@@ -49,7 +49,7 @@ void CVeMiniCover::OnPaint(const Dui::PAINTINFO& ps) noexcept
             (AnCoverEndValue - k) * 4.f/*箭头的行程因子*/;
         rcView.bottom = rcView.top + PlayPageArrowSize;
 
-        const auto Icon = GetImageManager()->AtlasGetD2D(AppImage::PlayPageUp);
+        const auto Icon = GetImageManager().AtlasGetD2D(AppImage::PlayPageUp);
         Icon.Draw(GetDC(), rcView, k / AnCoverEndValue);
     }
     else

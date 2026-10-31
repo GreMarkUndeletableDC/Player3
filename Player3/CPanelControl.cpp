@@ -40,7 +40,7 @@ LRESULT CPanelControl::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
         if (m_bEnableBlur)
         {
             GetDC()->Flush();
-            GetFilterBlur()->FilterDC(ps.rcClip, ps.ox, ps.oy);
+            GetFilterBlur().FilterDC(ps.rcClip, ps.ox, ps.oy);
         }
         GetDC()->FillRectangle(ps.rcClip, GetWindow().CcSetBrushColor(
             GetTheme()->GetColorD2D(IdCrPlayPanelBackground)));
