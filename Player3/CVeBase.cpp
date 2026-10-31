@@ -103,3 +103,8 @@ Dui::CFilterBlur& CVeBase::GetFilterBlur() const noexcept
 {
     return eck::DbgDynamicCast<CWindowMain*>(&GetWindow())->GetFilterBlur();
 }
+
+eck::CD2DShadow& CVeBase::GetShadow() const noexcept
+{
+    return eck::DbgDynamicCast<CWindowMain*>(&GetWindow())->GetShadow();
+}

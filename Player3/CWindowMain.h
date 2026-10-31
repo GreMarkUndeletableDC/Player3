@@ -92,6 +92,7 @@ private:
 
     CImageManager m_ImageMgr{};
     Dui::CFilterBlur m_FilterBlur{};
+    eck::CD2DShadow m_Shadow{};
 
     RefPtr<eck::CUxDwmWindowTheme> m_pUxWndTheme{ RefPtr<eck::CUxDwmWindowTheme>::Make() };
     ComPtr<ID2D1Bitmap1> m_pUxWndThemeAtlas{};
@@ -162,4 +163,5 @@ public:
 
     EckInlineNdCe auto& GetImageManager() noexcept { return m_ImageMgr; }
     EckInlineNdCe auto& GetFilterBlur() noexcept { return m_FilterBlur; }
+    EckInlineNdCe auto& GetShadow() noexcept { return m_Shadow; }
 };

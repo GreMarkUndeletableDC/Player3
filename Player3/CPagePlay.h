@@ -12,7 +12,8 @@ public:
         BackButtonSize = 40.f,
         LabelCoverPadding = 24.f,
         LabelPadding = 4.f,
-        LabelHeight = 26.f
+        LabelHeight = 26.f,
+        CoverShadowDistance = 45.f
         ;
 private:
     CVeCover m_Cover{};

@@ -38,4 +38,5 @@ public:
 
     CImageManager& GetImageManager() const noexcept;
     Dui::CFilterBlur& GetFilterBlur() const noexcept;
+    eck::CD2DShadow& GetShadow() const noexcept;
 };

@@ -32,6 +32,7 @@
 #include "eck\ImageHelper.h"
 #include "eck\RefPtr.h"
 #include "eck\Json.h"
+#include "eck\CD2DShadow.h"
 
 #if PLAYER_OPT_WINRT
 //#include "eck\WinRtDCompInterop.h"

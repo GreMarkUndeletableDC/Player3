@@ -10,12 +10,29 @@ LRESULT CVeVolumeBar::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         Dui::PAINTINFO ps;
         BeginPaint(ps, wParam, lParam);
-        GetDC()->FillRectangle(ps.rcClip, GetWindow().CcSetBrushColor(
-            GetTheme()->GetColorD2D(IdCrVolumeBarBackground)));
-        auto rc{ GetRectInClientD2D() };
-        eck::InflateRect(rc, -0.5f, -0.5f);
-        GetDC()->DrawRectangle(rc, GetWindow().CcSetBrushColor(
-            GetTheme()->GetColorD2D(IdCrVolumeBarBorder)));
+
+        auto rcContent{ GetRectInClientD2D() };
+        eck::InflateRect(rcContent, -ShadowDistance, -ShadowDistance);
+
+        D2D1_RECT_F rcTemp;
+        eck::IntersectRect(rcTemp, rcContent, ps.rcClip);
+        GetDC()->FillRectangle(rcTemp,
+            GetWindow().CcSetBrushColor(
+                GetTheme()->GetColorD2D(IdCrVolumeBarBackground)));
+
+        rcTemp = rcContent;
+        eck::InflateRect(rcTemp, -0.5f, -0.5f);
+        GetDC()->DrawRectangle(rcTemp,
+            GetWindow().CcSetBrushColor(
+                GetTheme()->GetColorD2D(IdCrVolumeBarBorder)));
+
+        GetShadow().DrawGrid(
+            GetDC(),
+            rcContent,
+            ShadowDistance,
+            D2D1_INTERPOLATION_MODE_LINEAR,
+            0.8f);
+
         EndPaint(ps);
     }
     return 0;
@@ -28,14 +45,29 @@ LRESULT CVeVolumeBar::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         __super::OnEvent(uMsg, wParam, lParam);
         GetWindow().KctRegisterTimeLine(this);
-        const auto cx = GetWidth();
-        const auto cy = GetHeight();
-        m_LAVol.Create(L"100"sv, Dui::DES_VISIBLE | Dui::DES_PARENT_COMP, 0,
-            InnerPadding, 0, LabelWidth, cy, this);
-        const auto x = InnerPadding * 2 + LabelWidth;
-        m_TrackBar.Create({}, Dui::DES_VISIBLE |
-            Dui::DES_PARENT_COMP | Dui::DES_NOTIFY_WND, 0,
-            x, 0, cx - x - InnerPadding, cy, this, nullptr, ELEID_VOLBAR_TRACK);
+
+        const auto mg = ShadowDistance;
+
+        m_LAVol.Create(
+            L"100"sv,
+            Dui::DES_VISIBLE | Dui::DES_PARENT_COMP,
+            0,
+            InnerPadding + mg,
+            mg,
+            LabelWidth,
+            GetHeight() - mg * 2.f,
+            this);
+
+        const auto x = InnerPadding * 2.f + LabelWidth + mg;
+        m_TrackBar.Create(
+            {},
+            Dui::DES_VISIBLE | Dui::DES_PARENT_COMP | Dui::DES_NOTIFY_WND,
+            0,
+            x,
+            mg,
+            GetWidth() - x - InnerPadding - mg,
+            GetHeight() - mg * 2.f,
+            this, nullptr, ELEID_VOLBAR_TRACK);
         m_TrackBar.SetRange(0, 200);
         m_TrackBar.SetTrackPosition(100);
         m_TrackBar.SetTrackSize(TrackBarTrackHeight);
@@ -55,11 +87,11 @@ void CVeVolumeBar::ShowAnimation() noexcept
     ECKBOOLNOT(m_bShow);
     SetStyle(GetStyle() | Dui::DES_VISIBLE);
     SetCompositor(&m_PageAn);
-    m_bAnimating = TRUE;
     if (m_bShow)
-        m_ecShowing.Start(0.f, 1.f);
+        m_ecShowing.Start(0.f, 1.f, m_bAnimating);
     else
-        m_ecShowing.Start(1.f, 0.f);
+        m_ecShowing.Start(1.f, 0.f, m_bAnimating);
+    m_bAnimating = TRUE;
     GetWindow().KctWake();
 }
 
@@ -76,7 +108,9 @@ void CVeVolumeBar::TlTick(int ms) noexcept
     m_msLastInterval = ms;
     m_bAnimating = m_ecShowing.Tick((float)ms, 300.f);
     m_PageAn.SetOpacity(m_ecShowing.K);
-    m_PageAn.SetMatrix(D2D1::Matrix3x2F::Translation(0.f, (1.f - m_ecShowing.K) * AnimationDistance));
+    m_PageAn.SetMatrix(D2D1::Matrix3x2F::Translation(
+        0.f,
+        (1.f - m_ecShowing.K) * AnimationDistance));
 
     auto rc = GetWholeRectInClient();
     CompUpdateCompositedRect();

@@ -151,6 +151,13 @@ LRESULT CPagePlay::OnEvent(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
                 1.f,
                 D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
                 ps.rcClipInEle);
+
+        GetShadow().DrawGrid(
+            GetDC(),
+            m_Cover.GetRectInClientD2D(),
+            CoverShadowDistance,
+            D2D1_INTERPOLATION_MODE_LINEAR,
+            0.8f);
         EndPaint(ps);
     }
     return 0;

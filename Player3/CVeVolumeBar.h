@@ -9,7 +9,8 @@ public:
         TrackBarThumbSize = 10.f,
         LabelWidth = 30.f,
         InnerPadding = 8.f,
-        AnimationDistance = 10.f
+        AnimationDistance = 10.f,
+        ShadowDistance = 18.f;
         ;
 private:
     Dui::CLabel m_LAVol{};

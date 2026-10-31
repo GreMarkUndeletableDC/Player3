@@ -35,6 +35,16 @@ BOOL CWindowMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs) noexcept
     m_ImageMgr.CoverRealize();
     m_ImageMgr.SingleLoad();
 
+    {
+        m_Shadow.Initialize(RdGetDC(), { 500.f, 500.f }, 40.f);
+        const auto Shape = m_Shadow.MakeShape(
+            eck::CD2DShadow::Shape::Rect,
+            CcSetBrushColor(D2D1::ColorF{ D2D1::ColorF::Black, 1.f }));
+        const auto Size = m_Shadow.GetCachePixelSize();
+        CcReserveBitmap(Size.width, Size.height);
+        m_Shadow.MakeBlurBitmap(CcGetBitmap(), &Shape);
+    }
+
     // 设置默认封面
     m_PlayPageAnimator.SetOverlayBitmap(m_ImageMgr.CoverGetD2D());
 
@@ -335,8 +345,10 @@ LRESULT CWindowMain::OnElementNotify(Dui::CElement* pEle, Dui::ELENMHDR* pnm) no
         }
         else if (pEle == &m_BTVol)
         {
-            const auto x = GetClientWidthLogical() - VolumeBarWidth - VolumeBarRightPadding;
-            const auto y = m_BTVol.GetOffsetInClient().y - VolumeBarHeight;
+            const auto x = GetClientWidthLogical() -
+                VolumeBarWidth - VolumeBarRightPadding - CVeVolumeBar::ShadowDistance;
+            const auto y = m_BTVol.GetOffsetInClient().y -
+                VolumeBarHeight - CVeVolumeBar::ShadowDistance;
             m_VolBar.SetPosition(x, y);
             m_VolBar.ShowAnimation();
         }

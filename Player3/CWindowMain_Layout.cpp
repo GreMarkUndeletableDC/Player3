@@ -151,8 +151,10 @@ void CWindowMain::InitializeUi() noexcept
     m_TitleBar.SetThemeAtlas(m_pUxWndThemeAtlas.Get());
     m_TitleBar.SynchronizeToSystemMenu();
     // 音量条
-    m_VolBar.Create({}, 0, 0,
-        0, 0, VolumeBarWidth, VolumeBarHeight, nullptr, this);
+    m_VolBar.Create({}, Dui::DES_NO_CLIP, 0,
+        0, 0,
+        VolumeBarWidth + CVeVolumeBar::ShadowDistance * 2.f,
+        VolumeBarHeight + CVeVolumeBar::ShadowDistance * 2.f, nullptr, this);
     m_VolBar.SetTextFormat(pTfCenter.Get());
     //
     UpdateButtonImageSize();
